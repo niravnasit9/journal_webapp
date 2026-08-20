@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { onSnapshot, doc } from "firebase/firestore";
 
 type Theme = "dark" | "light";
 
@@ -17,57 +17,50 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
+// Apply theme to DOM immediately (before React renders) to prevent flash
+function applyThemeToDOM(newTheme: Theme) {
+  if (newTheme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    // Load from local storage immediately to prevent flicker
-    const localTheme = localStorage.getItem("theme") as Theme | null;
-    if (localTheme) {
-      applyTheme(localTheme);
-    } else {
-      // Default to light theme if no local storage
-      applyTheme("light");
-    }
+    // 1. Apply from localStorage immediately (fast, no network)
+    const localTheme = (localStorage.getItem("theme") as Theme) || "light";
+    setThemeState(localTheme);
+    applyThemeToDOM(localTheme);
 
-    // Listen to Firebase auth to fetch server-side preference
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Listen to live updates from the user's doc
-        const unsubDoc = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-          if (docSnap.exists() && docSnap.data().theme) {
-            applyTheme(docSnap.data().theme as Theme);
-          }
-        });
-        return () => unsubDoc();
-      }
+    // 2. Then sync with Firestore in background (slower, network)
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+
+      const unsubDoc = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().theme) {
+          const serverTheme = docSnap.data().theme as Theme;
+          setThemeState(serverTheme);
+          localStorage.setItem("theme", serverTheme);
+          applyThemeToDOM(serverTheme);
+        }
+      });
+
+      return () => unsubDoc();
     });
 
-    return () => unsubscribe();
+    return () => unsubAuth();
   }, []);
 
-  const applyTheme = (newTheme: Theme) => {
+  const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
-    
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    applyThemeToDOM(newTheme);
   };
 
-  const setTheme = (newTheme: Theme) => {
-    applyTheme(newTheme);
-  };
-
-  // Prevent hydration mismatch flicker
-  if (!mounted) {
-    return <div style={{ visibility: 'hidden' }}>{children}</div>;
-  }
-
+  // NO hidden wrapper — render immediately, theme applied via classList on <html>
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}

@@ -22,9 +22,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${inter.variable} h-full antialiased`}
     >
-      <head>
+        {/* Apply theme BEFORE React renders to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            var t = localStorage.getItem('theme');
+            if (t === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+          } catch(e) {}
+        `}} />
         <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" />
-      </head>
+
       <body className="h-full font-sans selection:bg-blue-500/30 font-active-inter">
         <Toaster position="bottom-right" toastOptions={{
           style: {
