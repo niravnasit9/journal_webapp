@@ -9,9 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "firebase": "^12.18.0",
+    "lucide-react": "^1.33.0",
+    "metaapi.cloud-sdk": "^29.3.3",
     "next": "16.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-hot-toast": "^2.6.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
