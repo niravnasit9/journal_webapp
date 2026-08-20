@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useRouter } from "next/navigation";
@@ -106,6 +106,7 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
 
+      // Save user document
       await setDoc(doc(db, "users", firebaseUser.uid), {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
@@ -114,7 +115,13 @@ export default function RegisterPage() {
         created_at: new Date(),
       });
 
+      // Send email verification
+      await sendEmailVerification(firebaseUser);
+
+      // Set session cookie
       document.cookie = `userRole=user; path=/; max-age=86400; SameSite=Strict`;
+
+      // Redirect to dashboard (verification email is sent in background)
       router.push("/dashboard");
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
