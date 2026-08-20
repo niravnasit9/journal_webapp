@@ -28,14 +28,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        // Clear stale cookie to prevent infinite redirect loop with middleware
-        document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        router.push("/register");
-      } else if (!user.emailVerified) {
-        router.push("/verify-email");
-      }
+    if (!loading && !user) {
+      // Clear stale cookie to prevent infinite redirect loop with middleware
+      document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      router.push("/register");
     }
   }, [user, loading, router]);
 
@@ -45,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/login");
   };
 
-  if (loading || !user || !user.emailVerified) {
+  if (loading || !user) {
     return <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0f1c] flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
   }
 
