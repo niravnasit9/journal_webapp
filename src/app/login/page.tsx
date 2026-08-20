@@ -143,7 +143,7 @@ export default function LoginPage() {
           <i className="las la-chart-bar text-2xl text-white dark:text-gray-900"></i>
         </div>
         <h1 className="text-2xl font-black tracking-tighter">
-          GFT<span className="text-indigo-600 dark:text-indigo-400">Journal</span>
+          Profit<span className="text-indigo-600 dark:text-indigo-400">Pulse</span>
         </h1>
       </div>
 
@@ -153,7 +153,7 @@ export default function LoginPage() {
           <>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Welcome Back</h2>
-              <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">Sign in to your GFT Journal account</p>
+              <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">Sign in to your ProfitPulse account</p>
             </div>
 
             {error && (

@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MT5 Dashboard",
-  description: "Multi-Account MT5 Trading Dashboard",
+  title: "ProfitPulse — Trading Journal",
+  description: "Track, analyze and improve your trading with ProfitPulse",
 };
 
 import { Toaster } from "react-hot-toast";

@@ -186,7 +186,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="md:hidden h-16 border-b border-yellow-200 dark:border-slate-800 bg-[#f0f0f0] dark:bg-black flex items-center justify-between px-4 sticky top-0 z-30 shadow-md">
           <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold tracking-tight">
              <i className="las la-shield-alt text-2xl text-gray-900 dark:text-white"></i>
-            <span>GFT Journal</span>
+            <span>ProfitPulse</span>
           </div>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}

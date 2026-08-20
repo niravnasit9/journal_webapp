@@ -104,9 +104,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div>
                 <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
-                  ADMIN<span className="text-indigo-500">PANEL</span>
+                  Profit<span className="text-indigo-500">Pulse</span>
                 </h1>
-                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Superuser</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Admin Panel</p>
               </div>
             </div>
             
