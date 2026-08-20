@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/firebase/authContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import Script from "next/script";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
@@ -17,13 +18,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
-        {/* Apply theme instantly before React hydrates to prevent flash */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}` }} />
         <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" />
       </head>
       <body className="h-full font-sans selection:bg-blue-500/30 font-active-inter">
+        {/* Apply theme instantly before React hydrates to prevent flash */}
+        <Script id="theme-script" strategy="beforeInteractive">
+          {`try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}`}
+        </Script>
         <Toaster position="bottom-right" toastOptions={{
           style: {
             background: 'var(--toast-bg, #1f2229)',
