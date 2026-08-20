@@ -29,6 +29,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!loading && !user) {
+      // Clear stale cookie to prevent infinite redirect loop with middleware
+      document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       router.push("/register");
     }
   }, [user, loading, router]);
