@@ -23,27 +23,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
+        // 1. Set user and clear loading IMMEDIATELY — don't wait for Firestore
         setUser(firebaseUser);
-        try {
-          const userDocRef = doc(db, "users", firebaseUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          
-          if (userDocSnap.exists()) {
-            setRole(userDocSnap.data().role as "admin" | "user");
-          } else {
-            setRole("user"); // default role if doc not found
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setRole(null);
-        }
+        setLoading(false);
+
+        // 2. Fetch role in background (non-blocking)
+        getDoc(doc(db, "users", firebaseUser.uid))
+          .then((docSnap) => {
+            if (docSnap.exists()) {
+              setRole(docSnap.data().role as "admin" | "user");
+            } else {
+              setRole("user");
+            }
+          })
+          .catch(() => {
+            setRole("user"); // default on error
+          });
       } else {
+        // No user — clear everything and stop loading
         setUser(null);
         setRole(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
