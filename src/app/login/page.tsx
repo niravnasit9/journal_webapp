@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { auth, db } from "../../lib/firebase/config";
 import { useAuth } from "@/lib/firebase/authContext";
@@ -44,8 +45,16 @@ export default function LoginPage() {
     }
   }, [user, authLoading, router]);
 
-  if (authLoading || (!authLoading && user)) {
-    return null;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0f1c]">
+        <LoadingSpinner className="w-10 h-10" />
+      </div>
+    );
+  }
+
+  if (user) {
+    return null; // redirecting via useEffect
   }
 
   const validateForm = (): boolean => {
