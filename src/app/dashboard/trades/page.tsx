@@ -118,11 +118,11 @@ export default function GlobalTradesPage() {
             <tbody className="divide-y divide-slate-800/50">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12"><LoadingSpinner /></td>
+                  <td colSpan={7} className="px-6 py-12"><LoadingSpinner /></td>
                 </tr>
               ) : filteredTrades.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500 font-medium">No trades found.</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500 font-medium">No trades found.</td>
                 </tr>
               ) : (
                 filteredTrades.map((trade) => {

@@ -5,6 +5,8 @@ import { useAuth } from "@/lib/firebase/authContext";
 import { auth } from "@/lib/firebase/config";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useRouter, usePathname } from "next/navigation";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface NavItem {
   name: string;
@@ -21,6 +23,7 @@ interface NavSection {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, role, loading } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
