@@ -20,7 +20,7 @@ export default function VerifyEmailPage() {
       if (!user) {
         router.push("/register");
       } else if (user.emailVerified) {
-        router.push("/dashboard");
+        router.push("/pricing");
       }
     }
   }, [user, loading, router]);
@@ -59,7 +59,7 @@ export default function VerifyEmailPage() {
               await user.reload(); // Refreshes user data from Firebase
               if (auth.currentUser?.emailVerified) {
                 toast.success("Email verified successfully!");
-                router.push("/dashboard");
+                router.push("/pricing");
               } else {
                 toast.error("Email not verified yet. Try again.");
               }

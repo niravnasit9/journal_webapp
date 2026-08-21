@@ -7,7 +7,6 @@ import { db } from "@/lib/firebase/config";
 import { StrategyDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import Link from "next/link";
-import ThemeToggle from "@/components/ThemeToggle";
 
 export default function PublicStrategyPage() {
   const params = useParams();
@@ -85,7 +84,7 @@ export default function PublicStrategyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050810] transition-colors duration-500 font-sans relative">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050810] transition-colors duration-500 font-sans relative overflow-x-hidden">
       
       {/* Background Overlays & Grid */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -116,7 +115,6 @@ export default function PublicStrategyPage() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Link 
               href="/register" 
               className="px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black text-sm font-black rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-105"
@@ -131,17 +129,17 @@ export default function PublicStrategyPage() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-20">
         
         {strategy.image_url && (
-          <div className="w-full h-[300px] md:h-[450px] rounded-[3rem] overflow-hidden mb-12 md:mb-16 relative shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="w-full h-[300px] md:h-[450px] rounded-3xl md:rounded-[3rem] overflow-hidden mb-8 md:mb-16 relative shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700">
             <img src={strategy.image_url} alt={strategy.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10"></div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
           
           {/* Left Column: Strategy Details (Sticky on Desktop) */}
           <div className="lg:col-span-5">
-            <div className="sticky top-32 animate-in fade-in slide-in-from-left-8 duration-700">
+            <div className="lg:sticky lg:top-32 animate-in fade-in slide-in-from-left-8 duration-700">
               
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-black uppercase tracking-[0.2em] mb-6 shadow-sm">
                 <span className="relative flex h-2 w-2">
@@ -153,7 +151,7 @@ export default function PublicStrategyPage() {
 
               <div className="mb-2">
                 <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-2">Strategy Name</h3>
-                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
+                <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight break-words">
                   {strategy.name}
                 </h1>
               </div>
@@ -170,7 +168,7 @@ export default function PublicStrategyPage() {
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-0.5">Author</p>
                   <p className="text-sm font-bold text-gray-900 dark:text-white">
-                    @{strategy.owner_email ? strategy.owner_email.split('@')[0] : "Trader"}
+                    {strategy.owner_name ? strategy.owner_name : `@${strategy.owner_email ? strategy.owner_email.split('@')[0] : "Trader"}`}
                   </p>
                 </div>
               </div>
@@ -224,7 +222,7 @@ export default function PublicStrategyPage() {
                   {strategy.rules.map((rule, idx) => (
                     <div 
                       key={idx} 
-                      className="group relative bg-white dark:bg-[#111318] rounded-[2rem] p-8 shadow-sm hover:shadow-2xl border border-gray-100 dark:border-white/5 hover:border-yellow-400/50 transition-all duration-500 overflow-hidden"
+                      className="group relative bg-white dark:bg-[#111318] rounded-3xl md:rounded-[2rem] p-6 md:p-8 shadow-sm hover:shadow-2xl border border-gray-100 dark:border-white/5 hover:border-yellow-400/50 transition-all duration-500 overflow-hidden"
                     >
                       {/* Hover Overlay Animation */}
                       <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/0 via-yellow-400/5 to-yellow-400/0 opacity-0 group-hover:opacity-100 translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000 ease-in-out pointer-events-none"></div>
@@ -233,9 +231,9 @@ export default function PublicStrategyPage() {
                         <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center shrink-0 group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-colors duration-300 shadow-inner">
                           <span className="text-gray-900 dark:text-white group-hover:text-black font-black text-2xl">{idx + 1}</span>
                         </div>
-                        <div className="pt-1">
+                        <div className="pt-1 flex-1 min-w-0">
                           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-2">Rule Parameter {idx + 1}</h4>
-                          <p className="text-xl text-gray-800 dark:text-slate-200 font-bold leading-relaxed">
+                          <p className="text-xl text-gray-800 dark:text-slate-200 font-bold leading-relaxed break-words">
                             {rule}
                           </p>
                         </div>
@@ -244,7 +242,7 @@ export default function PublicStrategyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="p-16 rounded-[3rem] bg-white/50 dark:bg-[#111318]/50 border border-dashed border-gray-200 dark:border-white/10 text-center shadow-inner">
+                <div className="p-10 md:p-16 rounded-3xl md:rounded-[3rem] bg-white/50 dark:bg-[#111318]/50 border border-dashed border-gray-200 dark:border-white/10 text-center shadow-inner">
                   <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i className="las la-folder-open text-4xl text-gray-400"></i>
                   </div>
@@ -259,13 +257,13 @@ export default function PublicStrategyPage() {
         </div>
 
         {/* Call to Action Banner (Full Width) */}
-        <div className="mt-24 relative rounded-[3rem] overflow-hidden shadow-[0_20px_50px_-12px_rgba(250,204,21,0.3)] group animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
+        <div className="mt-16 md:mt-24 relative rounded-3xl md:rounded-[3rem] overflow-hidden shadow-[0_20px_50px_-12px_rgba(250,204,21,0.3)] group animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 transition-transform duration-1000 group-hover:scale-105"></div>
           
           {/* Animated Tech Overlay */}
           <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] mix-blend-overlay"></div>
           
-          <div className="relative z-10 px-8 py-16 md:py-20 text-center text-black flex flex-col items-center">
+          <div className="relative z-10 px-6 py-12 md:px-8 md:py-20 text-center text-black flex flex-col items-center">
             <div className="w-16 h-16 bg-black/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
               <i className="las la-chart-bar text-4xl text-black"></i>
             </div>

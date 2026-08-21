@@ -8,6 +8,8 @@ export interface UserDoc {
   theme?: "dark" | "light";
   created_at: any; // Firestore Timestamp
   photo_url?: string;
+  subscription_tier?: "free" | "starter" | "pro" | "elite";
+  subscription_status?: string;
 }
 
 export interface AccountDoc {
@@ -101,5 +103,6 @@ export interface StrategyDoc {
   is_public?: boolean;
   image_url?: string;
   owner_email?: string;
+  owner_name?: string;
   owner_photo_url?: string;
 }

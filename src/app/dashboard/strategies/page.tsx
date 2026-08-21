@@ -151,6 +151,7 @@ export default function StrategiesPage() {
         id: docRef.id,
         owner_uid: user.uid,
         owner_email: user.email || "",
+        owner_name: user.displayName || user.email || "",
         owner_photo_url: user.photoURL || "",
         name: name.trim(),
         description: description.trim(),
@@ -247,7 +248,7 @@ export default function StrategiesPage() {
           <p className="mt-4 text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest text-sm animate-pulse">Loading Playbooks</p>
         </div>
       ) : strategies.length === 0 ? (
-        <div className="bg-white/50 dark:bg-[#111318]/50 backdrop-blur-xl border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-[3rem] p-12 md:p-20 text-center shadow-lg transition-all hover:bg-white dark:hover:bg-[#111318]">
+        <div className="bg-white/50 dark:bg-[#111318]/50 backdrop-blur-xl border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-12 md:p-20 text-center shadow-lg transition-all hover:bg-white dark:hover:bg-[#111318]">
           <div className="w-24 h-24 bg-gradient-to-tr from-yellow-100 to-yellow-50 dark:from-yellow-500/20 dark:to-yellow-500/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner rotate-3">
             <i className="las la-chess-knight text-5xl text-yellow-500"></i>
           </div>
@@ -308,7 +309,7 @@ export default function StrategiesPage() {
                 </div>
               )}
 
-              <div className="px-8 pb-8 pt-4 flex-grow flex flex-col relative z-10 -mt-6">
+              <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-4 flex-grow flex flex-col relative z-10 -mt-6">
                 
                 {/* Floating Action Buttons */}
                 <div className="absolute -top-12 right-6 flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:translate-y-4 md:group-hover:translate-y-0 transition-all duration-300">
@@ -381,7 +382,7 @@ export default function StrategiesPage() {
 
       {/* Share Modal - Premium Redesign */}
       {isShareModalOpen && strategyToShare && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-gray-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto p-4 sm:p-6 bg-gray-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#111318] rounded-[2rem] w-full max-w-lg shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 overflow-hidden scale-in-95 duration-300">
             
             <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
@@ -456,7 +457,7 @@ export default function StrategiesPage() {
 
       {/* Create/Edit Modal - Premium Redesign */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-gray-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto p-4 sm:p-6 bg-gray-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#111318] rounded-[2rem] w-full max-w-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 my-auto scale-in-95 duration-300">
             
             <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center sticky top-0 bg-white/90 dark:bg-[#111318]/90 backdrop-blur-xl rounded-t-[2rem] z-10">

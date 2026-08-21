@@ -67,6 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Users", href: "/admin/users", icon: "las la-users" },
         { name: "Accounts", href: "/admin/accounts", icon: "las la-wallet" },
         { name: "Trades", href: "/admin/trades", icon: "las la-book-open" },
+        { name: "Strategies", href: "/admin/strategies", icon: "las la-chess-knight", tag: "NEW" },
       ]
     },
     {
@@ -80,7 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0f1c] text-gray-700 dark:text-slate-300 flex font-sans">
+    <div className="min-h-screen w-full bg-[#fafafa] dark:bg-[#0a0f1c] text-gray-700 dark:text-slate-300 flex font-sans overflow-x-hidden">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -91,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <aside 
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-[#f0f0f0] dark:bg-black border-r border-yellow-200 dark:border-[#222] transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-[#f0f0f0] dark:bg-black border-r border-yellow-200 dark:border-[#222] transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -184,7 +185,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Wrapper */}
-      <main className="flex-1 flex flex-col min-h-screen bg-[#fafafa] dark:bg-[#0a0f1c] relative">
+      <main className="flex-1 flex flex-col min-w-0 min-h-screen bg-[#fafafa] dark:bg-[#0a0f1c] relative">
         {/* Mobile Header Topbar */}
         <div className="md:hidden sticky top-0 z-30 bg-[#f0f0f0] dark:bg-black/80 backdrop-blur-md border-b border-yellow-200 dark:border-[#222] px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -204,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Dynamic Page Content */}
-        <div className="flex-1 p-4 md:p-8 xl:p-10 max-w-7xl mx-auto w-full">
+        <div className="flex-1 p-4 md:p-8 xl:p-10 max-w-7xl mx-auto w-full animate-fade-in-up">
           {children}
         </div>
       </main>

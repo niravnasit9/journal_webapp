@@ -25,11 +25,13 @@ interface NavSection {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, role, loading } = useAuth();
+  const { user, role, tier, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState("");
 
   useEffect(() => {
     if (!loading) {
@@ -37,11 +39,62 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Clear stale cookie to prevent infinite redirect loop with middleware
         document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         router.push("/register");
-      } else if (!user.emailVerified) {
+      } else if (!user.emailVerified && role !== "admin") {
         router.push("/verify-email");
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, role]);
+
+  const getThemeVars = () => {
+    switch (tier) {
+      case "elite":
+        return {
+          bg: "bg-purple-50 dark:bg-purple-500/10 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-purple-500/10 before:via-fuchsia-500/10 before:to-purple-500/10 before:animate-gradient-x",
+          border: "border-purple-300 dark:border-[#523e6b] shadow-[0_0_15px_rgba(168,85,247,0.1)]",
+          text: "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-gradient-x drop-shadow-sm",
+          iconText: "text-purple-600 dark:text-purple-400 animate-pulse",
+          activeBg: "bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-gradient-x text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-purple-400/50",
+          activeIcon: "text-white drop-shadow-md",
+          badgeBg: "bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white shadow-lg animate-pulse",
+          activeBadgeBg: "bg-white text-purple-600 shadow-md",
+        };
+      case "pro":
+        return {
+          bg: "bg-yellow-50 dark:bg-yellow-500/10 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-yellow-500/5 before:via-amber-500/10 before:to-yellow-500/5 before:animate-pulse",
+          border: "border-yellow-200 dark:border-[#333022] shadow-[0_0_10px_rgba(234,179,8,0.1)]",
+          text: "text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 drop-shadow-sm",
+          iconText: "text-yellow-500 animate-pulse",
+          activeBg: "bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-yellow-400/50",
+          activeIcon: "text-black drop-shadow-md",
+          badgeBg: "bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-md",
+          activeBadgeBg: "bg-black text-yellow-500 shadow-sm",
+        };
+      case "starter":
+        return {
+          bg: "bg-blue-50 dark:bg-blue-500/10 transition-colors duration-500",
+          border: "border-blue-200 dark:border-[#1a2838] hover:shadow-[0_0_10px_rgba(59,130,246,0.15)] transition-shadow duration-300",
+          text: "text-blue-600 dark:text-blue-400",
+          iconText: "text-blue-500 group-hover:animate-pulse",
+          activeBg: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.3)] border border-blue-400/30",
+          activeIcon: "text-white",
+          badgeBg: "bg-blue-500 text-white",
+          activeBadgeBg: "bg-white text-blue-600",
+        };
+      default: // free
+        return {
+          bg: "bg-gray-100 dark:bg-white/5 transition-colors duration-300",
+          border: "border-gray-200 dark:border-[#222] hover:border-gray-300 dark:hover:border-[#333] transition-colors",
+          text: "text-gray-600 dark:text-gray-400",
+          iconText: "text-gray-600 dark:text-gray-400",
+          activeBg: "bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm",
+          activeIcon: "text-white dark:text-black",
+          badgeBg: "bg-gray-900 dark:bg-white text-white dark:text-black",
+          activeBadgeBg: "bg-gray-200 dark:bg-[#222] text-black dark:text-white",
+        };
+    }
+  };
+
+  const theme = getThemeVars();
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -89,6 +142,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
+  const handleSaveName = async () => {
+    if (!user || !newDisplayName.trim()) {
+      setIsEditingName(false);
+      return;
+    }
+    try {
+      await updateProfile(user, { displayName: newDisplayName.trim() });
+      await setDoc(doc(db, "users", user.uid), { name: newDisplayName.trim() }, { merge: true });
+      setIsEditingName(false);
+      toast.success("Profile name updated!");
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update name");
+    }
+  };
+
   if (loading || !user || !user.emailVerified) {
     return <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1c] flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
   }
@@ -132,7 +201,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <aside 
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-black border-r border-gray-200 dark:border-[#222] transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none transition-colors duration-300 ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-black border-r border-gray-200 dark:border-[#222] transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none transition-colors duration-300 animate-slide-in-left ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -142,10 +211,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Header/Logo */}
           <div className="pt-8 pb-8 px-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <i className="las la-shield-alt text-4xl text-gray-900 dark:text-white transition-colors duration-300"></i>
+              <i className={`las la-shield-alt text-4xl transition-colors duration-300 ${theme.iconText}`}></i>
               <div className="flex flex-col leading-tight">
                 <span className="text-gray-900 dark:text-white font-black tracking-widest text-lg transition-colors duration-300">JOURNAL</span>
-                <span className="text-gray-900 dark:text-white font-bold text-xs uppercase tracking-wider transition-colors duration-300">Trading Platform</span>
+                <span className={`${theme.text} font-black text-xs uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"}</span>
               </div>
             </div>
             <button className="md:hidden text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-gray-900 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>
@@ -170,22 +239,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`group flex items-center justify-between px-4 py-3 rounded-full transition-all duration-200 text-[15px] font-bold ${
                           isActive 
-                            ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-black" 
+                            ? theme.activeBg
                             : "text-gray-700 dark:text-slate-300 hover:bg-[#f5f5f5] dark:bg-[#1a1a1a] hover:text-gray-900 dark:text-white"
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <i className={`${item.icon} text-[22px] ${isActive ? "text-black" : "text-gray-500 dark:text-slate-400 group-hover:text-gray-900 dark:text-white transition-colors"}`}></i>
+                          <i className={`${item.icon} text-[22px] ${isActive ? theme.activeIcon : "text-gray-500 dark:text-slate-400 group-hover:text-gray-900 dark:text-white transition-colors"}`}></i>
                           {item.name}
                         </div>
                         
                         {item.badge && (
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${isActive ? 'bg-[#f0f0f0] dark:bg-black text-yellow-500' : 'bg-yellow-500 text-black'}`}>
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${isActive ? theme.activeBadgeBg : theme.badgeBg}`}>
                             {item.badge}
                           </div>
                         )}
                         {item.tag && (
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wider ${isActive ? 'bg-[#f0f0f0] dark:bg-black text-yellow-500' : 'bg-yellow-500 text-black'}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wider ${isActive ? theme.activeBadgeBg : theme.badgeBg}`}>
                             {item.tag}
                           </span>
                         )}
@@ -200,7 +269,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="mt-auto px-4 pb-6">
-          <div className="bg-white dark:bg-[#111] border border-yellow-200 dark:border-[#222] rounded-2xl p-4">
+          <div className={`bg-white dark:bg-[#111] border rounded-2xl p-4 ${theme.border}`}>
             <div className="flex items-center gap-3 mb-4">
               <label className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gradient-to-tr dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-gray-600 dark:text-white font-bold text-sm shrink-0 cursor-pointer overflow-hidden group">
                 {uploadingImage ? (
@@ -222,9 +291,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
                 <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} disabled={uploadingImage} />
               </label>
-              <div className="overflow-hidden">
-                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.email}</p>
-                <p className="text-[10px] text-gray-500 dark:text-slate-400 font-black uppercase tracking-widest mt-0.5">{role}</p>
+              <div className="overflow-hidden flex-1">
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={newDisplayName}
+                      onChange={(e) => setNewDisplayName(e.target.value)}
+                      className={`w-full bg-gray-100 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-md px-2 py-1 text-xs text-gray-900 dark:text-white outline-none focus:border-2 ${theme.border}`}
+                      autoFocus
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                    />
+                    <button onClick={handleSaveName} className="text-emerald-500 hover:text-emerald-600">
+                      <i className="las la-check-circle text-lg"></i>
+                    </button>
+                    <button onClick={() => setIsEditingName(false)} className="text-gray-400 hover:text-rose-500">
+                      <i className="las la-times-circle text-lg"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between group/name cursor-pointer" onClick={() => { setNewDisplayName(user.displayName || user.email || ""); setIsEditingName(true); }}>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate" title={user.displayName || user.email || ""}>
+                      {user.displayName || user.email}
+                    </p>
+                    <i className="las la-pen text-gray-400 opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
+                  </div>
+                )}
+                <div className={`text-xs font-black truncate uppercase tracking-widest ${theme.text}`}>
+                  {tier ? tier : "FREE TIER"}
+                </div>
               </div>
             </div>
             <div className="p-4 border-t border-gray-200 dark:border-slate-800 space-y-2">
@@ -263,8 +358,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
+            {/* Upgrade Banner - Only show if not Elite */}
+            {tier !== 'elite' && (
+              <div className={`mt-4 rounded-xl p-3 border border-gray-100 dark:border-white/5 flex items-center justify-between ${theme.bg}`}>
+                <div>
+                  <h5 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-0.5">Upgrade Plan</h5>
+                  <p className="text-[9px] text-gray-500 dark:text-slate-400 font-medium">Unlock more features</p>
+                </div>
+                <Link href="/pricing" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm ${theme.badgeBg}`}>
+                  <i className="las la-arrow-right"></i>
+                </Link>
+              </div>
+            )}
+
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 xl:p-10">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 xl:p-10 animate-fade-in-up">
           {children}
         </div>
       </main>

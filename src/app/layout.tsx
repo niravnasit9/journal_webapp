@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-full font-sans selection:bg-blue-500/30 font-active-inter">
         {/* Apply theme instantly before React hydrates to prevent flash */}
         <Script id="theme-script" strategy="beforeInteractive">
-          {`try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}`}
+          {`try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');}catch(e){}`}
         </Script>
         <Toaster position="bottom-right" toastOptions={{
           style: {
