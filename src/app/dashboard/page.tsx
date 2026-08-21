@@ -197,22 +197,22 @@ export default function UserDashboard() {
                 <div className="h-px w-full bg-white dark:bg-[#1f2229] mb-6"></div>
   
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-8">
                   <div>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Starting Balance</p>
-                    <p className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                       {account.currency === "INR" ? "₹" : "$"}{account.initial_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Current Equity</p>
-                    <p className={`text-2xl font-extrabold tracking-tight ${(account.current_balance || account.initial_balance) >= account.initial_balance ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${(account.current_balance || account.initial_balance) >= account.initial_balance ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {account.currency === "INR" ? "₹" : "$"}{(account.current_balance || account.initial_balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
-                  <div>
+                  <div className="col-span-2 lg:col-span-1">
                     <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Type</p>
-                    <p className="text-[15px] font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    <p className="text-[15px] font-extrabold text-gray-900 dark:text-white tracking-tight mt-1 sm:mt-0">
                       {account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", "")}
                     </p>
                   </div>

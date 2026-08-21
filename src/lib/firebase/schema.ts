@@ -7,6 +7,7 @@ export interface UserDoc {
   country?: string;
   theme?: "dark" | "light";
   created_at: any; // Firestore Timestamp
+  photo_url?: string;
 }
 
 export interface AccountDoc {
@@ -87,4 +88,18 @@ export interface TicketMessageDoc {
   sender_role: "user" | "admin";
   message: string;
   created_at: any;
+}
+
+export interface StrategyDoc {
+  id: string;
+  owner_uid: string;
+  name: string;
+  description: string;
+  rules: string[];
+  created_at: any;
+  updated_at: any;
+  is_public?: boolean;
+  image_url?: string;
+  owner_email?: string;
+  owner_photo_url?: string;
 }

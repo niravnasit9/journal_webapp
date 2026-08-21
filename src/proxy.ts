@@ -17,6 +17,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith('/strategy/')) {
+    return NextResponse.next();
+  }
+
   // Protect all other routes - redirect to register if no valid role
   if (!role || role === 'null' || role === 'undefined' || role === '') {
     return NextResponse.redirect(new URL('/register', request.url));

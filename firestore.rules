@@ -36,5 +36,11 @@ service cloud.firestore {
       allow read: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.owner_uid == request.auth.uid);
       allow write: if isAdmin();
     }
+    
+    match /strategies/{strategyId} {
+      allow read: if (resource != null && resource.data.is_public == true) || isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.owner_uid == request.auth.uid);
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+    }
   }
 }

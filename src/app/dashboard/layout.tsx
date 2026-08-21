@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
-import { auth } from "@/lib/firebase/config";
+import { auth, db } from "@/lib/firebase/config";
+import { updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import toast from "react-hot-toast";
 
 interface NavItem {
   name: string;
@@ -26,6 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -45,6 +49,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push("/login");
   };
 
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 30 * 1024 * 1024) {
+      toast.error("Image must be less than 30MB");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        try {
+          const base64data = reader.result;
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64data })
+          });
+          const data = await response.json();
+          
+          if (response.ok && data.url) {
+            await updateProfile(user, { photoURL: data.url });
+            await setDoc(doc(db, "users", user.uid), { photo_url: data.url }, { merge: true });
+            window.location.reload(); 
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setUploadingImage(false);
+        }
+      };
+    } catch (error) {
+      console.error(error);
+      setUploadingImage(false);
+    }
+  };
+
   if (loading || !user || !user.emailVerified) {
     return <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1c] flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
   }
@@ -56,6 +100,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       items: [
         { name: "Dashboard", href: "/dashboard", icon: "las la-border-all" },
         { name: "All Trades", href: "/dashboard/trades", icon: "las la-book-open" },
+        { name: "Strategies", href: "/dashboard/strategies", icon: "las la-chess-knight" },
         { name: "Global Calendar", href: "/dashboard/calendar", icon: "las la-calendar" },
       ]
     },
@@ -154,13 +199,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         </div>
 
-        {/* User Profile Footer */}
         <div className="mt-auto px-4 pb-6">
           <div className="bg-white dark:bg-[#111] border border-yellow-200 dark:border-[#222] rounded-2xl p-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gradient-to-tr dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-gray-600 dark:text-white font-bold text-sm shrink-0">
-                <i className="las la-user"></i>
-              </div>
+              <label className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gradient-to-tr dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-gray-600 dark:text-white font-bold text-sm shrink-0 cursor-pointer overflow-hidden group">
+                {uploadingImage ? (
+                  <LoadingSpinner className="w-4 h-4 border-[2px]" />
+                ) : user.photoURL ? (
+                  <>
+                    <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <i className="las la-camera text-white"></i>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <i className="las la-user"></i>
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <i className="las la-camera text-white"></i>
+                    </div>
+                  </>
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} disabled={uploadingImage} />
+              </label>
               <div className="overflow-hidden">
                 <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.email}</p>
                 <p className="text-[10px] text-gray-500 dark:text-slate-400 font-black uppercase tracking-widest mt-0.5">{role}</p>
