@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase/config";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
 
@@ -30,6 +30,8 @@ export default function TransactionsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<Partial<Transaction>>({});
 
   useEffect(() => {
     fetchTransactions();
@@ -97,6 +99,51 @@ export default function TransactionsAdminPage() {
   const truncate = (str: string, length = 12) => {
     if (!str || str.length <= length) return str;
     return `${str.substring(0, length / 2)}...${str.substring(str.length - length / 2)}`;
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this transaction permanently?")) return;
+    
+    try {
+      await deleteDoc(doc(db, "processed_txids", id));
+      setTransactions(prev => prev.filter(tx => tx.id !== id));
+      setSelectedTx(null);
+      toast.success("Transaction deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete transaction.");
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedTx) return;
+    
+    try {
+      const txRef = doc(db, "processed_txids", selectedTx.id);
+      
+      // Update Firestore
+      const updatePayload: any = {};
+      if (editData.tier !== undefined) updatePayload.tier = editData.tier;
+      if (editData.amountUsd !== undefined) updatePayload.amount = editData.amountUsd; // Map amountUsd back to amount in DB
+      if (editData.status !== undefined) updatePayload.status = editData.status;
+
+      await updateDoc(txRef, updatePayload);
+      
+      // Update Local State
+      setTransactions(prev => prev.map(tx => {
+        if (tx.id === selectedTx.id) {
+          return { ...tx, ...editData };
+        }
+        return tx;
+      }));
+      
+      setSelectedTx(prev => prev ? { ...prev, ...editData } : null);
+      setIsEditing(false);
+      toast.success("Transaction updated successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update transaction.");
+    }
   };
 
   if (loading) {
@@ -245,7 +292,7 @@ export default function TransactionsAdminPage() {
                 Digital Receipt
               </h2>
               <button 
-                onClick={() => setSelectedTx(null)}
+                onClick={() => { setSelectedTx(null); setIsEditing(false); }}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-500 dark:text-slate-400 transition-colors relative z-10"
               >
                 <i className="las la-times text-xl"></i>
@@ -269,7 +316,20 @@ export default function TransactionsAdminPage() {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Plan Tier</p>
-                    <p className="text-sm font-black text-gray-900 dark:text-white capitalize drop-shadow-sm">{selectedTx.tier}</p>
+                    {isEditing ? (
+                      <select 
+                        value={editData.tier || 'free'}
+                        onChange={e => setEditData(prev => ({...prev, tier: e.target.value}))}
+                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
+                      >
+                        <option value="free">Free</option>
+                        <option value="starter">Starter</option>
+                        <option value="pro">Pro</option>
+                        <option value="elite">Elite</option>
+                      </select>
+                    ) : (
+                      <p className="text-sm font-black text-gray-900 dark:text-white capitalize drop-shadow-sm">{selectedTx.tier}</p>
+                    )}
                   </div>
                 </div>
 
@@ -281,15 +341,42 @@ export default function TransactionsAdminPage() {
                   
                   <div className="bg-emerald-50/50 dark:bg-emerald-500/5 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
                     <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mb-1.5">Amount Verified</p>
-                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">${selectedTx.amountUsd} USD</p>
+                    {isEditing ? (
+                      <input 
+                        type="number"
+                        value={editData.amountUsd !== undefined ? editData.amountUsd : ''}
+                        onChange={e => setEditData(prev => ({...prev, amountUsd: Number(e.target.value)}))}
+                        className="w-full bg-white dark:bg-black/50 border border-emerald-200 dark:border-emerald-500/30 rounded-lg px-3 py-1.5 text-lg font-black focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-700 dark:text-emerald-400 mt-1"
+                        placeholder="0.00"
+                      />
+                    ) : (
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">${selectedTx.amountUsd} USD</p>
+                    )}
                     <p className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/70 mt-1">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
                   </div>
                   
                   <div>
                     <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Status</p>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 uppercase border border-emerald-200 dark:border-emerald-500/20">
-                      <i className="las la-check-circle text-base"></i> {selectedTx.status}
-                    </span>
+                    {isEditing ? (
+                      <select 
+                        value={editData.status || 'SUCCESS'}
+                        onChange={e => setEditData(prev => ({...prev, status: e.target.value}))}
+                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
+                      >
+                        <option value="SUCCESS">Success</option>
+                        <option value="FAILED">Failed</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="REFUNDED">Refunded</option>
+                      </select>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black tracking-widest uppercase border ${
+                        selectedTx.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' :
+                        selectedTx.status === 'FAILED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-200 dark:border-rose-500/20' :
+                        'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
+                      }`}>
+                        <i className={`las text-base ${selectedTx.status === 'SUCCESS' ? 'la-check-circle' : 'la-exclamation-circle'}`}></i> {selectedTx.status}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -334,10 +421,45 @@ export default function TransactionsAdminPage() {
               )}
             </div>
             
-            <div className="p-5 border-t border-gray-200/50 dark:border-white/5 bg-gray-50/80 dark:bg-black/20 flex justify-end">
+            <div className="p-4 md:p-5 border-t border-gray-200/50 dark:border-white/5 bg-gray-50/80 dark:bg-black/20 flex flex-col md:flex-row justify-between items-center gap-4">
+              
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                {!isEditing ? (
+                  <>
+                    <button 
+                      onClick={() => { setIsEditing(true); setEditData(selectedTx); }} 
+                      className="px-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                    >
+                      <i className="las la-pen text-base"></i> Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(selectedTx.id)} 
+                      className="px-4 py-2.5 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                    >
+                      <i className="las la-trash text-base"></i> Delete
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button 
+                      onClick={handleSaveEdit} 
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm shadow-emerald-500/20"
+                    >
+                      <i className="las la-save text-base"></i> Save Changes
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(false)} 
+                      className="px-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+
               <button 
                 onClick={() => window.open(selectedTx.network === 'BEP20' || selectedTx.network === 'ERC20' ? `https://bscscan.com/tx/${selectedTx.id}` : `https://tronscan.org/#/transaction/${selectedTx.id}`, '_blank')}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs tracking-widest font-black uppercase rounded-xl transition-all hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center gap-2"
+                className="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs tracking-widest font-black uppercase rounded-xl transition-all hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2"
               >
                 View on Explorer <i className="las la-external-link-alt text-lg"></i>
               </button>
