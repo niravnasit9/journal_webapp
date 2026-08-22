@@ -6,9 +6,11 @@ import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTierTheme } from "@/hooks/useTierTheme";
 
 export default function GlobalCalendarPage() {
-  const { user } = useAuth();
+  const { user, tier } = useAuth();
+  const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -56,7 +58,18 @@ export default function GlobalCalendarPage() {
   const firstDay = getFirstDayOfMonth(currentDate);
   const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  const maxMonthsBack = tier === 'elite' || tier === 'pro' ? Infinity : tier === 'starter' ? 3 : 1;
+  const today = new Date();
+  const monthsDiff = (today.getFullYear() - currentDate.getFullYear()) * 12 + (today.getMonth() - currentDate.getMonth());
+  const canGoBack = monthsDiff < maxMonthsBack;
+
+  const prevMonth = () => {
+    if (canGoBack) {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    } else {
+      import("react-hot-toast").then(mod => mod.toast.error(`Your ${tier || 'Free'} plan only supports ${maxMonthsBack} month(s) of historical data.`));
+    }
+  };
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
   // Calculate daily PnL & Stats
@@ -98,16 +111,19 @@ export default function GlobalCalendarPage() {
         <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize your combined trading performance across all accounts day by day.</p>
       </div>
 
-      <div className="bg-white dark:bg-[#111318] rounded-[24px] border border-yellow-200 dark:border-slate-800 p-8 shadow-2xl">
+      <div className={`rounded-[24px] border p-8 shadow-2xl transition-all ${theme.card}`}>
         
         {/* Header & Monthly Stats */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-yellow-200 dark:border-slate-800/50 pb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-gray-200 dark:border-white/5 pb-8">
           <div className="flex items-center gap-4">
-            <button onClick={prevMonth} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-slate-700 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
+            <button 
+              onClick={prevMonth} 
+              className={`p-2.5 rounded-xl transition-colors shadow-sm ${!canGoBack ? 'opacity-50 bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-[#1f2229] hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-white/5'}`}
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 className="text-2xl font-black text-gray-900 dark:text-white w-48 text-center">{monthName}</h2>
-            <button onClick={nextMonth} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-slate-700 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
+            <button onClick={nextMonth} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-white/5 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -139,7 +155,7 @@ export default function GlobalCalendarPage() {
           ))}
           
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-28 bg-[#fafafa] dark:bg-[#0a0f1c]/30 rounded-[16px] border border-yellow-200 dark:border-slate-800/20"></div>
+            <div key={`empty-${i}`} className="h-28 bg-gray-50/50 dark:bg-white/[0.02] rounded-[16px] border border-gray-100 dark:border-white/5"></div>
           ))}
 
           {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -147,7 +163,7 @@ export default function GlobalCalendarPage() {
             const data = dailyData[day];
             const pnl = data?.pnl;
             
-            let bgClass = "bg-gray-50/50 dark:bg-[#111318] border-gray-200 dark:border-slate-800/50";
+            let bgClass = "bg-gray-50/50 dark:bg-white/[0.02] border-gray-100 dark:border-white/5";
             let textClass = "text-gray-400 dark:text-slate-600";
 
             if (pnl !== undefined) {

@@ -23,7 +23,7 @@ export function proxy(request: NextRequest) {
 
   // Protect all other routes - redirect to register if no valid role
   if (!role || role === 'null' || role === 'undefined' || role === '') {
-    return NextResponse.redirect(new URL('/register', request.url));
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Admin routes - only admins allowed

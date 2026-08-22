@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { collection, query, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { TradeDoc, AccountDoc, UserDoc } from "@/lib/firebase/schema";
-import Link from "next/link";
-import CustomSelect from "@/components/ui/CustomSelect";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Select } from "@/components/ui/Select";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 
 interface TradeWithDetails extends TradeDoc {
@@ -81,52 +83,51 @@ export default function AdminTradesPage() {
     : trades.filter(t => t.accountType === filterAccountType);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 font-sans">
+    <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-            <i className="las la-book-open text-3xl text-emerald-500"></i>
+          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
+            <i className="las la-book-open text-3xl text-success"></i>
             Global Trades List
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm font-medium mt-1">View all trades executed across the platform.</p>
+          <p className="text-secondary text-sm font-medium mt-1">View all trades executed across the platform.</p>
         </div>
         
-        <div className="relative w-full sm:w-64 shrink-0">
-          <CustomSelect 
+        <div className="w-full sm:w-64 shrink-0">
+          <Select 
             options={[
               { value: "ALL", label: "All Account Types" },
               ...uniqueTypes.map(type => ({ value: type, label: type }))
             ]}
             value={filterAccountType}
-            onChange={setFilterAccountType}
-            icon="las la-filter"
+            onChange={(e) => setFilterAccountType(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-700 dark:text-slate-300">
-            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
+      <Card className="overflow-visible border-default">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left text-sm text-secondary">
+            <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
               <tr>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Account Type</th>
                 <th className="px-6 py-4">Symbol</th>
-                <th className="px-6 py-4">Direction</th>
-                <th className="px-6 py-4">Volume</th>
+                <th className="px-6 py-4">Type</th>
+                <th className="px-6 py-4">Setup / Emotion</th>
                 <th className="px-6 py-4 text-right">Net P&L</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-subtle">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400 dark:text-slate-500 font-bold">
-                    Loading trades...
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
+                    <LoadingSpinner />
                   </td>
                 </tr>
               ) : filteredTrades.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400 dark:text-slate-500 font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
                     No trades match the criteria.
                   </td>
                 </tr>
@@ -134,32 +135,45 @@ export default function AdminTradesPage() {
                 filteredTrades.map((trade) => {
                   const netPnL = trade.profit_loss - trade.commission;
                   return (
-                    <tr key={trade.id} className="hover:bg-gray-100 dark:hover:bg-[#16181d] transition-colors">
+                    <tr key={trade.id} className="hover:bg-elevated transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-bold text-gray-900 dark:text-white">{trade.userEmail}</p>
-                        <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest">{trade.accountLabel}</p>
+                        <p className="font-bold text-primary">{trade.userEmail}</p>
+                        <p className="text-[10px] text-muted uppercase tracking-widest">{trade.accountLabel}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                          trade.accountType.toLowerCase() === "real" 
-                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
-                            : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                        }`}>
+                        <Badge variant={trade.accountType.toLowerCase() === "real" ? "success" : "info"} size="sm" className="uppercase">
                           {trade.accountType}
-                        </span>
+                        </Badge>
                       </td>
-                      <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">
+                      <td className="px-6 py-4 font-bold text-primary">
                         {trade.symbol}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${trade.direction === 'BUY' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                          {trade.direction}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge variant={trade.direction === 'BUY' ? "info" : "warning"} size="sm" className="uppercase">
+                            {trade.direction}
+                          </Badge>
+                          <span className="text-xs font-medium text-secondary">{trade.lot_size} lots</span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 font-medium">
-                        {trade.lot_size} lots
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {trade.setup_grade && (
+                            <Badge variant="neutral" size="sm">
+                              {trade.setup_grade}
+                            </Badge>
+                          )}
+                          {trade.emotion && (
+                            <Badge variant="info" size="sm">
+                              {trade.emotion}
+                            </Badge>
+                          )}
+                          {!trade.setup_grade && !trade.emotion && (
+                            <span className="text-xs text-muted">-</span>
+                          )}
+                        </div>
                       </td>
-                      <td className={`px-6 py-4 text-right font-black ${netPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <td className={`px-6 py-4 text-right font-black ${netPnL >= 0 ? 'text-success' : 'text-danger'}`}>
                         {netPnL >= 0 ? '+' : ''}${netPnL.toFixed(2)}
                       </td>
                     </tr>
@@ -169,7 +183,7 @@ export default function AdminTradesPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

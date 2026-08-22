@@ -2,313 +2,258 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
-import { useTierTheme } from "@/hooks/useTierTheme";
 import { db } from "@/lib/firebase/config";
-import { collection, addDoc, query, where, getDocs, getDoc, doc } from "firebase/firestore";
-import { provisionMetaApiAccount } from "@/app/actions/mt5Actions";
-import toast from "react-hot-toast";
-import { AccountDoc } from "@/lib/firebase/schema";
+import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import CustomSelect from "@/components/ui/CustomSelect";
+import { Badge } from "@/components/ui/Badge";
 
-export default function UserDashboard() {
+export default function UserDashboardCommandCenter() {
   const { user } = useAuth();
-  const theme = useTierTheme();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
-  const [isFetchingAccounts, setIsFetchingAccounts] = useState(true);
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState("all");
-  
-  // Form State
-  const [label, setLabel] = useState("");
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [server, setServer] = useState("");
-  const [accountType, setAccountType] = useState("Funded");
-  const [currency, setCurrency] = useState<"USD" | "INR">("USD");
+  const [recentTrades, setRecentTrades] = useState<TradeDoc[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchAccounts();
-      fetchAccountTypes();
-    }
+    if (user) fetchDashboardData();
   }, [user]);
 
-  const fetchAccountTypes = async () => {
-    try {
-      const snap = await getDoc(doc(db, "settings", "platform"));
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.accountTypes && data.accountTypes.length > 0) {
-          setAvailableTypes(data.accountTypes);
-          setAccountType(data.accountTypes[0]);
-        }
-      } else {
-        setAvailableTypes(["Funded", "Real"]);
-        setAccountType("Funded");
-      }
-    } catch (e) {
-      setAvailableTypes(["Funded", "Real"]);
-    }
-  };
-
-  const fetchAccounts = async () => {
+  const fetchDashboardData = async () => {
     if (!user) return;
     try {
-      const q = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
-      const querySnapshot = await getDocs(q);
-      const accs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
-      setAccounts(accs);
+      setLoading(true);
+      
+      const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
+      const accSnap = await getDocs(accQuery);
+      const accDocs = accSnap.docs.map(d => ({ id: d.id, ...d.data() } as AccountDoc));
+      setAccounts(accDocs);
+
+      let allTrades: TradeDoc[] = [];
+      for (const acc of accDocs) {
+        const tQuery = query(collection(db, "trades"), where("account_id", "==", acc.id));
+        const tSnap = await getDocs(tQuery);
+        const tDocs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TradeDoc));
+        allTrades = [...allTrades, ...tDocs];
+      }
+      
+      // Sort trades by close time descending
+      allTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
+      setRecentTrades(allTrades);
     } catch (error) {
-      console.error("Error fetching accounts:", error);
-    }
-  };
-
-  const handleAddAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setIsCreatingAccount(true);
-
-    try {
-      const { createManualAccountAction } = await import("@/app/actions/accountActions");
-      const res = await createManualAccountAction(user.uid, {
-        label,
-        broker: server,
-        account_type: accountType,
-        currency,
-        initial_balance: Number(login)
-      });
-
-      if (!res.success) {
-        toast.error(res.error || "Failed to add account");
-        setIsCreatingAccount(false);
-        return;
-      }
-
-      toast.success("Account added successfully!");
-      setIsModalOpen(false);
-      setLabel(""); setLogin(""); setPassword(""); setServer("");
-      fetchAccounts();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add account");
+      console.error("Error fetching dashboard data:", error);
     } finally {
-      setIsCreatingAccount(false);
+      setLoading(false);
     }
   };
 
-  // Calculate overview stats
-  const totalAccounts = accounts.length;
-  const fundedAccounts = accounts.filter(a => a.account_type === "funded").length;
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
+  }
+
+  // Calculate Metrics
+  let totalBalance = 0;
+  let totalInitialBalance = 0;
+  accounts.forEach(acc => {
+    totalInitialBalance += (acc.initial_balance || 0);
+  });
+
+  const totalTradesCount = recentTrades.length;
+  let totalPnL = 0;
+  let winningTrades = 0;
+  let todaysPnL = 0;
+  
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  recentTrades.forEach(t => {
+    const net = t.profit_loss - (t.commission || 0);
+    totalPnL += net;
+    if (net > 0) winningTrades++;
+    
+    if (new Date(t.close_time).getTime() >= todayStart.getTime()) {
+      todaysPnL += net;
+    }
+  });
+
+  totalBalance = totalInitialBalance + totalPnL;
+  const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
-      
-      {/* Search & Filter Top Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0f1115] border-b border-gray-200 dark:border-transparent p-4 md:px-6 md:py-3 transition-colors duration-300">
-        <div className="relative w-full md:w-96">
-          <input 
-            type="text" 
-            placeholder="Search accounts" 
-            className="w-full bg-gray-100 dark:bg-[#16181d] border border-gray-200 dark:border-transparent rounded-lg pl-4 pr-10 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:text-slate-500 focus:outline-none focus:ring-1 focus:ring-yellow-500/50 text-sm transition-all"
-          />
+    <div className="space-y-6 max-w-7xl mx-auto font-sans animate-in fade-in">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
+            <i className="las la-home text-3xl text-info"></i>
+            Command Center
+          </h1>
+          <p className="text-secondary text-sm mt-1 font-medium">Welcome back, here's your global trading overview.</p>
         </div>
-
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <CustomSelect 
-            className="w-32"
-            options={[
-              { value: "all", label: "All" },
-              { value: "active", label: "Active" }
-            ]}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className={theme.buttonPrimary}
-          >
-            <i className="las la-plus text-[16px]"></i>
-            Add
-          </button>
+        <div className="flex gap-3 w-full md:w-auto">
+          <Link href="/dashboard/accounts">
+            <Button variant="secondary" leftIcon={<i className="las la-wallet text-lg"></i>}>
+              Accounts
+            </Button>
+          </Link>
+          <Link href="/dashboard/performance">
+            <Button variant="primary" leftIcon={<i className="las la-chart-bar text-lg"></i>}>
+              Analytics
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Account Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-2">
-        {accounts.length === 0 ? (
-          <div className="col-span-full py-20 flex flex-col items-center justify-center border border-dashed border-yellow-300 dark:border-slate-700 rounded-2xl bg-white dark:bg-[#111318]">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-[#16181d] rounded-full flex items-center justify-center mb-4">
-              <i className="las la-server text-4xl text-gray-400 dark:text-slate-500"></i>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-white transition-colors">
+              <i className="las la-dollar-sign text-xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Accounts Connected</h3>
-            <p className="text-gray-500 dark:text-slate-400 text-center max-w-md mb-6">
-              Connect your first MT5 account to start tracking your performance.
-            </p>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="text-yellow-500 hover:text-yellow-400 font-bold flex items-center gap-2"
-            >
-              Connect an account now <i className="las la-arrow-right text-[16px]"></i>
-            </button>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Global Balance</h3>
           </div>
-        ) : (
-          accounts.map(account => (
-            <div 
-              key={account.id} 
-              className={`group relative p-6 flex flex-col justify-between transition-all overflow-hidden border ${theme.card}`}
-            >
-              <div>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-white dark:bg-[#1f2229] flex items-center justify-center shrink-0 border border-yellow-300 dark:border-slate-700">
-                      <i className="las la-shield-alt text-[16px] text-gray-700 dark:text-slate-300"></i>
-                    </div>
-                    <h2 className="text-[17px] font-extrabold text-gray-900 dark:text-white tracking-tight">
-                      {account.label}
-                    </h2>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-500 rounded-full text-[10px] font-bold tracking-wider ml-1">
-                      Active
-                    </span>
-                  </div>
-                </div>
-  
-                {/* Meta Details */}
-                <div className="space-y-2.5 mb-6">
-                  <div className="flex items-center gap-2.5">
-                    <i className="las la-trophy text-[16px] text-yellow-500"></i>
-                    <span className="text-gray-700 dark:text-slate-300 text-sm font-semibold">
-                      {account.account_type === 'funded' ? 'Funded Account: ' : 'Phase 1 Challenge: '}
-                      <span className="text-gray-500 dark:text-slate-400">{account.account_type === 'funded' ? 'Instant Hero' : 'Pay Later Challenge'}</span>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    <span className="text-gray-700 dark:text-slate-300 text-sm font-semibold">
-                      Started: <span className="text-gray-500 dark:text-slate-400">{new Date(account.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </span>
-                  </div>
-                </div>
+          <p className="text-3xl font-extrabold text-primary tracking-tight">
+            ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <div className="text-xs font-medium text-secondary mt-2">Across {accounts.length} active accounts</div>
+        </Card>
 
-                <div className="h-px w-full bg-white dark:bg-[#1f2229] mb-6"></div>
-  
-                {/* Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-8">
-                  <div>
-                    <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Starting Balance</p>
-                    <p className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                      {account.currency === "INR" ? "₹" : "$"}{account.initial_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Current Equity</p>
-                    <p className={`text-xl sm:text-2xl font-extrabold tracking-tight ${(account.current_balance || account.initial_balance) >= account.initial_balance ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {account.currency === "INR" ? "₹" : "$"}{(account.current_balance || account.initial_balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div className="col-span-2 lg:col-span-1">
-                    <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mb-1">Type</p>
-                    <p className="text-[15px] font-extrabold text-gray-900 dark:text-white tracking-tight mt-1 sm:mt-0">
-                      {account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", "")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-  
+        <Card className="p-6 border-default shadow-sm hover:border-success transition-colors group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-white transition-colors">
+              <i className="las la-chart-line text-xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
+          </div>
+          <p className={`text-3xl font-extrabold tracking-tight ${totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <div className="text-xs font-medium text-secondary mt-2">All-time profit/loss</div>
+        </Card>
+
+        <Card className="p-6 border-default shadow-sm hover:border-primary transition-colors group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-elevated border border-default rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-inverse transition-colors">
+              <i className="las la-sun text-xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Today's P/L</h3>
+          </div>
+          <p className={`text-3xl font-extrabold tracking-tight ${todaysPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {todaysPnL >= 0 ? '+' : ''}${todaysPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <div className="text-xs font-medium text-secondary mt-2">Reset at midnight UTC</div>
+        </Card>
+
+        <Card className="p-6 border-default shadow-sm hover:border-warning transition-colors group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-white transition-colors">
+              <i className="las la-bullseye text-xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Win Rate</h3>
+          </div>
+          <p className="text-3xl font-extrabold text-primary tracking-tight">
+            {winRate.toFixed(1)}%
+          </p>
+          <div className="text-xs font-medium text-secondary mt-2">From {totalTradesCount} total trades</div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Trades Table */}
+        <Card className="lg:col-span-2 overflow-hidden border-default shadow-sm">
+          <CardHeader className="bg-elevated/50 border-b border-subtle py-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+              <i className="las la-history text-lg"></i>
+              Recent Trades
+            </CardTitle>
+            <Link href="/dashboard/trades" className="text-xs font-bold text-info hover:text-primary transition-colors uppercase tracking-widest">
+              View All
+            </Link>
+          </CardHeader>
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead>
+                <tr className="bg-surface text-secondary text-[11px] font-bold uppercase tracking-widest border-b border-subtle">
+                  <th className="px-6 py-3">Symbol</th>
+                  <th className="px-6 py-3">Type</th>
+                  <th className="px-6 py-3">Close Time</th>
+                  <th className="px-6 py-3 text-right">Net P/L</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-subtle">
+                {recentTrades.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center text-secondary">
+                      No trades recorded yet.
+                    </td>
+                  </tr>
+                ) : (
+                  recentTrades.slice(0, 5).map(trade => (
+                    <tr key={trade.id} className="hover:bg-elevated/50 transition-colors">
+                      <td className="px-6 py-3 font-bold text-primary">{trade.symbol}</td>
+                      <td className="px-6 py-3">
+                        <Badge variant={trade.direction === 'BUY' ? 'info' : 'warning'} size="sm">
+                          {trade.direction}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-3 text-secondary font-medium">
+                        {new Date(trade.close_time).toLocaleString()}
+                      </td>
+                      <td className={`px-6 py-3 text-right font-bold ${trade.profit_loss >= 0 ? 'text-success' : 'text-danger'}`}>
+                        {trade.profit_loss >= 0 ? '+' : ''}${trade.profit_loss.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Quick Links & Tips */}
+        <Card className="lg:col-span-1 border-default shadow-sm">
+          <CardHeader className="bg-elevated/50 border-b border-subtle py-4">
+            <CardTitle className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
+              <i className="las la-bolt text-lg"></i>
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 space-y-3">
+            <Link href="/dashboard/risk" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-danger hover:bg-danger/5 transition-all">
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => {
-                    toast(`Broker: ${account.broker}\nCurrency: ${account.currency}\nType: ${account.account_type}`, {
-                      icon: 'ℹ️',
-                    });
-                  }}
-                  className={theme.buttonSecondary}
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                  Credentials
-                </button>
-                
-                <Link 
-                  href={`/dashboard/accounts/${account.id}`}
-                  className={theme.buttonPrimary}
-                >
-                  <i className="las la-eye text-[16px]"></i>
-                  View Dashboard
-                </Link>
+                <i className="las la-shield-alt text-xl text-danger group-hover:scale-110 transition-transform"></i>
+                <div className="font-bold text-primary text-sm">Risk Center</div>
               </div>
-              
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Connect Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-[#fafafa] dark:bg-[#0a0f1c]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-300 dark:border-slate-700 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center p-5 border-b border-yellow-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0f1523]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
-                <i className="las la-server text-2xl text-blue-500"></i> Connect MT5 Account
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white transition">
-                <i className="las la-times text-xl"></i>
-              </button>
-            </div>
+              <i className="las la-angle-right text-secondary"></i>
+            </Link>
             
-            <form onSubmit={handleAddAccount} className="p-6 space-y-5">
-              
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Account Label</label>
-                <input type="text" placeholder="e.g. Main Funded $50k" value={label} onChange={(e) => setLabel(e.target.value)} className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all" required />
+            <Link href="/dashboard/goals" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-success hover:bg-success/5 transition-all">
+              <div className="flex items-center gap-3">
+                <i className="las la-bullseye text-xl text-success group-hover:scale-110 transition-transform"></i>
+                <div className="font-bold text-primary text-sm">Trading Goals</div>
               </div>
+              <i className="las la-angle-right text-secondary"></i>
+            </Link>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Broker / Prop Firm</label>
-                <input type="text" placeholder="e.g. Exness, FTMO, GoatFunded" value={server} onChange={(e) => setServer(e.target.value)} className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all" required />
+            <Link href="/dashboard/reports" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-info hover:bg-info/5 transition-all">
+              <div className="flex items-center gap-3">
+                <i className="las la-file-download text-xl text-info group-hover:scale-110 transition-transform"></i>
+                <div className="font-bold text-primary text-sm">Export Reports</div>
               </div>
+              <i className="las la-angle-right text-secondary"></i>
+            </Link>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Starting Balance</label>
-                  <input type="number" step="any" placeholder="5000" value={login} onChange={(e) => setLogin(e.target.value)} className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-mono" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Currency</label>
-                  <CustomSelect 
-                    options={[
-                      { value: "USD", label: "USD" },
-                      { value: "INR", label: "INR" }
-                    ]}
-                    value={currency} 
-                    onChange={(val) => setCurrency(val as "USD" | "INR")}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Type</label>
-                  <CustomSelect 
-                    options={availableTypes.map(type => ({ value: type, label: type }))}
-                    value={accountType} 
-                    onChange={setAccountType}
-                  />
-                </div>
+            <Link href="/dashboard/insights" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-warning hover:bg-warning/5 transition-all">
+              <div className="flex items-center gap-3">
+                <i className="las la-lightbulb text-xl text-warning group-hover:scale-110 transition-transform"></i>
+                <div className="font-bold text-primary text-sm">View Insights</div>
               </div>
-
-              <div className="pt-2 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors rounded-lg hover:bg-[#e5e7eb] dark:bg-slate-800">Cancel</button>
-                <button type="submit" disabled={isCreatingAccount} className={theme.buttonPrimary}>
-                  {isCreatingAccount ? "Creating..." : "Create Account"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <i className="las la-angle-right text-secondary"></i>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

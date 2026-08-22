@@ -26,17 +26,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribeSnapshot: () => void;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         // 1. Set user IMMEDIATELY
         setUser(firebaseUser);
 
-        // 2. Fetch role and tier using a real-time listener, THEN clear loading
-        unsubscribeSnapshot = onSnapshot(
-          doc(db, "users", firebaseUser.uid),
-          (docSnap) => {
+        // 2. Fetch role and tier using a one-time fetch to avoid hanging listeners
+        getDoc(doc(db, "users", firebaseUser.uid))
+          .then((docSnap) => {
             if (docSnap.exists()) {
               const data = docSnap.data();
               setRole(data.role as "admin" | "user");
@@ -45,29 +43,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setRole("user");
               setTier("free");
             }
-            // Clear loading only after we have the real tier
             setLoading(false);
-          },
-          (error) => {
-            console.error("Error listening to user document:", error);
+          })
+          .catch((error) => {
+            console.error("Error fetching user document:", error);
             setRole("user");
             setTier("free");
             setLoading(false);
-          }
-        );
+          });
       } else {
         // No user — clear everything and stop loading
         setUser(null);
         setRole(null);
         setTier(null);
         setLoading(false);
-        if (unsubscribeSnapshot) unsubscribeSnapshot();
       }
     });
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeSnapshot) unsubscribeSnapshot();
     };
   }, []);
 

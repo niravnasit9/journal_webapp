@@ -11,8 +11,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine 
 } from 'recharts';
 
+import { useTierTheme } from "@/hooks/useTierTheme";
+
 export default function GlobalAnalyticsPage() {
-  const { user } = useAuth();
+  const { user, tier } = useAuth();
+  const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +88,9 @@ export default function GlobalAnalyticsPage() {
     };
   });
 
+  const isProOrElite = tier === 'pro' || tier === 'elite';
+  const themeHex = tier === 'elite' ? '#a855f7' : tier === 'pro' ? '#3b82f6' : '#eab308'; // purple, blue, yellow
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto font-sans">
       
@@ -98,7 +104,7 @@ export default function GlobalAnalyticsPage() {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800">
+        <div className={`p-6 rounded-2xl border transition-all ${theme.card}`}>
           <div className="flex items-center gap-3 text-gray-500 dark:text-slate-400 font-bold text-sm mb-2 uppercase tracking-wider">
             <i className="las la-chart-pie text-[16px] text-blue-500"></i> Total PnL
           </div>
@@ -107,21 +113,33 @@ export default function GlobalAnalyticsPage() {
           </p>
         </div>
         
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800">
+        <div className={`p-6 rounded-2xl border transition-all relative overflow-hidden ${theme.card}`}>
+          {!isProOrElite && (
+            <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
+              <i className="las la-lock text-2xl text-gray-900 dark:text-white mb-1"></i>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">Pro Feature</span>
+            </div>
+          )}
           <div className="flex items-center gap-3 text-gray-500 dark:text-slate-400 font-bold text-sm mb-2 uppercase tracking-wider">
             <i className="las la-bullseye text-[16px] text-emerald-500"></i> Win Rate
           </div>
           <p className="text-3xl font-extrabold text-gray-900 dark:text-white">{winRate.toFixed(1)}%</p>
         </div>
 
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800">
+        <div className={`p-6 rounded-2xl border transition-all relative overflow-hidden ${theme.card}`}>
+          {!isProOrElite && (
+            <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
+              <i className="las la-lock text-2xl text-gray-900 dark:text-white mb-1"></i>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-white">Pro Feature</span>
+            </div>
+          )}
           <div className="flex items-center gap-3 text-gray-500 dark:text-slate-400 font-bold text-sm mb-2 uppercase tracking-wider">
             <i className="las la-chart-line text-[16px] text-yellow-500"></i> Profit Factor
           </div>
           <p className="text-3xl font-extrabold text-gray-900 dark:text-white">{profitFactor.toFixed(2)}</p>
         </div>
 
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800">
+        <div className={`p-6 rounded-2xl border transition-all ${theme.card}`}>
           <div className="flex items-center gap-3 text-gray-500 dark:text-slate-400 font-bold text-sm mb-2 uppercase tracking-wider">
             <i className="las la-book-open text-[16px] text-purple-500"></i> Total Trades
           </div>
@@ -130,8 +148,22 @@ export default function GlobalAnalyticsPage() {
       </div>
 
       {/* Chart Section */}
-      <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className={`relative border rounded-2xl p-4 md:p-6 shadow-2xl transition-all overflow-hidden ${theme.card}`}>
+        {!isProOrElite && (
+          <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6">
+            <div className="w-16 h-16 bg-white dark:bg-black rounded-full flex items-center justify-center shadow-xl mb-4">
+              <i className="las la-lock text-3xl text-gray-900 dark:text-white"></i>
+            </div>
+            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Advanced Charts Locked</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-6 max-w-sm">
+              Upgrade to Pro or Elite to visualize your equity curve, analyze drawdowns, and access detailed charting tools.
+            </p>
+            <a href="/pricing" className={theme.buttonPrimary}>
+              Upgrade Now
+            </a>
+          </div>
+        )}
+        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 ${!isProOrElite ? 'opacity-30 pointer-events-none' : ''}`}>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Equity Curve</h3>
           
           <div className="flex flex-col sm:flex-row gap-3">
@@ -146,12 +178,12 @@ export default function GlobalAnalyticsPage() {
                 icon="las la-wallet"
               />
             </div>
-            <div className="flex bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg p-1">
+            <div className="flex bg-[#fafafa] dark:bg-[#0a0f1c] border border-gray-200 dark:border-slate-800 rounded-lg p-1">
               {(["area", "line", "bar"] as const).map(type => (
                 <button
                   key={type}
                   onClick={() => setChartType(type)}
-                  className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${chartType === type ? 'bg-yellow-500 text-black' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white'}`}
+                  className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${chartType === type ? 'bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white'}`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </button>
@@ -197,8 +229,8 @@ export default function GlobalAnalyticsPage() {
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorPnL" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#eab308" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#eab308" stopOpacity={0}/>
+                      <stop offset="5%" stopColor={themeHex} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={themeHex} stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1f2229" vertical={false} />
@@ -218,18 +250,18 @@ export default function GlobalAnalyticsPage() {
                   />
                   <RechartsTooltip 
                     contentStyle={{ backgroundColor: '#0f1115', borderColor: '#1f2229', borderRadius: '8px', color: '#fff', fontWeight: 'bold' }}
-                    itemStyle={{ color: '#eab308' }}
-                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Net PnL'] as any}
+                    itemStyle={{ color: themeHex }}
+                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Equity'] as any}
                     labelStyle={{ color: '#94a3b8' }}
                   />
                   <ReferenceLine y={0} stroke="#334155" strokeDasharray="3 3" />
                   <Area 
                     type="monotone" 
                     dataKey="pnl" 
-                    stroke="#eab308" 
+                    stroke={themeHex} 
+                    strokeWidth={3}
                     fillOpacity={1} 
                     fill="url(#colorPnL)"
-                    strokeWidth={3}
                   />
                 </AreaChart>
               ) : (
@@ -251,18 +283,18 @@ export default function GlobalAnalyticsPage() {
                   />
                   <RechartsTooltip 
                     contentStyle={{ backgroundColor: '#0f1115', borderColor: '#1f2229', borderRadius: '8px', color: '#fff', fontWeight: 'bold' }}
-                    itemStyle={{ color: '#eab308' }}
-                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Net PnL'] as any}
+                    itemStyle={{ color: themeHex }}
+                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Equity'] as any}
                     labelStyle={{ color: '#94a3b8' }}
                   />
                   <ReferenceLine y={0} stroke="#334155" strokeDasharray="3 3" />
                   <Line 
                     type="monotone" 
                     dataKey="pnl" 
-                    stroke="#eab308" 
+                    stroke={themeHex} 
                     strokeWidth={3}
                     dot={false}
-                    activeDot={{ r: 6, fill: '#eab308', stroke: '#0f1115', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: themeHex, stroke: '#0f1115', strokeWidth: 2 }}
                   />
                 </LineChart>
               )}

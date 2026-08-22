@@ -12,6 +12,10 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useTierTheme } from "@/hooks/useTierTheme";
 import UpgradeCelebration from "@/components/ui/UpgradeCelebration";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 
 interface NavItem {
   name: string;
@@ -38,9 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // Clear stale cookie to prevent infinite redirect loop with middleware
         document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        router.push("/register");
+        router.push("/login");
       } else if (!user.emailVerified && role !== "admin") {
         router.push("/verify-email");
       }
@@ -112,106 +115,111 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   if (loading || !user || !user.emailVerified) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1c] flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
+    return <div className="min-h-screen bg-base flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
   }
 
-  // Navigation Data Structure (Trading Journal Specific)
   const navSections: NavSection[] = [
     {
-      title: "MAIN MENU",
+      title: "WORKSPACE",
       items: [
         { name: "Dashboard", href: "/dashboard", icon: "las la-border-all" },
+        { name: "Accounts", href: "/dashboard/accounts", icon: "las la-wallet" }
+      ]
+    },
+    {
+      title: "TRADING",
+      items: [
         { name: "All Trades", href: "/dashboard/trades", icon: "las la-book-open" },
         { name: "Strategies", href: "/dashboard/strategies", icon: "las la-chess-knight" },
-        { name: "Global Calendar", href: "/dashboard/calendar", icon: "las la-calendar" },
+        { name: "Calendar", href: "/dashboard/calendar", icon: "las la-calendar" },
       ]
     },
     {
       title: "ANALYTICS",
       items: [
-        { name: "Performance", href: "/dashboard/analytics", icon: "las la-chart-bar" },
-        { name: "Reports", href: "/dashboard/reports", icon: "las la-file-alt", tag: "NEW" },
+        { name: "Performance", href: "/dashboard/performance", icon: "las la-chart-bar" },
+        { name: "Risk Center", href: "/dashboard/risk", icon: "las la-shield-alt" },
+        { name: "Insights", href: "/dashboard/insights", icon: "las la-lightbulb" },
+        { name: "Reports", href: "/dashboard/reports", icon: "las la-file-alt" },
+      ]
+    },
+    {
+      title: "RESOURCES",
+      items: [
+        { name: "Prop Firms", href: "/dashboard/prop-firms", icon: "las la-building" },
+        { name: "Goals", href: "/dashboard/goals", icon: "las la-bullseye" },
+        { name: "Support", href: "/dashboard/support", icon: "las la-question-circle" },
       ]
     },
     {
       title: "SYSTEM",
       items: [
+        { name: "Notifications", href: "/dashboard/notifications", icon: "las la-bell" },
         { name: "Settings", href: "/dashboard/settings", icon: "las la-cog" },
-        { name: "Support", href: "/dashboard/support", icon: "las la-question-circle" },
       ]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0f1c] text-gray-700 dark:text-slate-300 flex font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-base flex font-sans transition-colors duration-300">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-[#000000]/80 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <aside 
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-black border-r border-gray-200 dark:border-[#222] transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none transition-colors duration-300 animate-slide-in-left ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[280px] bg-surface border-r border-subtle transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* Scrollable Area */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-6 flex flex-col">
           
-          {/* Header/Logo */}
           <div className="pt-8 pb-8 px-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <i className={`las la-shield-alt text-4xl transition-colors duration-300 ${theme.icon}`}></i>
+              <i className={`las la-shield-alt text-3xl transition-colors duration-300 ${theme.icon}`}></i>
               <div className="flex flex-col leading-tight">
-                <span className="text-gray-900 dark:text-white font-black tracking-widest text-lg transition-colors duration-300">JOURNAL</span>
+                <span className="text-primary font-bold tracking-widest text-lg transition-colors duration-300">PROFITPULSE</span>
                 <UpgradeCelebration tier={tier}>
-                  <span className={`${theme.textHighlight} font-black text-xs uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"}</span>
+                  <span className={`${theme.textHighlight} text-[10px] uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"} PLAN</span>
                 </UpgradeCelebration>
               </div>
             </div>
-            <button className="md:hidden text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-gray-900 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>
+            <button className="md:hidden text-secondary hover:text-primary" onClick={() => setIsMobileMenuOpen(false)}>
               <i className="las la-times text-2xl"></i>
             </button>
           </div>
 
-          {/* Navigation Sections */}
           <nav className="px-3 space-y-6 flex-1">
             {navSections.map((section, idx) => (
               <div key={idx}>
-                <h4 className="px-4 text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                <h4 className="px-4 text-[10px] font-bold text-muted uppercase tracking-widest mb-3">
                   {section.title}
                 </h4>
                 <div className="space-y-1">
                   {section.items.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
                     return (
                       <Link 
                         key={item.name} 
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`group flex items-center justify-between px-4 py-3 text-sm transition-all duration-300 ${
+                        className={`group flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-200 rounded-lg ${
                           isActive 
                             ? theme.sidebarActive 
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 mx-2 rounded-xl'
+                            : 'text-secondary hover:bg-elevated mx-2'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <i className={`${item.icon} text-[22px] ${isActive ? theme.icon : "text-gray-500 dark:text-slate-400 group-hover:text-gray-900 dark:text-white transition-colors"}`}></i>
-                          {item.name}
+                        <div className="flex items-center gap-3">
+                          <i className={`${item.icon} text-xl ${isActive ? theme.icon : "text-muted group-hover:text-primary transition-colors"}`}></i>
+                          <span className={isActive ? "font-semibold" : "font-medium"}>{item.name}</span>
                         </div>
                         
-                        {item.badge && (
-                          <div className={theme.badge}>
-                            {item.badge}
-                          </div>
-                        )}
                         {item.tag && (
-                          <span className={theme.badge}>
-                            {item.tag}
-                          </span>
+                          <Badge variant="info" size="sm">{item.tag}</Badge>
                         )}
                       </Link>
                     )
@@ -220,13 +228,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             ))}
           </nav>
-
         </div>
 
         <div className="mt-auto px-4 pb-6">
-          <div className={`bg-white dark:bg-[#111] border rounded-2xl p-4 ${theme.border}`}>
+          <Card className="p-4">
             <div className="flex items-center gap-3 mb-4">
-              <label className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gradient-to-tr dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-gray-600 dark:text-white font-bold text-sm shrink-0 cursor-pointer overflow-hidden group">
+              <label className="relative w-10 h-10 rounded-full bg-elevated flex items-center justify-center text-primary font-bold text-sm shrink-0 cursor-pointer overflow-hidden group border border-default">
                 {uploadingImage ? (
                   <LoadingSpinner className="w-4 h-4 border-[2px]" />
                 ) : user.photoURL ? (
@@ -249,50 +256,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="overflow-hidden flex-1">
                 {isEditingName ? (
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="text" 
+                    <Input 
                       value={newDisplayName}
                       onChange={(e) => setNewDisplayName(e.target.value)}
-                      className={`w-full bg-gray-100 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-md px-2 py-1 text-xs text-gray-900 dark:text-white outline-none focus:border-2 ${theme.border}`}
                       autoFocus
                       onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                      className="px-2 py-1 text-xs"
                     />
-                    <button onClick={handleSaveName} className="text-emerald-500 hover:text-emerald-600">
+                    <button onClick={handleSaveName} className="text-success">
                       <i className="las la-check-circle text-lg"></i>
                     </button>
-                    <button onClick={() => setIsEditingName(false)} className="text-gray-400 hover:text-rose-500">
+                    <button onClick={() => setIsEditingName(false)} className="text-muted hover:text-danger">
                       <i className="las la-times-circle text-lg"></i>
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between group/name cursor-pointer" onClick={() => { setNewDisplayName(user.displayName || user.email || ""); setIsEditingName(true); }}>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate" title={user.displayName || user.email || ""}>
+                    <p className="text-sm font-bold text-primary truncate" title={user.displayName || user.email || ""}>
                       {user.displayName || user.email}
                     </p>
-                    <i className="las la-pen text-gray-400 opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
+                    <i className="las la-pen text-muted opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
                   </div>
                 )}
-                <div className={`text-xs font-black truncate uppercase tracking-widest ${theme.textHighlight}`}>
-                  {tier ? tier : "FREE TIER"}
+                <div className={`text-xs font-bold truncate uppercase tracking-widest ${theme.textHighlight}`}>
+                  {tier ? tier : "FREE"} PLAN
                 </div>
               </div>
             </div>
-            <div className="p-4 border-t border-gray-200 dark:border-slate-800 space-y-2">
+            <div className="pt-4 border-t border-subtle space-y-3">
               <ThemeToggle />
-              <button 
+              <Button 
+                variant="danger" 
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 font-bold rounded-xl transition-all text-sm"
+                className="w-full"
+                leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
               >
-                <i className="las la-sign-out-alt"></i>
                 Sign Out
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fafafa] dark:bg-[#0a0f1c] relative">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-base">
         {/* Desktop Custom Scrollbar Style override */}
         <style dangerouslySetInnerHTML={{__html: `
           .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -300,31 +307,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         `}} />
 
         {/* Mobile Top Header */}
-        <div className="md:hidden h-16 border-b border-yellow-200 dark:border-slate-800 bg-[#f0f0f0] dark:bg-black flex items-center justify-between px-4 sticky top-0 z-30 shadow-md">
-          <div className="flex items-center gap-2 text-gray-900 dark:text-white font-bold tracking-tight">
-             <i className="las la-shield-alt text-2xl text-gray-900 dark:text-white"></i>
+        <div className="md:hidden h-16 border-b border-subtle bg-surface flex items-center justify-between px-4 sticky top-0 z-30 shadow-sm">
+          <div className="flex items-center gap-2 text-primary font-bold tracking-tight">
+             <i className="las la-shield-alt text-2xl text-primary"></i>
             <span>ProfitPulse</span>
           </div>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="text-gray-500 dark:text-slate-400 p-2 -mr-2 hover:text-gray-900 dark:text-white"
+            className="text-secondary p-2 -mr-2 hover:text-primary"
           >
             <i className="las la-bars text-2xl"></i>
           </button>
         </div>
 
-            {/* Upgrade Banner - Only show if free */}
-            {(tier === 'free' || !tier) && (
-              <div className={`m-4 rounded-xl p-3 border border-gray-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-white/5`}>
-                <div>
-                  <h5 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-0.5">Upgrade Plan</h5>
-                  <p className="text-[9px] text-gray-500 dark:text-slate-400 font-medium">Unlock more features</p>
-                </div>
-                <Link href="/pricing" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm ${theme.badge}`}>
-                  <i className="las la-arrow-right"></i>
-                </Link>
-              </div>
-            )}
+        {/* Upgrade Banner - Only show if free */}
+        {(tier === 'free' || !tier) && (
+          <div className={`m-4 rounded-xl p-3 border border-default flex items-center justify-between bg-elevated shadow-sm`}>
+            <div>
+              <h5 className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">Upgrade Plan</h5>
+              <p className="text-[10px] text-secondary font-medium">Unlock more features</p>
+            </div>
+            <Link href="/pricing" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm bg-primary text-inverse`}>
+              <i className="las la-arrow-right"></i>
+            </Link>
+          </div>
+        )}
 
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 xl:p-10 animate-fade-in-up">

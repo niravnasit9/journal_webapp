@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { calculatePnL } from "@/utils/pnlCalculator";
 import CustomSelect from "@/components/ui/CustomSelect";
+import { useTierTheme } from "@/hooks/useTierTheme";
+import { useAuth } from "@/lib/firebase/authContext";
 
 const SYMBOL_PRESETS = ["XAUUSD", "BTCUSD", "XAGUSD", "USOIL"];
 
@@ -20,6 +22,9 @@ interface EditTradeModalProps {
 export default function EditTradeModal({ isOpen, onClose, accountId, trade, accountCurrency, onUpdated }: EditTradeModalProps) {
   const [loading, setLoading] = useState(false);
   const [usdInrRate, setUsdInrRate] = useState(83.50);
+  const theme = useTierTheme();
+  const { tier } = useAuth();
+  const isProOrElite = tier === 'pro' || tier === 'elite';
   
   // Symbol selection states
   const [symbolMode, setSymbolMode] = useState<"preset" | "other">("preset");
@@ -32,7 +37,9 @@ export default function EditTradeModal({ isOpen, onClose, accountId, trade, acco
     open_price: "",
     close_price: "",
     profit_loss: "",
-    commission: ""
+    commission: "",
+    emotion: "Neutral" as any,
+    setup_grade: "B" as any
   });
 
   // Populate form when modal opens
@@ -51,7 +58,9 @@ export default function EditTradeModal({ isOpen, onClose, accountId, trade, acco
         open_price: trade.open_price.toString(),
         close_price: trade.close_price.toString(),
         profit_loss: trade.profit_loss.toString(),
-        commission: trade.commission.toString()
+        commission: trade.commission.toString(),
+        emotion: trade.emotion || "Neutral",
+        setup_grade: trade.setup_grade || "B"
       });
     }
   }, [isOpen, trade]);
@@ -109,6 +118,8 @@ export default function EditTradeModal({ isOpen, onClose, accountId, trade, acco
       close_price: Number(formData.close_price),
       profit_loss: Number(formData.profit_loss),
       commission: Number(formData.commission) || 0,
+      emotion: isProOrElite ? formData.emotion : undefined,
+      setup_grade: isProOrElite ? formData.setup_grade : undefined,
     });
 
     setLoading(false);
@@ -222,6 +233,58 @@ export default function EditTradeModal({ isOpen, onClose, accountId, trade, acco
               />
             </div>
           )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative group/lock">
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                Setup Grade
+                {!isProOrElite && <i className="las la-lock text-yellow-500"></i>}
+              </label>
+              <div className={!isProOrElite ? "opacity-50 pointer-events-none" : ""}>
+                <CustomSelect 
+                  value={formData.setup_grade} 
+                  onChange={val => setFormData({...formData, setup_grade: val as any})}
+                  options={[
+                    { value: "A+", label: "A+ (Perfect Setup)" },
+                    { value: "A", label: "A (Good Setup)" },
+                    { value: "B", label: "B (Average Setup)" },
+                    { value: "C", label: "C (Poor Setup)" }
+                  ]}
+                />
+              </div>
+              {!isProOrElite && (
+                <div className="absolute inset-0 z-10 hidden group-hover/lock:flex items-center justify-center bg-black/5 rounded-lg cursor-not-allowed">
+                  <span className="bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">PRO Feature</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="relative group/lock">
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                Emotion
+                {!isProOrElite && <i className="las la-lock text-yellow-500"></i>}
+              </label>
+              <div className={!isProOrElite ? "opacity-50 pointer-events-none" : ""}>
+                <CustomSelect 
+                  value={formData.emotion} 
+                  onChange={val => setFormData({...formData, emotion: val as any})}
+                  options={[
+                    { value: "Neutral", label: "Neutral" },
+                    { value: "Confident", label: "Confident" },
+                    { value: "FOMO", label: "FOMO" },
+                    { value: "Revenge", label: "Revenge Trading" },
+                    { value: "Bored", label: "Bored / Forced" },
+                    { value: "Tilted", label: "Tilted / Angry" }
+                  ]}
+                />
+              </div>
+              {!isProOrElite && (
+                <div className="absolute inset-0 z-10 hidden group-hover/lock:flex items-center justify-center bg-black/5 rounded-lg cursor-not-allowed">
+                  <span className="bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg">PRO Feature</span>
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>

@@ -4,13 +4,17 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { auth, db } from "@/lib/firebase/config";
 import { updatePassword } from "firebase/auth";
-import { collection, query, where, getDocs, deleteDoc, doc, updateDoc, getDoc, writeBatch } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, writeBatch } from "firebase/firestore";
 import toast from "react-hot-toast";
-import CustomSelect from "@/components/ui/CustomSelect";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useTierTheme } from "@/hooks/useTierTheme";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const theme = useTierTheme();
   
   // Profile State
   const [name, setName] = useState("");
@@ -122,35 +126,32 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 font-sans max-w-5xl mx-auto transition-colors duration-300">
+    <div className="space-y-6 animate-in fade-in max-w-5xl mx-auto font-sans">
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-center">
-          <i className="las la-cog text-2xl text-blue-500"></i>
+        <div className={`w-12 h-12 bg-elevated border border-default rounded-xl flex items-center justify-center`}>
+          <i className={`las la-cog text-2xl ${theme.icon}`}></i>
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight transition-colors duration-300">Platform Settings</h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400 font-medium mt-1 transition-colors duration-300">Manage your security, preferences, and data.</p>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">Platform Settings</h1>
+          <p className="text-sm text-secondary font-medium mt-1">Manage your security, preferences, and data.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
-          
-          {/* Profile & Security */}
-          <div className="bg-white dark:bg-[#111318] rounded-2xl border border-gray-200 dark:border-slate-800 shadow-lg dark:shadow-xl overflow-hidden transition-colors duration-300">
-            <div className="p-6 border-b border-gray-200 dark:border-slate-800 transition-colors duration-300">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight transition-colors duration-300">
-                <i className="las la-shield-alt text-xl text-yellow-500"></i>
+          <Card className="overflow-hidden">
+            <div className="p-6 border-b border-subtle">
+              <h2 className="text-lg font-bold text-primary flex items-center gap-2 tracking-tight">
+                <i className={`las la-shield-alt text-xl ${theme.icon}`}></i>
                 Security & Profile
               </h2>
             </div>
             
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors duration-300">Registered Email</label>
-                <div className="w-full bg-gray-50 dark:bg-[#0a0f1c] border border-gray-300 dark:border-slate-800 rounded-xl px-4 py-3 text-gray-600 dark:text-slate-300 font-bold flex items-center gap-3 cursor-not-allowed transition-colors duration-300">
-                  <i className="las la-envelope text-lg text-gray-400 dark:text-slate-500 transition-colors duration-300"></i>
+                <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Registered Email</label>
+                <div className="w-full bg-base border border-default rounded-xl px-4 py-3 text-secondary font-bold flex items-center gap-3 cursor-not-allowed">
+                  <i className="las la-envelope text-lg text-muted"></i>
                   {user?.email || "Loading..."}
                 </div>
               </div>
@@ -158,126 +159,106 @@ export default function SettingsPage() {
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors duration-300">Full Name</label>
-                    <div className="relative">
-                      <i className="las la-user text-lg absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-colors duration-300"></i>
-                      <input 
-                        type="text" 
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name"
-                        className="w-full bg-white dark:bg-[#0a0f1c] border border-gray-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-medium transition-all"
-                        required
-                      />
-                    </div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Full Name</label>
+                    <Input 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      required
+                      leftIcon={<i className="las la-user text-lg"></i>}
+                    />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors duration-300">Phone Number</label>
-                    <div className="relative">
-                      <i className="las la-phone text-lg absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-colors duration-300"></i>
-                      <input 
-                        type="text" 
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+1 (555) 000-0000"
-                        className="w-full bg-white dark:bg-[#0a0f1c] border border-gray-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-medium transition-all"
-                      />
-                    </div>
+                    <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Phone Number</label>
+                    <Input 
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                      leftIcon={<i className="las la-phone text-lg"></i>}
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors duration-300">Country / Timezone</label>
-                  <div className="relative w-full md:w-1/2 pr-0 md:pr-3">
-                    <i className="las la-globe-americas text-lg absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-colors duration-300"></i>
-                    <input 
-                      type="text" 
+                  <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Country / Timezone</label>
+                  <div className="w-full md:w-1/2 pr-0 md:pr-3">
+                    <Input 
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
                       placeholder="e.g. United States (EST)"
-                      className="w-full bg-white dark:bg-[#0a0f1c] border border-gray-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-medium transition-all"
+                      leftIcon={<i className="las la-globe-americas text-lg"></i>}
                     />
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-2">
-                  <button 
+                  <Button 
                     type="submit" 
+                    variant="secondary"
                     disabled={isUpdatingProfile || !name.trim()}
-                    className="px-6 py-3 bg-gray-100 dark:bg-[#1f2229] hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-900 dark:text-white font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-slate-800 flex items-center gap-2"
+                    leftIcon={<i className="las la-save text-lg"></i>}
                   >
-                    <i className="las la-save text-lg"></i>
                     {isUpdatingProfile ? "Saving..." : "Save Profile Details"}
-                  </button>
+                  </Button>
                 </div>
               </form>
 
-              <hr className="border-gray-200 dark:border-slate-800 my-6 transition-colors duration-300" />
+              <hr className="border-subtle my-6" />
 
               <form onSubmit={handleUpdatePassword}>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2 transition-colors duration-300">Update Password</label>
+                <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Update Password</label>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <i className="las la-lock text-lg absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-colors duration-300"></i>
-                    <input 
+                  <div className="flex-1">
+                    <Input 
                       type="password" 
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="New password"
-                      className="w-full bg-white dark:bg-[#0a0f1c] border border-gray-300 dark:border-slate-800 rounded-xl pl-11 pr-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-medium transition-all"
                       minLength={8}
                       pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\[\]{}|;:',.<>?/~`]).{8,}"
                       title="Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character."
                       required
+                      leftIcon={<i className="las la-lock text-lg"></i>}
                     />
                   </div>
-                  <button 
+                  <Button 
                     type="submit" 
+                    variant="secondary"
                     disabled={isUpdatingPassword || newPassword.length < 8}
-                    className="px-6 py-3 bg-gray-100 dark:bg-[#1f2229] hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-900 dark:text-white font-bold rounded-xl transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-slate-800"
                   >
                     {isUpdatingPassword ? "Updating..." : "Update Password"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
-          </div>
-
+          </Card>
         </div>
 
-        {/* Sidebar Actions */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-[#111318] rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-sm overflow-hidden transition-colors duration-300">
-            <div className="p-6 border-b border-rose-100 dark:border-rose-900/50">
-              <h2 className="text-lg font-bold text-rose-600 dark:text-rose-500 flex items-center gap-2 tracking-tight">
+          <Card className="border-danger shadow-sm overflow-hidden bg-danger-bg/50">
+            <div className="p-6 border-b border-danger/20">
+              <h2 className="text-lg font-bold text-danger flex items-center gap-2 tracking-tight">
                 <i className="las la-exclamation-triangle text-xl"></i>
                 Danger Zone
               </h2>
             </div>
             
             <div className="p-6 space-y-6">
-              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium transition-colors duration-300 leading-relaxed">
+              <p className="text-sm text-danger/80 font-medium leading-relaxed">
                 Wiping data will permanently delete all trades and journal entries. This action cannot be undone. Account balances will remain untouched.
               </p>
               
-              <button
+              <Button
+                variant="danger"
                 onClick={() => setIsConfirmOpen(true)}
                 disabled={isWiping}
-                className="w-full bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-500 border border-rose-200 dark:border-rose-500/30 font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="w-full"
+                leftIcon={isWiping ? <i className="las la-spinner la-spin text-xl"></i> : <i className="las la-trash-alt text-xl group-hover:animate-bounce"></i>}
               >
-                {isWiping ? (
-                  <>
-                    <i className="las la-spinner la-spin text-xl"></i> Wiping...
-                  </>
-                ) : (
-                  <>
-                    <i className="las la-trash-alt text-xl group-hover:animate-bounce"></i> Wipe All Data
-                  </>
-                )}
-              </button>
+                {isWiping ? "Wiping..." : "Wipe All Data"}
+              </Button>
             </div>
-          </div>
-
+          </Card>
         </div>
       </div>
 

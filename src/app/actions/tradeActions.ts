@@ -12,6 +12,8 @@ export async function addManualTradeAction(accountId: string, data: {
   close_price: number;
   profit_loss: number;
   commission: number;
+  emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
+  setup_grade?: "A+" | "A" | "B" | "C";
 }) {
   try {
     const batch = writeBatch(db);
@@ -35,7 +37,9 @@ export async function addManualTradeAction(accountId: string, data: {
       strategy_tag: "",
       notes: "Manual Entry",
       screenshot_url: "",
-      mistake_tags: []
+      mistake_tags: [],
+      emotion: data.emotion,
+      setup_grade: data.setup_grade,
     };
     batch.set(newTradeRef, tradeData);
 
@@ -111,6 +115,8 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
   close_price: number;
   profit_loss: number;
   commission: number;
+  emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
+  setup_grade?: "A+" | "A" | "B" | "C";
 }) {
   try {
     const batch = writeBatch(db);
@@ -133,6 +139,8 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
       close_price: Number(data.close_price),
       profit_loss: Number(data.profit_loss),
       commission: Number(data.commission),
+      emotion: data.emotion,
+      setup_grade: data.setup_grade,
     });
 
     // 3. Fetch account and adjust balance

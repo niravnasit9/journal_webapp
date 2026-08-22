@@ -5,6 +5,10 @@ import { db } from "@/lib/firebase/config";
 import { collection, query, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 interface Transaction {
   id: string; // The txid
@@ -121,15 +125,13 @@ export default function TransactionsAdminPage() {
     try {
       const txRef = doc(db, "processed_txids", selectedTx.id);
       
-      // Update Firestore
       const updatePayload: any = {};
       if (editData.tier !== undefined) updatePayload.tier = editData.tier;
-      if (editData.amountUsd !== undefined) updatePayload.amount = editData.amountUsd; // Map amountUsd back to amount in DB
+      if (editData.amountUsd !== undefined) updatePayload.amount = editData.amountUsd;
       if (editData.status !== undefined) updatePayload.status = editData.status;
 
       await updateDoc(txRef, updatePayload);
       
-      // Update Local State
       setTransactions(prev => prev.map(tx => {
         if (tx.id === selectedTx.id) {
           return { ...tx, ...editData };
@@ -155,119 +157,116 @@ export default function TransactionsAdminPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/70 dark:bg-[#0a0f1c]/70 backdrop-blur-xl p-6 rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl relative overflow-hidden">
-        {/* Glow accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none" />
-        
+    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in pb-20 font-sans">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface p-6 rounded-2xl border border-subtle relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+          <h1 className="text-3xl font-bold text-primary tracking-tight flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-info-bg flex items-center justify-center text-info border border-info/20">
               <i className="las la-file-invoice-dollar text-2xl"></i>
             </div>
             Transactions
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm mt-2 font-medium">
+          <p className="text-secondary text-sm mt-2 font-medium">
             Real-time blockchain payments and invoice history.
           </p>
         </div>
         
-        <div className="w-full md:w-auto flex items-center relative z-10">
-          <i className="las la-search absolute left-4 text-gray-400 dark:text-slate-500 text-lg"></i>
-          <input 
-            type="text" 
+        <div className="w-full md:w-80 flex items-center relative z-10">
+          <Input 
             placeholder="Search TxID or User ID..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:w-80 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 shadow-sm"
+            leftIcon={<i className="las la-search text-lg"></i>}
           />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#0a0f1c] rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl overflow-hidden relative">
-        <div className="overflow-x-auto">
+      <Card className="overflow-visible border-default">
+        <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 dark:bg-white/[0.02] border-b border-gray-200 dark:border-white/5">
-                <th className="px-6 py-5 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">Date Processed</th>
-                <th className="px-6 py-5 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">Transaction ID</th>
-                <th className="px-6 py-5 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">User / Tier</th>
-                <th className="px-6 py-5 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">Amount / Network</th>
-                <th className="px-6 py-5 text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500 text-right">Actions</th>
+              <tr className="bg-surface border-b border-subtle">
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted">Date Processed</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted">Transaction ID</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted">User / Tier</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted">Amount / Network</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-muted text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+            <tbody className="divide-y divide-subtle">
               {filteredTx.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center text-gray-500 dark:text-slate-400">
-                    <div className="w-20 h-20 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <td colSpan={5} className="px-6 py-20 text-center text-secondary">
+                    <div className="w-20 h-20 bg-elevated rounded-full flex items-center justify-center mx-auto mb-4 border border-default">
                       <i className="las la-inbox text-4xl opacity-50 block"></i>
                     </div>
-                    <p className="font-bold text-gray-900 dark:text-white">No transactions found</p>
+                    <p className="font-bold text-primary">No transactions found</p>
                     <p className="text-sm">Try adjusting your search criteria.</p>
                   </td>
                 </tr>
               ) : (
                 filteredTx.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50/80 dark:hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                  <tr key={tx.id} className="hover:bg-elevated transition-colors group">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-primary">
                         {formatDate(tx.processedAt)}
                       </div>
-                      <div className="text-xs font-medium text-gray-500 dark:text-slate-500 mt-1 flex items-center gap-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${tx.network === 'BEP20' ? 'bg-yellow-500' : 'bg-red-500'}`}></span>
+                      <div className="text-xs font-medium text-muted mt-1 flex items-center gap-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${tx.network === 'BEP20' ? 'bg-warning' : 'bg-danger'}`}></span>
                         {tx.network} Network
                       </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-white/5">
+                        <span className="font-mono text-sm font-medium text-primary bg-elevated px-2.5 py-1 rounded-lg border border-default">
                           {truncate(tx.id, 16)}
                         </span>
                         <button 
                           onClick={() => copyToClipboard(tx.id)}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 hover:text-indigo-500 transition-colors"
+                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface text-muted hover:text-info transition-colors"
                           title="Copy TxID"
                         >
                           <i className="las la-copy text-lg"></i>
                         </button>
                       </div>
                       {tx.isTestTransaction && (
-                        <span className="inline-flex mt-2 items-center px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 tracking-widest uppercase">
-                          Test Tx
-                        </span>
+                        <Badge variant="warning" size="sm" className="mt-2 uppercase">Test Tx</Badge>
                       )}
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
-                          <i className="las la-user text-gray-500"></i>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-primary flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-elevated border border-default flex items-center justify-center">
+                          <i className="las la-user text-muted"></i>
                         </div>
                         {truncate(tx.uid, 12)}
                       </div>
-                      <span className={`inline-block mt-2 px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-widest border ${
-                        tx.tier === 'elite' ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
-                        tx.tier === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
-                        'bg-gray-50 text-gray-700 border-gray-200 dark:bg-white/5 dark:text-slate-300 dark:border-white/10'
-                      }`}>
-                        {tx.tier}
-                      </span>
+                      <div className="mt-2">
+                        <Badge 
+                          variant={tx.tier === 'elite' ? 'info' : tx.tier === 'pro' ? 'neutral' : 'free'} 
+                          size="sm" 
+                          className="uppercase"
+                        >
+                          {tx.tier}
+                        </Badge>
+                      </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="text-base font-black text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-base font-bold text-success">
                         ${tx.amountUsd}
                       </div>
-                      <div className="text-xs font-bold text-gray-500 dark:text-slate-500 mt-1 uppercase tracking-wider">
+                      <div className="text-xs font-bold text-muted mt-1 uppercase tracking-wider">
                         {tx.amountCrypto} {tx.tokenSymbol !== 'N/A' ? tx.tokenSymbol : tx.cryptoId.split('_')[0]}
                       </div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap text-right">
-                      <button 
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <Button 
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setSelectedTx(tx)}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-900 dark:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors inline-flex items-center gap-1"
+                        rightIcon={<i className="las la-angle-right text-base"></i>}
                       >
-                        Details <i className="las la-angle-right text-base"></i>
-                      </button>
+                        Details
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -275,52 +274,50 @@ export default function TransactionsAdminPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* Transaction Details Premium Modal */}
       {selectedTx && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white/90 dark:bg-[#0a0f1c]/90 backdrop-blur-2xl w-full max-w-2xl rounded-[32px] shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+          <Card className="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             
-            <div className="p-6 md:p-8 border-b border-gray-200/50 dark:border-white/5 flex justify-between items-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none" />
-              
-              <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+            <div className="p-6 border-b border-subtle flex justify-between items-center bg-elevated">
+              <h2 className="text-xl font-bold text-primary flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-info-bg border border-info/20 flex items-center justify-center text-info">
                   <i className="las la-receipt text-2xl"></i>
                 </div>
                 Digital Receipt
               </h2>
               <button 
                 onClick={() => { setSelectedTx(null); setIsEditing(false); }}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-500 dark:text-slate-400 transition-colors relative z-10"
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface hover:bg-elevated text-muted hover:text-primary transition-colors border border-default"
               >
                 <i className="las la-times text-xl"></i>
               </button>
             </div>
             
-            <div className="p-6 md:p-8 overflow-y-auto">
+            <div className="p-6 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-5">
-                  <div className="bg-gray-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Transaction Hash</p>
+                <div className="space-y-4">
+                  <div className="bg-elevated p-4 rounded-xl border border-default">
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Transaction Hash</p>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-xs font-bold text-gray-900 dark:text-slate-200 break-all">{selectedTx.id}</p>
-                      <button onClick={() => copyToClipboard(selectedTx.id)} className="w-8 h-8 flex items-center justify-center rounded bg-white dark:bg-black/50 text-gray-400 hover:text-indigo-500 border border-gray-200 dark:border-white/5 shrink-0 transition-colors"><i className="las la-copy text-lg"></i></button>
+                      <p className="font-mono text-xs font-bold text-primary break-all">{selectedTx.id}</p>
+                      <button onClick={() => copyToClipboard(selectedTx.id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface text-muted hover:text-info border border-default shrink-0 transition-colors"><i className="las la-copy text-lg"></i></button>
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">User ID</p>
-                    <p className="font-mono text-sm text-gray-900 dark:text-slate-200">{selectedTx.uid}</p>
+                  <div className="bg-elevated p-4 rounded-xl border border-default">
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">User ID</p>
+                    <p className="font-mono text-sm text-primary">{selectedTx.uid}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Plan Tier</p>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Plan Tier</p>
                     {isEditing ? (
                       <select 
                         value={editData.tier || 'free'}
                         onChange={e => setEditData(prev => ({...prev, tier: e.target.value}))}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
+                        className="w-full bg-surface border border-default rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-strong text-primary"
                       >
                         <option value="free">Free</option>
                         <option value="starter">Starter</option>
@@ -328,40 +325,40 @@ export default function TransactionsAdminPage() {
                         <option value="elite">Elite</option>
                       </select>
                     ) : (
-                      <p className="text-sm font-black text-gray-900 dark:text-white capitalize drop-shadow-sm">{selectedTx.tier}</p>
+                      <Badge variant="neutral" size="sm" className="capitalize">{selectedTx.tier}</Badge>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-5">
-                  <div className="bg-gray-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Network / Token</p>
-                    <p className="text-sm font-bold text-gray-900 dark:text-slate-200">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
+                <div className="space-y-4">
+                  <div className="bg-elevated p-4 rounded-xl border border-default">
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Network / Token</p>
+                    <p className="text-sm font-bold text-primary">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
                   </div>
                   
-                  <div className="bg-emerald-50/50 dark:bg-emerald-500/5 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
-                    <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mb-1.5">Amount Verified</p>
+                  <div className="bg-success-bg p-4 rounded-xl border border-success/20">
+                    <p className="text-[10px] font-bold text-success uppercase tracking-widest mb-1.5">Amount Verified</p>
                     {isEditing ? (
                       <input 
                         type="number"
                         value={editData.amountUsd !== undefined ? editData.amountUsd : ''}
                         onChange={e => setEditData(prev => ({...prev, amountUsd: Number(e.target.value)}))}
-                        className="w-full bg-white dark:bg-black/50 border border-emerald-200 dark:border-emerald-500/30 rounded-lg px-3 py-1.5 text-lg font-black focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-700 dark:text-emerald-400 mt-1"
+                        className="w-full bg-surface border border-success/30 rounded-lg px-3 py-2 text-lg font-bold focus:outline-none focus:ring-1 focus:ring-success text-success mt-1"
                         placeholder="0.00"
                       />
                     ) : (
-                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">${selectedTx.amountUsd} USD</p>
+                      <p className="text-2xl font-bold text-success">${selectedTx.amountUsd} USD</p>
                     )}
-                    <p className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/70 mt-1">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
+                    <p className="text-xs font-bold text-success/70 mt-1">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
                   </div>
                   
                   <div>
-                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Status</p>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Status</p>
                     {isEditing ? (
                       <select 
                         value={editData.status || 'SUCCESS'}
                         onChange={e => setEditData(prev => ({...prev, status: e.target.value}))}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
+                        className="w-full bg-surface border border-default rounded-lg px-3 py-2 text-sm font-bold tracking-widest uppercase focus:outline-none focus:ring-1 focus:ring-strong text-primary"
                       >
                         <option value="SUCCESS">Success</option>
                         <option value="FAILED">Failed</option>
@@ -369,102 +366,112 @@ export default function TransactionsAdminPage() {
                         <option value="REFUNDED">Refunded</option>
                       </select>
                     ) : (
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black tracking-widest uppercase border ${
-                        selectedTx.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' :
-                        selectedTx.status === 'FAILED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border-rose-200 dark:border-rose-500/20' :
-                        'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
-                      }`}>
-                        <i className={`las text-base ${selectedTx.status === 'SUCCESS' ? 'la-check-circle' : 'la-exclamation-circle'}`}></i> {selectedTx.status}
-                      </span>
+                      <Badge 
+                        variant={
+                          selectedTx.status === 'SUCCESS' ? 'success' : 
+                          selectedTx.status === 'FAILED' ? 'danger' : 'warning'
+                        }
+                      >
+                        <i className={`las text-base mr-1 ${selectedTx.status === 'SUCCESS' ? 'la-check-circle' : 'la-exclamation-circle'}`}></i> {selectedTx.status}
+                      </Badge>
                     )}
                   </div>
                 </div>
               </div>
 
-              <hr className="my-6 border-gray-200/50 dark:border-white/5" />
+              <hr className="my-6 border-subtle" />
 
-              <h3 className="text-sm font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-widest">
-                <i className="las la-link text-indigo-500 text-lg"></i>
+              <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-widest">
+                <i className="las la-link text-info text-lg"></i>
                 Blockchain Metadata
               </h3>
 
-              <div className="space-y-3 bg-gray-50 dark:bg-white/[0.02] p-5 rounded-2xl border border-gray-100 dark:border-white/5">
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-gray-200 dark:border-white/5 pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-500">Block Timestamp:</span>
-                  <span className="text-sm font-mono font-medium text-gray-900 dark:text-slate-300">{formatDate(selectedTx.timestamp)}</span>
+              <div className="space-y-3 bg-elevated p-5 rounded-xl border border-default">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Block Timestamp:</span>
+                  <span className="text-sm font-mono font-medium text-primary">{formatDate(selectedTx.timestamp)}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-gray-200 dark:border-white/5 pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-500">From Address (Sender):</span>
-                  <span className="text-xs font-mono font-medium text-gray-900 dark:text-slate-300 break-all">{selectedTx.fromAddress}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">From Address (Sender):</span>
+                  <span className="text-xs font-mono font-medium text-primary break-all">{selectedTx.fromAddress}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-gray-200 dark:border-white/5 pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-500">To Address (Deposit):</span>
-                  <span className="text-xs font-mono font-medium text-gray-900 dark:text-slate-300 break-all">{selectedTx.toAddress}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">To Address (Deposit):</span>
+                  <span className="text-xs font-mono font-medium text-primary break-all">{selectedTx.toAddress}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-gray-200 dark:border-white/5 pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-500">Transaction Fee:</span>
-                  <span className="text-sm font-mono font-medium text-gray-900 dark:text-slate-300">{selectedTx.transactionFee}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Transaction Fee:</span>
+                  <span className="text-sm font-mono font-medium text-primary">{selectedTx.transactionFee}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-500">System Processed At:</span>
-                  <span className="text-sm font-mono font-medium text-gray-900 dark:text-slate-300">{formatDate(selectedTx.processedAt)}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">System Processed At:</span>
+                  <span className="text-sm font-mono font-medium text-primary">{formatDate(selectedTx.processedAt)}</span>
                 </div>
               </div>
               
               {selectedTx.isTestTransaction && (
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 items-start dark:bg-amber-900/20 dark:border-amber-700/50">
-                  <i className="las la-exclamation-triangle text-amber-500 text-xl mt-0.5"></i>
-                  <p className="text-xs text-amber-800 dark:text-amber-400 leading-relaxed font-medium">
+                <div className="mt-4 p-4 bg-warning-bg border border-warning/30 rounded-xl flex gap-3 items-start">
+                  <i className="las la-exclamation-triangle text-warning text-xl mt-0.5"></i>
+                  <p className="text-xs text-warning leading-relaxed font-medium">
                     This was an authorized test micro-transaction. The payment was processed and the user's tier was upgraded, but the standard dollar amount validation was bypassed.
                   </p>
                 </div>
               )}
             </div>
             
-            <div className="p-4 md:p-5 border-t border-gray-200/50 dark:border-white/5 bg-gray-50/80 dark:bg-black/20 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="p-4 md:p-5 border-t border-subtle bg-elevated flex flex-col md:flex-row justify-between items-center gap-4">
               
               <div className="flex items-center gap-3 w-full md:w-auto">
                 {!isEditing ? (
                   <>
-                    <button 
-                      onClick={() => { setIsEditing(true); setEditData(selectedTx); }} 
-                      className="px-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                    <Button 
+                      variant="outline"
+                      onClick={() => { setIsEditing(true); setEditData(selectedTx); }}
+                      leftIcon={<i className="las la-pen text-base"></i>}
+                      className="flex-1 md:flex-none"
                     >
-                      <i className="las la-pen text-base"></i> Edit
-                    </button>
-                    <button 
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="danger"
                       onClick={() => handleDelete(selectedTx.id)} 
-                      className="px-4 py-2.5 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                      leftIcon={<i className="las la-trash text-base"></i>}
+                      className="flex-1 md:flex-none"
                     >
-                      <i className="las la-trash text-base"></i> Delete
-                    </button>
+                      Delete
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <button 
+                    <Button 
+                      variant="primary"
                       onClick={handleSaveEdit} 
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm shadow-emerald-500/20"
+                      leftIcon={<i className="las la-save text-base"></i>}
+                      className="flex-1 md:flex-none"
                     >
-                      <i className="las la-save text-base"></i> Save Changes
-                    </button>
-                    <button 
+                      Save Changes
+                    </Button>
+                    <Button 
+                      variant="outline"
                       onClick={() => setIsEditing(false)} 
-                      className="px-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 flex-1 md:flex-none shadow-sm"
+                      className="flex-1 md:flex-none"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
 
-              <button 
+              <Button 
+                variant="secondary"
                 onClick={() => window.open(selectedTx.network === 'BEP20' || selectedTx.network === 'ERC20' ? `https://bscscan.com/tx/${selectedTx.id}` : `https://tronscan.org/#/transaction/${selectedTx.id}`, '_blank')}
-                className="w-full md:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs tracking-widest font-black uppercase rounded-xl transition-all hover:scale-105 shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2"
+                rightIcon={<i className="las la-external-link-alt text-lg"></i>}
+                className="w-full md:w-auto uppercase tracking-widest font-bold"
               >
-                View on Explorer <i className="las la-external-link-alt text-lg"></i>
-              </button>
+                View on Explorer
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

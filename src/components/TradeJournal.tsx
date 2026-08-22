@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { TradeDoc } from "@/lib/firebase/schema";
+import { useAuth } from "@/lib/firebase/authContext";
+import { useTierTheme } from "@/hooks/useTierTheme";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 
 interface TradeJournalProps {
   trades: TradeDoc[];
@@ -15,6 +21,40 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
   const [search, setSearch] = useState("");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
+  const { tier } = useAuth();
+  const theme = useTierTheme();
+
+  const isProOrElite = tier === 'pro' || tier === 'elite';
+
+  const handleExportCSV = () => {
+    if (!isProOrElite) {
+      import("react-hot-toast").then(mod => mod.toast.error("Exporting data is a Pro & Elite feature. Please upgrade your plan!"));
+      return;
+    }
+    
+    if (filteredTrades.length === 0) {
+      import("react-hot-toast").then(mod => mod.toast.error("No trades to export."));
+      return;
+    }
+
+    const headers = ["Symbol", "Open Time", "Close Time", "Direction", "Lot Size", "Open Price", "Close Price", "Profit/Loss", "Commission"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredTrades.map(t => {
+        return `"${t.symbol}","${new Date(t.open_time).toISOString()}","${new Date(t.close_time).toISOString()}","${t.direction}",${t.lot_size},${t.open_price},${t.close_price},${t.profit_loss},${t.commission}`;
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `account_trading_history_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredTrades = trades.filter(trade => {
     const matchesSearch = trade.symbol.toLowerCase().includes(search.toLowerCase());
     let matchesDate = true;
@@ -25,54 +65,60 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
   });
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-yellow-200 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col font-sans">
+    <Card className="flex flex-col font-sans overflow-hidden">
       {/* Table Header / Filters */}
-      <div className="p-4 md:p-6 border-b border-yellow-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-gray-50 dark:bg-gray-950">
+      <div className="p-4 md:p-6 border-b border-subtle flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-elevated">
         <div className="flex justify-between items-center w-full md:w-auto">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Trade History</h2>
+          <h2 className="text-lg font-bold text-primary tracking-tight">Trade History</h2>
           
-          {/* Mobile Filter Button */}
-          <button 
+          <Button 
+            variant="secondary"
+            size="sm"
             onClick={() => setIsFilterSheetOpen(true)}
-            className="md:hidden flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#111827] text-gray-700 dark:text-slate-300 text-sm font-bold rounded-lg border border-yellow-200 dark:border-slate-800"
+            className="md:hidden"
+            leftIcon={<i className="las la-filter"></i>}
           >
-            <i className="las la-filter"></i> Filters
-          </button>
+            Filters
+          </Button>
         </div>
         
         {/* Desktop Filters */}
-        <div className="hidden md:flex flex-row gap-3 w-auto">
-          {/* Search */}
-          <div className="relative w-56">
-            <i className="las la-search text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-            <input 
-              type="text" 
+        <div className="hidden md:flex flex-row gap-3 w-auto items-center">
+          
+          <Button 
+            variant="outline"
+            onClick={handleExportCSV}
+            className={!isProOrElite ? "opacity-70 cursor-not-allowed" : ""}
+            leftIcon={<i className={`las ${isProOrElite ? 'la-download' : 'la-lock'} text-lg`}></i>}
+          >
+            Export
+          </Button>
+          
+          <div className="w-56">
+            <Input 
               placeholder="Search symbol..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-lg text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-400 dark:text-slate-500"
+              leftIcon={<i className="las la-search text-lg"></i>}
             />
           </div>
           
-          {/* Date Range */}
           <div className="flex items-center gap-2 w-auto">
-            <div className="relative w-40">
-              <i className="las la-calendar text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-              <input 
+            <div className="w-40">
+              <Input 
                 type="date" 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full pl-9 pr-2 py-2 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-lg text-sm text-gray-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all dark:[color-scheme:dark] [color-scheme:light]"
+                leftIcon={<i className="las la-calendar text-lg"></i>}
               />
             </div>
-            <span className="text-gray-400 dark:text-slate-500 text-sm font-medium">to</span>
-            <div className="relative w-40">
-              <i className="las la-calendar text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-              <input 
+            <span className="text-secondary text-sm font-medium">to</span>
+            <div className="w-40">
+              <Input 
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full pl-9 pr-2 py-2 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-lg text-sm text-gray-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all dark:[color-scheme:dark] [color-scheme:light]"
+                leftIcon={<i className="las la-calendar text-lg"></i>}
               />
             </div>
           </div>
@@ -80,10 +126,10 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
       </div>
 
       {/* Table Content */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left border-collapse whitespace-nowrap">
           <thead>
-            <tr className="bg-[#f8f9fa] dark:bg-[#0f1523] text-gray-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
+            <tr className="bg-surface text-secondary text-[11px] font-bold uppercase tracking-widest border-b border-subtle">
               <th className="px-6 py-4">Open Time</th>
               <th className="px-6 py-4">Symbol</th>
               <th className="px-6 py-4">Type</th>
@@ -93,47 +139,43 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
               <th className="px-4 py-4 w-12 text-center"></th>
             </tr>
           </thead>
-          <tbody className="text-sm">
+          <tbody className="text-sm bg-surface">
             {filteredTrades.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                <td colSpan={7} className="px-6 py-12 text-center text-secondary">
                   <div className="flex flex-col items-center justify-center">
-                    <i className="las la-filter text-4xl mb-3 opacity-50"></i>
+                    <i className="las la-filter text-4xl mb-3 opacity-50 text-muted"></i>
                     <p>No trades match your criteria.</p>
                   </div>
                 </td>
               </tr>
             ) : (
               filteredTrades.map((trade) => (
-                <tr key={trade.id} className="border-b border-yellow-200 dark:border-slate-800/50 hover:bg-[#e5e7eb] dark:bg-slate-800/40 transition-colors group">
-                  <td className="px-6 py-4 text-gray-700 dark:text-slate-300 font-medium">
+                <tr key={trade.id} className="border-b border-subtle hover:bg-elevated transition-colors group">
+                  <td className="px-6 py-4 text-secondary font-medium">
                     {new Date(trade.open_time).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 font-bold text-gray-900 dark:text-slate-200">
+                  <td className="px-6 py-4 font-bold text-primary">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${trade.profit_loss >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                      <div className={`w-1.5 h-1.5 rounded-full ${trade.profit_loss >= 0 ? 'bg-success' : 'bg-danger'}`} />
                       {trade.symbol}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${
-                      trade.direction === 'BUY' 
-                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
-                        : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                    }`}>
+                    <Badge variant={trade.direction === 'BUY' ? 'info' : 'warning'} size="sm">
                       {trade.direction}
-                    </span>
+                    </Badge>
                   </td>
-                  <td className="px-6 py-4 text-gray-700 dark:text-slate-300 font-medium">{trade.lot_size.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{trade.open_price}</td>
-                  <td className={`px-6 py-4 text-right font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <td className="px-6 py-4 text-secondary font-medium">{trade.lot_size.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-muted">{trade.open_price}</td>
+                  <td className={`px-6 py-4 text-right font-bold ${trade.profit_loss >= 0 ? 'text-success' : 'text-danger'}`}>
                     {trade.profit_loss >= 0 ? '+' : ''}${trade.profit_loss.toFixed(2)}
                   </td>
                   <td className="px-4 py-4 text-center">
                     {onEditTrade && (
                       <button 
                         onClick={() => onEditTrade(trade)}
-                        className="text-slate-600 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-blue-500/10"
+                        className="text-muted hover:text-info transition-colors p-2 rounded-lg hover:bg-info-bg mx-1"
                         title="Edit Trade"
                       >
                         <i className="las la-pen text-[16px]"></i>
@@ -142,7 +184,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
                     {onDeleteTrade && (
                       <button 
                         onClick={() => onDeleteTrade(trade.id)}
-                        className="text-slate-600 hover:text-rose-500 transition-colors p-2 rounded-lg hover:bg-rose-500/10"
+                        className="text-muted hover:text-danger transition-colors p-2 rounded-lg hover:bg-danger-bg mx-1"
                         title="Delete Trade"
                       >
                         <i className="las la-trash-alt text-[16px]"></i>
@@ -163,63 +205,54 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade }: Tra
             className="absolute inset-0"
             onClick={() => setIsFilterSheetOpen(false)}
           />
-          <div className="relative w-full bg-white dark:bg-[#111827] rounded-t-3xl border-t border-yellow-200 dark:border-slate-800 shadow-2xl p-6 pb-10 animate-in slide-in-from-bottom-full duration-300">
-            <div className="w-12 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full mx-auto mb-6"></div>
+          <div className={`relative w-full border-t border-subtle rounded-t-3xl shadow-2xl p-6 pb-10 bg-surface animate-in slide-in-from-bottom-full duration-300 transition-all`}>
+            <div className="w-12 h-1.5 bg-strong rounded-full mx-auto mb-6"></div>
             
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Filter Trades</h3>
+            <h3 className="text-xl font-bold text-primary mb-6">Filter Trades</h3>
             
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2">Search Symbol</label>
-                <div className="relative w-full">
-                  <i className="las la-search text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-                  <input 
-                    type="text" 
-                    placeholder="Search symbol..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-3 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-400 dark:text-slate-500"
-                  />
-                </div>
+                <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Search Symbol</label>
+                <Input 
+                  placeholder="Search symbol..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  leftIcon={<i className="las la-search text-lg"></i>}
+                />
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-2">Date Range</label>
-                <div className="flex items-center gap-3 w-full">
-                  <div className="relative flex-1">
-                    <i className="las la-calendar text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-                    <input 
-                      type="date" 
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full pl-9 pr-2 py-3 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl text-sm text-gray-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all dark:[color-scheme:dark] [color-scheme:light]"
-                    />
-                  </div>
-                  <span className="text-gray-400 dark:text-slate-500 text-sm font-medium">to</span>
-                  <div className="relative flex-1">
-                    <i className="las la-calendar text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"></i>
-                    <input 
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full pl-9 pr-2 py-3 bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl text-sm text-gray-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 transition-all dark:[color-scheme:dark] [color-scheme:light]"
-                    />
-                  </div>
+                <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Date Range</label>
+                <div className="flex flex-col gap-3 w-full">
+                  <Input 
+                    type="date" 
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    leftIcon={<i className="las la-calendar text-lg"></i>}
+                  />
+                  <div className="text-center text-muted font-medium text-sm">to</div>
+                  <Input 
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    leftIcon={<i className="las la-calendar text-lg"></i>}
+                  />
                 </div>
               </div>
 
               <div className="pt-4">
-                <button 
+                <Button 
+                  variant="primary"
+                  className="w-full"
                   onClick={() => setIsFilterSheetOpen(false)}
-                  className="w-full py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl transition-all shadow-lg"
                 >
                   Apply Filters
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { AccountDoc, UserDoc } from "@/lib/firebase/schema";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import CustomSelect from "@/components/ui/CustomSelect";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
+import { Card } from "@/components/ui/Card";
+import { Select } from "@/components/ui/Select";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 
 interface AccountWithUser extends AccountDoc {
   userEmail: string;
@@ -65,33 +68,34 @@ export default function AdminAccountsPage() {
     : accounts.filter(a => a.account_type === filterType);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 font-sans">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto font-sans">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-surface p-6 rounded-2xl border border-subtle">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-            <i className="las la-wallet text-3xl text-purple-500"></i>
+          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
+            <div className="w-10 h-10 bg-info-bg rounded-lg border border-info/20 flex items-center justify-center text-info">
+              <i className="las la-wallet text-2xl"></i>
+            </div>
             Global Accounts List
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm font-medium mt-1">View all trading accounts created by users.</p>
+          <p className="text-secondary text-sm font-medium mt-2">View all trading accounts created by users.</p>
         </div>
         
-        <div className="relative w-full sm:w-64 shrink-0">
-          <CustomSelect 
+        <div className="w-full sm:w-64 shrink-0">
+          <Select 
             options={[
               { value: "ALL", label: "All Account Types" },
               ...uniqueTypes.map(type => ({ value: type, label: type }))
             ]}
             value={filterType}
-            onChange={setFilterType}
-            icon="las la-filter"
+            onChange={(e) => setFilterType(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-700 dark:text-slate-300">
-            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
+      <Card className="overflow-visible border-default p-0">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left text-sm text-secondary">
+            <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
               <tr>
                 <th className="px-6 py-4">Account Label</th>
                 <th className="px-6 py-4">Owner (User)</th>
@@ -101,52 +105,54 @@ export default function AdminAccountsPage() {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-subtle bg-surface">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8"><LoadingSpinner /></td>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <LoadingSpinner />
+                  </td>
                 </tr>
               ) : filteredAccounts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400 dark:text-slate-500 font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
                     No accounts match the criteria.
                   </td>
                 </tr>
               ) : (
                 filteredAccounts.map((acc) => (
-                  <tr key={acc.id} className="hover:bg-gray-100 dark:hover:bg-[#16181d] transition-colors group cursor-pointer" onClick={() => router.push(`/admin/users/${acc.owner_uid}`)}>
-                    <td className="px-6 py-4 font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                  <tr key={acc.id} className="hover:bg-elevated transition-colors group cursor-pointer" onClick={() => router.push(`/admin/users/${acc.owner_uid}`)}>
+                    <td className="px-6 py-4 font-bold text-primary whitespace-nowrap">
                       {acc.label}
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">
-                      <Link href={`/admin/users/${acc.owner_uid}`} className="hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <td className="px-6 py-4 text-secondary font-medium">
+                      <Link href={`/admin/users/${acc.owner_uid}`} className="hover:text-info transition-colors flex items-center gap-2">
                          <i className="las la-user"></i>
                          {acc.userEmail}
                       </Link>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                        acc.account_type.toLowerCase() === "real" 
-                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
-                          : "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                      }`}>
+                      <Badge variant={acc.account_type.toLowerCase() === "real" ? "success" : "info"} size="sm" className="uppercase">
                         {acc.account_type}
-                      </span>
+                      </Badge>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400">
+                    <td className="px-6 py-4 text-secondary">
                       {acc.broker}
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-bold">
+                    <td className="px-6 py-4 text-primary font-bold">
                       {acc.currency || "USD"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link 
-                        href={`/admin/users/${acc.owner_uid}`}
-                        className="w-8 h-8 rounded-lg bg-white dark:bg-[#1f2229] hover:bg-slate-700 text-gray-700 dark:text-slate-300 flex items-center justify-center transition-colors inline-flex"
-                        title="Manage Account"
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/admin/users/${acc.owner_uid}`);
+                        }}
+                        leftIcon={<i className="las la-cog"></i>}
                       >
-                        <i className="las la-cog"></i>
-                      </Link>
+                        Manage
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -154,7 +160,7 @@ export default function AdminAccountsPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

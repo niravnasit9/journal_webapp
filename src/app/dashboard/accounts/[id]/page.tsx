@@ -13,26 +13,29 @@ import TradeJournal from "@/components/TradeJournal";
 import AddTradeModal from "@/components/AddTradeModal";
 import EditTradeModal from "@/components/EditTradeModal";
 import toast from "react-hot-toast";
+import { useTierTheme } from "@/hooks/useTierTheme";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
-type TabType = "Account Overview" | "Trading Overview" | "Trading History" | "Calendar";
+type TabType = "Account Overview" | "Trading Overview" | "Trading History" | "Psychology" | "Calendar";
 
 export default function AccountDetailView() {
   const { id } = useParams();
   const accountId = id as string;
-  const { user } = useAuth();
+  const { user, tier } = useAuth();
+  const theme = useTierTheme();
   const router = useRouter();
 
   const [account, setAccount] = useState<AccountDoc | null>(null);
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddTradeOpen, setIsAddTradeOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
   
   const [activeTab, setActiveTab] = useState<TabType>("Account Overview");
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
   const [tradeToEdit, setTradeToEdit] = useState<TradeDoc | null>(null);
   const [tradeToDelete, setTradeToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -104,7 +107,7 @@ export default function AccountDetailView() {
     return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
   }
   if (!account) {
-    return <div className="text-rose-500 p-8">Account not found</div>;
+    return <div className="text-danger p-8 font-bold">Account not found</div>;
   }
 
   const initialBalance = account.initial_balance || 0;
@@ -131,7 +134,41 @@ export default function AccountDetailView() {
     });
   }
 
-  // Advanced Statistics Calculations
+  // Drawdown Logic Engine
+  let highestWatermark = initialBalance;
+  let maxDrawdownValue = 0; 
+
+  chronologicalTrades.forEach(t => {
+    if (account.drawdown_type === 'trailing') {
+      if (runningBalance > highestWatermark) {
+        highestWatermark = runningBalance;
+      }
+    }
+  });
+
+  const dailyLossLimitPct = account.daily_loss_limit_pct || 5;
+  const maxDrawdownPct = account.max_drawdown_pct || 10;
+  
+  let maxDrawdownThreshold = 0;
+  if (account.drawdown_type === 'trailing') {
+    maxDrawdownThreshold = highestWatermark * (1 - (maxDrawdownPct / 100));
+  } else {
+    maxDrawdownThreshold = initialBalance * (1 - (maxDrawdownPct / 100));
+  }
+  
+  const dailyPnL: Record<string, number> = {};
+  trades.forEach(t => {
+    const dateStr = new Date(t.close_time).toISOString().split('T')[0];
+    dailyPnL[dateStr] = (dailyPnL[dateStr] || 0) + (t.profit_loss - (t.commission || 0));
+  });
+
+  const previousDays = Object.keys(dailyPnL);
+  const currentDay = chronologicalTrades.length > 0 ? new Date(chronologicalTrades[chronologicalTrades.length - 1].close_time).toISOString().split('T')[0] : '';
+  const dailyDrawdownType = account.daily_drawdown_type || 'balance';
+  
+  const currentDailyPnL = dailyPnL[currentDay] || 0;
+  const dailyLossLimitValue = (initialBalance * dailyLossLimitPct) / 100;
+
   const winningTrades = trades.filter(t => (t.profit_loss - (t.commission || 0)) > 0);
   const losingTrades = trades.filter(t => (t.profit_loss - (t.commission || 0)) <= 0);
   
@@ -147,14 +184,6 @@ export default function AccountDetailView() {
 
   const totalCommissions = trades.reduce((sum, t) => sum + (t.commission || 0), 0);
   const totalVolume = trades.reduce((sum, t) => sum + (t.lot_size || 0), 0);
-
-  // Group by day for daily stats
-  const dailyPnL: Record<string, number> = {};
-  trades.forEach(t => {
-    const dateStr = new Date(t.close_time).toISOString().split('T')[0];
-    dailyPnL[dateStr] = (dailyPnL[dateStr] || 0) + (t.profit_loss - (t.commission || 0));
-  });
-  
   const tradingDaysCount = Object.keys(dailyPnL).length;
   const avgDailyPnL = tradingDaysCount > 0 ? overallPnL / tradingDaysCount : 0;
   
@@ -164,12 +193,11 @@ export default function AccountDetailView() {
   const avgWinningDay = winningDays.length > 0 ? winningDays.reduce((a,b) => a+b, 0) / winningDays.length : 0;
   const avgLosingDay = losingDays.length > 0 ? losingDays.reduce((a,b) => a+b, 0) / losingDays.length : 0;
 
-  const TABS: TabType[] = ["Account Overview", "Trading Overview", "Trading History", "Calendar"];
+  const TABS: TabType[] = ["Account Overview", "Trading Overview", "Trading History", "Psychology"];
 
-  // Helper component for stat rows
-  const StatRow = ({ label, value, isCurrency = false, colorClass = "text-gray-900 dark:text-white" }: { label: string, value: string | number, isCurrency?: boolean, colorClass?: string }) => (
-    <div className="flex justify-between items-center py-3 border-b border-yellow-200 dark:border-slate-800/50 last:border-0">
-      <span className="text-gray-500 dark:text-slate-400 text-sm">{label}</span>
+  const StatRow = ({ label, value, isCurrency = false, colorClass = "text-primary" }: { label: string, value: string | number, isCurrency?: boolean, colorClass?: string }) => (
+    <div className="flex justify-between items-center py-3 border-b border-subtle last:border-0">
+      <span className="text-secondary text-sm">{label}</span>
       <span className={`text-sm font-bold ${colorClass}`}>
         {isCurrency && typeof value === 'number' && value < 0 ? '-' : ''}
         {isCurrency ? (account.currency === "INR" ? "₹" : "$") : ''}
@@ -179,169 +207,254 @@ export default function AccountDetailView() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
+    <div className="space-y-8 animate-in fade-in font-sans">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#111827] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#e5e7eb] dark:bg-slate-800 flex items-center justify-center shrink-0 border border-yellow-300 dark:border-slate-700">
-            <span className="text-gray-500 dark:text-slate-400 font-bold text-xl">{account.label[0]}</span>
+      <Card className="p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-elevated flex items-center justify-center shrink-0 border border-default">
+              <span className="text-secondary font-bold text-xl">{account.label[0]}</span>
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
+                {account.label}
+              </h1>
+              <div className="mt-1">
+                <Badge variant={account.account_type === 'real' ? 'success' : 'info'} size="sm">
+                  {account.account_type}
+                </Badge>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-              {account.label}
-            </h1>
-            <span className="inline-block mt-1 px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
-              {account.account_type}
-            </span>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Button 
+              variant="primary"
+              onClick={() => setIsAddModalOpen(true)}
+              leftIcon={<i className="las la-plus text-lg"></i>}
+              className="w-full md:w-auto"
+            >
+              Add Trade
+            </Button>
           </div>
         </div>
+      </Card>
 
-        <div className="flex items-center gap-3">
-           <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-black font-bold rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.3)] transition-all"
-          >
-            <i className="las la-plus text-[16px]"></i>
-            Add Trade
-          </button>
-          <AddTradeModal 
-            isOpen={isAddModalOpen} 
-            onClose={() => setIsAddModalOpen(false)} 
-            accountId={accountId} 
-            accountCurrency={account.currency as "USD" | "INR"}
-            onAdded={fetchData} 
-          />
-
-          <EditTradeModal 
-            isOpen={isEditModalOpen} 
-            onClose={() => { setIsEditModalOpen(false); setTradeToEdit(null); }} 
-            accountId={accountId}
-            trade={tradeToEdit}
-            accountCurrency={account.currency as "USD" | "INR"}
-            onUpdated={fetchData} 
-          />
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-yellow-200 dark:border-slate-800 pb-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-subtle pb-4">
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeTab === tab 
-                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-black shadow-[0_0_15px_rgba(234,179,8,0.3)]' 
-                : 'bg-white dark:bg-[#111827] text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white border border-yellow-200 dark:border-slate-800 hover:border-yellow-300 dark:border-slate-700'
+                ? "bg-[var(--text-primary)] text-[var(--bg-base)]"
+                : 'bg-elevated text-secondary hover:text-primary hover:bg-surface border border-default'
             }`}
           >
             {tab}
           </button>
         ))}
-        
-        <div className="ml-auto flex items-center gap-2">
-          <button 
-            onClick={() => setIsCredentialsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#111827] text-gray-700 dark:text-slate-300 text-sm font-bold rounded-full border border-yellow-200 dark:border-slate-800 hover:border-yellow-300 dark:border-slate-700 transition-colors"
-          >
-            <i className="las la-key text-[16px]"></i> Credentials
-          </button>
-        </div>
       </div>
 
-      {/* Tab Content Rendering */}
+      {activeTab === "Account Overview" && (
+        <div className="space-y-6">
+          {account.prop_firm ? (
+            <Card className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <i className={`las la-shield-alt text-3xl text-[var(--plan-starter)]`}></i>
+                <div>
+                  <h3 className="text-xl font-bold text-primary">Challenge Tracker</h3>
+                  <p className="text-sm text-secondary">Tracking rules for {account.prop_firm}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-elevated p-5 rounded-xl border border-default">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-bold text-secondary">Daily Loss Limit</span>
+                    <span className="text-sm font-black text-primary">{account.daily_loss_limit_pct}%</span>
+                  </div>
+                  <div className="flex justify-between items-end mb-4">
+                    <div>
+                      <p className="text-xs text-muted mb-1">Current Today</p>
+                      <p className={`text-2xl font-black ${currentDailyPnL < 0 ? 'text-danger' : 'text-success'}`}>
+                        {account.currency === "INR" ? "₹" : "$"}{Math.abs(currentDailyPnL).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted mb-1">Limit ({dailyDrawdownType === 'equity' ? 'Equity' : 'Balance'})</p>
+                      <p className="text-lg font-bold text-primary">
+                        {account.currency === "INR" ? "₹" : "$"}{dailyLossLimitValue.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-subtle h-2 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${(Math.abs(currentDailyPnL < 0 ? currentDailyPnL : 0) / dailyLossLimitValue) > 0.8 ? 'bg-danger' : 'bg-success'}`}
+                      style={{ width: `${Math.min((Math.abs(currentDailyPnL < 0 ? currentDailyPnL : 0) / dailyLossLimitValue) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div className="bg-elevated p-5 rounded-xl border border-default">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-bold text-secondary">Max Drawdown ({account.drawdown_type || 'static'})</span>
+                    <span className="text-sm font-black text-primary">{account.max_drawdown_pct}%</span>
+                  </div>
+                  <div className="flex justify-between items-end mb-4">
+                    <div>
+                      <p className="text-xs text-muted mb-1">Current Balance</p>
+                      <p className={`text-2xl font-black ${currentBalance < initialBalance ? 'text-danger' : 'text-success'}`}>
+                        {account.currency === "INR" ? "₹" : "$"}{currentBalance.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted mb-1">Breach Level</p>
+                      <p className="text-lg font-bold text-primary">
+                        {account.currency === "INR" ? "₹" : "$"}{maxDrawdownThreshold.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-subtle h-2 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${(Math.abs(highestWatermark - currentBalance) / (highestWatermark - maxDrawdownThreshold)) > 0.8 ? 'bg-danger' : 'bg-success'}`}
+                      style={{ width: `${Math.min((Math.abs(highestWatermark - currentBalance) / (highestWatermark - maxDrawdownThreshold)) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-10 text-center flex flex-col items-center justify-center">
+              <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center mb-4 border border-default">
+                <i className="las la-shield-alt text-4xl text-muted"></i>
+              </div>
+              <h3 className="text-xl font-bold text-primary mb-2">No Prop Firm Attached</h3>
+              <p className="text-secondary max-w-md mx-auto">
+                This is a standard account. If you want to track drawdown rules for a challenge, create a new account and select a Prop Firm.
+              </p>
+            </Card>
+          )}
+        </div>
+      )}
+
       {activeTab === "Trading Overview" && (
         <div className="space-y-6">
-          
-          {/* Main Top Metrics (Net P&L, RR, Win Rate, Profit Factor) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <div className="bg-white dark:bg-[#111827] p-5 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl relative overflow-hidden group hover:border-yellow-300 dark:border-slate-700 transition-colors">
-              <h3 className="text-xs text-gray-500 dark:text-slate-400 font-bold tracking-wide uppercase mb-3">Net P&L</h3>
-              <p className={`text-3xl font-extrabold tracking-tight ${overallPnL >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
+            <Card className="p-5">
+              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Net P&L</h3>
+              <p className={`text-3xl font-extrabold tracking-tight ${overallPnL >= 0 ? 'text-success' : 'text-danger'}`}>
                 {overallPnL >= 0 ? '+' : ''}{account.currency === "INR" ? "₹" : "$"}{Math.abs(overallPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-            </div>
+            </Card>
 
-            <div className="bg-white dark:bg-[#111827] p-5 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl relative overflow-hidden group hover:border-yellow-300 dark:border-slate-700 transition-colors">
-              <h3 className="text-xs text-gray-500 dark:text-slate-400 font-bold tracking-wide uppercase mb-3">Average Realized R:R</h3>
-              <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <Card className="p-5 relative overflow-hidden">
+              {!(tier === 'pro' || tier === 'elite') && (
+                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
+                  <i className="las la-lock text-2xl text-primary mb-1"></i>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
+                </div>
+              )}
+              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Average Realized R:R</h3>
+              <p className="text-3xl font-extrabold text-primary tracking-tight">
                 {totalTrades === 0 ? "--" : avgRR.toFixed(2)}
               </p>
-              <div className="w-full bg-[#e5e7eb] dark:bg-slate-800 h-1.5 rounded-full mt-4">
-                <div className={`h-1.5 rounded-full ${totalTrades === 0 ? 'bg-slate-700 w-0' : (avgRR >= 1 ? 'bg-emerald-400 w-2/3' : 'bg-rose-500 w-1/3')}`}></div>
+              <div className="w-full bg-subtle h-1.5 rounded-full mt-4">
+                <div className={`h-1.5 rounded-full ${totalTrades === 0 ? 'bg-muted w-0' : (avgRR >= 1 ? 'bg-success w-2/3' : 'bg-danger w-1/3')}`}></div>
               </div>
-            </div>
+            </Card>
             
-            <div className="bg-white dark:bg-[#111827] p-5 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl relative overflow-hidden group hover:border-yellow-300 dark:border-slate-700 transition-colors">
-              <h3 className="text-xs text-gray-500 dark:text-slate-400 font-bold tracking-wide uppercase mb-3">Win Rate</h3>
-              <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <Card className="p-5 relative overflow-hidden">
+              {!(tier === 'pro' || tier === 'elite') && (
+                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
+                  <i className="las la-lock text-2xl text-primary mb-1"></i>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
+                </div>
+              )}
+              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Win Rate</h3>
+              <p className="text-3xl font-extrabold text-primary tracking-tight">
                 {totalTrades > 0 ? ((winningTrades.length / totalTrades) * 100).toFixed(0) : "--"}%
               </p>
-            </div>
+            </Card>
 
-            <div className="bg-white dark:bg-[#111827] p-5 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl relative overflow-hidden group hover:border-yellow-300 dark:border-slate-700 transition-colors">
-              <h3 className="text-xs text-gray-500 dark:text-slate-400 font-bold tracking-wide uppercase mb-3">Profit Factor</h3>
-              <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <Card className="p-5 relative overflow-hidden">
+              {!(tier === 'pro' || tier === 'elite') && (
+                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
+                  <i className="las la-lock text-2xl text-primary mb-1"></i>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
+                </div>
+              )}
+              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Profit Factor</h3>
+              <p className="text-3xl font-extrabold text-primary tracking-tight">
                 {totalTrades === 0 ? "--" : profitFactor.toFixed(2)}
               </p>
-            </div>
+            </Card>
           </div>
 
-          {/* GFT 4-Column Detailed Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            
-            {/* P&L Statistics */}
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-              <h3 className="text-gray-900 dark:text-white font-bold mb-4">P&L Statistics</h3>
+            <Card className="p-6">
+              <h3 className="text-primary font-bold mb-4">P&L Statistics</h3>
               <div className="space-y-1">
-                <StatRow label="Avg Daily P&L" value={avgDailyPnL} isCurrency colorClass={avgDailyPnL >= 0 ? "text-emerald-400" : "text-rose-500"} />
-                <StatRow label="Avg Trade P&L" value={avgTradePnL} isCurrency colorClass={avgTradePnL >= 0 ? "text-emerald-400" : "text-rose-500"} />
-                <StatRow label="Avg Winning Trade" value={avgWinningTrade} isCurrency colorClass="text-emerald-400" />
-                <StatRow label="Avg Losing Trade" value={avgLosingTrade} isCurrency colorClass="text-rose-500" />
-                <StatRow label="Avg Winning Day" value={avgWinningDay} isCurrency colorClass="text-emerald-400" />
-                <StatRow label="Avg Losing Day" value={avgLosingDay} isCurrency colorClass="text-rose-500" />
+                <StatRow label="Avg Daily P&L" value={avgDailyPnL} isCurrency colorClass={avgDailyPnL >= 0 ? "text-success" : "text-danger"} />
+                <StatRow label="Avg Trade P&L" value={avgTradePnL} isCurrency colorClass={avgTradePnL >= 0 ? "text-success" : "text-danger"} />
+                <StatRow label="Avg Winning Trade" value={avgWinningTrade} isCurrency colorClass="text-success" />
+                <StatRow label="Avg Losing Trade" value={avgLosingTrade} isCurrency colorClass="text-danger" />
+                <StatRow label="Avg Winning Day" value={avgWinningDay} isCurrency colorClass="text-success" />
+                <StatRow label="Avg Losing Day" value={avgLosingDay} isCurrency colorClass="text-danger" />
               </div>
-            </div>
+            </Card>
 
-            {/* Trading Activity */}
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-              <h3 className="text-gray-900 dark:text-white font-bold mb-4">Trading Activity</h3>
+            <Card className="p-6">
+              <h3 className="text-primary font-bold mb-4">Trading Activity</h3>
               <div className="space-y-1">
                 <StatRow label="Total Trades" value={totalTrades} />
-                <StatRow label="Winning Trades" value={winningTrades.length} colorClass="text-emerald-400" />
-                <StatRow label="Losing Trades" value={losingTrades.length} colorClass="text-rose-500" />
+                <StatRow label="Winning Trades" value={winningTrades.length} colorClass="text-success" />
+                <StatRow label="Losing Trades" value={losingTrades.length} colorClass="text-danger" />
                 <StatRow label="Open Trades" value={0} />
                 <StatRow label="Trading Days" value={tradingDaysCount} />
                 <StatRow label="Avg Daily Volume" value={tradingDaysCount > 0 ? (totalVolume / tradingDaysCount).toFixed(2) : "0"} />
               </div>
-            </div>
+            </Card>
 
-            {/* Streaks & Patterns */}
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-              <h3 className="text-gray-900 dark:text-white font-bold mb-4">Streaks & Patterns</h3>
+            <Card className="p-6">
+              <h3 className="text-primary font-bold mb-4">Streaks & Patterns</h3>
               <div className="space-y-1">
-                <StatRow label="Max Win Streak" value={0} colorClass="text-emerald-400" />
-                <StatRow label="Max Loss Streak" value={0} colorClass="text-rose-500" />
-                <StatRow label="Max Winning Days" value={0} colorClass="text-emerald-400" />
-                <StatRow label="Max Losing Days" value={0} colorClass="text-rose-500" />
+                <StatRow label="Max Win Streak" value={0} colorClass="text-success" />
+                <StatRow label="Max Loss Streak" value={0} colorClass="text-danger" />
+                <StatRow label="Max Winning Days" value={0} colorClass="text-success" />
+                <StatRow label="Max Losing Days" value={0} colorClass="text-danger" />
               </div>
-            </div>
+            </Card>
 
-            {/* Costs & Fees */}
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-              <h3 className="text-gray-900 dark:text-white font-bold mb-4">Costs & Fees</h3>
+            <Card className="p-6">
+              <h3 className="text-primary font-bold mb-4">Costs & Fees</h3>
               <div className="space-y-1">
-                <StatRow label="Total Commissions" value={-totalCommissions} isCurrency colorClass="text-rose-500" />
-                <StatRow label="Total Swap" value={0} isCurrency colorClass="text-rose-500" />
+                <StatRow label="Total Commissions" value={-totalCommissions} isCurrency colorClass="text-danger" />
+                <StatRow label="Total Swap" value={0} isCurrency colorClass="text-danger" />
               </div>
-            </div>
-
+            </Card>
           </div>
 
-          <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Daily Net Cumulative P&L</h2>
-            <PnLChart data={equityData} />
-          </div>
+          <Card className="p-6 relative overflow-hidden">
+            {!(tier === 'pro' || tier === 'elite') && (
+              <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6">
+                <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
+                  <i className="las la-lock text-3xl text-primary"></i>
+                </div>
+                <h3 className="text-xl font-black text-primary mb-2">Advanced Charts Locked</h3>
+                <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
+                  Upgrade to Pro or Elite to visualize your equity curve.
+                </p>
+                <Link href="/pricing">
+                  <Button variant="primary">Upgrade Now</Button>
+                </Link>
+              </div>
+            )}
+            <div className={!(tier === 'pro' || tier === 'elite') ? 'opacity-30 pointer-events-none' : ''}>
+              <h2 className="text-lg font-bold text-primary mb-6">Daily Net Cumulative P&L</h2>
+              <PnLChart data={equityData} />
+            </div>
+          </Card>
         </div>
       )}
 
@@ -349,143 +462,91 @@ export default function AccountDetailView() {
         <TradeJournal trades={trades} onDeleteTrade={handleDeleteTrade} onEditTrade={handleEditTrade} />
       )}
 
-      {/* Calendar Tab */}
-      {activeTab === "Calendar" && (
-        <div className="bg-white dark:bg-[#111318] rounded-[24px] border border-yellow-200 dark:border-slate-800 p-8 shadow-2xl mt-6">
-          
-          {/* Header & Monthly Stats */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-yellow-200 dark:border-slate-800/50 pb-8">
-            <div className="flex items-center gap-4">
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-slate-700 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
-                <i className="las la-angle-left text-xl"></i>
-              </button>
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white w-48 text-center">
-                {calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-              </h2>
-              <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-slate-700 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
-                <i className="las la-angle-right text-xl"></i>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Monthly PnL</p>
-                <p className={`text-2xl font-extrabold tracking-tight ${Object.entries(dailyPnL).filter(([dateStr]) => {
-                  const [y, m] = dateStr.split('-');
-                  return parseInt(y) === calendarDate.getFullYear() && parseInt(m) - 1 === calendarDate.getMonth();
-                }).reduce((sum, [_, pnl]) => sum + pnl, 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {Object.entries(dailyPnL).filter(([dateStr]) => {
-                  const [y, m] = dateStr.split('-');
-                  return parseInt(y) === calendarDate.getFullYear() && parseInt(m) - 1 === calendarDate.getMonth();
-                }).reduce((sum, [_, pnl]) => sum + pnl, 0) >= 0 ? '+' : '-'}
-                  ${Math.abs(Object.entries(dailyPnL).filter(([dateStr]) => {
-                  const [y, m] = dateStr.split('-');
-                  return parseInt(y) === calendarDate.getFullYear() && parseInt(m) - 1 === calendarDate.getMonth();
-                }).reduce((sum, [_, pnl]) => sum + pnl, 0)).toFixed(2)}
+      {activeTab === "Psychology" && (
+        <div className="space-y-6">
+          <Card className="p-8 relative overflow-hidden">
+            {!(tier === 'pro' || tier === 'elite') && (
+              <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6">
+                <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
+                  <i className="las la-lock text-3xl text-primary"></i>
+                </div>
+                <h3 className="text-xl font-black text-primary mb-2">Psychology Analytics Locked</h3>
+                <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
+                  Upgrade to Pro or Elite to understand how your emotions and setups impact your P&L.
                 </p>
+                <Link href="/pricing">
+                  <Button variant="primary">Upgrade Now</Button>
+                </Link>
+              </div>
+            )}
+            
+            <div className={!(tier === 'pro' || tier === 'elite') ? 'opacity-30 pointer-events-none' : ''}>
+              <div className="flex items-center gap-3 mb-8">
+                <i className={`las la-brain text-3xl text-[var(--plan-pro)]`}></i>
+                <div>
+                  <h3 className="text-xl font-bold text-primary">Psychology & Setup Analytics</h3>
+                  <p className="text-sm text-secondary">Discover your most profitable emotions and setups</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-primary uppercase tracking-wider text-sm border-b border-subtle pb-2">Net P&L by Emotion</h4>
+                  {(() => {
+                    const emotionPnl: Record<string, number> = {};
+                    trades.forEach(t => {
+                      if (t.emotion) {
+                        emotionPnl[t.emotion] = (emotionPnl[t.emotion] || 0) + (t.profit_loss - (t.commission || 0));
+                      }
+                    });
+                    const sortedEmotions = Object.entries(emotionPnl).sort((a, b) => b[1] - a[1]);
+                    
+                    if (sortedEmotions.length === 0) {
+                      return <p className="text-sm text-secondary">No emotional data logged yet. Add emotions to your trades!</p>
+                    }
+                    
+                    return sortedEmotions.map(([emotion, pnl]) => (
+                      <div key={emotion} className="flex items-center justify-between p-3 bg-elevated rounded-lg border border-default">
+                        <span className="font-bold text-primary">{emotion}</span>
+                        <span className={`font-black ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
+                          {pnl >= 0 ? '+' : ''}{account.currency === 'INR' ? '₹' : '$'}{Math.abs(pnl).toFixed(2)}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-bold text-primary uppercase tracking-wider text-sm border-b border-subtle pb-2">Net P&L by Setup Grade</h4>
+                  {(() => {
+                    const gradePnl: Record<string, number> = {};
+                    trades.forEach(t => {
+                      if (t.setup_grade) {
+                        gradePnl[t.setup_grade] = (gradePnl[t.setup_grade] || 0) + (t.profit_loss - (t.commission || 0));
+                      }
+                    });
+                    const sortedGrades = Object.entries(gradePnl).sort((a, b) => {
+                      const order: Record<string, number> = { "A+": 1, "A": 2, "B": 3, "C": 4 };
+                      return (order[a[0]] || 99) - (order[b[0]] || 99);
+                    });
+                    
+                    if (sortedGrades.length === 0) {
+                      return <p className="text-sm text-secondary">No setup grades logged yet. Grade your setups to see stats!</p>
+                    }
+                    
+                    return sortedGrades.map(([grade, pnl]) => (
+                      <div key={grade} className="flex items-center justify-between p-3 bg-elevated rounded-lg border border-default">
+                        <span className="font-bold text-[var(--plan-pro)] bg-[var(--plan-pro-bg)] px-2 py-0.5 rounded border border-[var(--plan-pro)]/20">{grade}</span>
+                        <span className={`font-black ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
+                          {pnl >= 0 ? '+' : ''}{account.currency === 'INR' ? '₹' : '$'}{Math.abs(pnl).toFixed(2)}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-3 md:gap-5">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{day}</div>
-            ))}
-            
-            {Array.from({ length: new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay() }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-28 bg-[#fafafa] dark:bg-[#0a0f1c]/30 rounded-[16px] border border-yellow-200 dark:border-slate-800/20"></div>
-            ))}
-
-            {Array.from({ length: new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0).getDate() }).map((_, i) => {
-              const day = i + 1;
-              // Format date string to match dailyPnL keys (YYYY-MM-DD)
-              const dateStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const pnl = dailyPnL[dateStr];
-              
-              let bgClass = "bg-gray-50/50 dark:bg-[#111318] border-gray-200 dark:border-slate-800/50";
-              let textClass = "text-gray-400 dark:text-slate-600";
-
-              if (pnl !== undefined) {
-                if (pnl > 0) {
-                  bgClass = "bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.05)] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]";
-                  textClass = "text-emerald-400";
-                } else if (pnl < 0) {
-                  bgClass = "bg-rose-950/20 border-rose-500/40 hover:border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.1)]";
-                  textClass = "text-rose-400";
-                }
-              }
-
-              return (
-                <div key={day} className={`h-28 rounded-[16px] border p-3 flex flex-col justify-between transition-all group ${bgClass}`}>
-                  <div className="flex justify-between items-start">
-                    <span className={`text-sm font-bold ${pnl !== undefined ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{day}</span>
-                  </div>
-                  
-                  {pnl !== undefined && (
-                    <div className="flex flex-col items-end">
-                      <span className={`text-base md:text-lg font-black tracking-tight ${textClass}`}>
-                        {pnl > 0 ? '+' : ''}{pnl.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Account Overview Tab */}
-      {activeTab === "Account Overview" && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl flex flex-col justify-center items-center text-center">
-               <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20">
-                <i className="las la-wallet text-4xl text-blue-500"></i>
-               </div>
-               <h3 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Total Equity</h3>
-               <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                 {account.currency === "INR" ? "₹" : "$"}{currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-               </p>
-               <div className="mt-4 px-4 py-1.5 bg-[#fafafa] dark:bg-[#0a0f1c] rounded-full border border-yellow-200 dark:border-slate-800 text-sm font-bold text-gray-700 dark:text-slate-300">
-                 Started at {account.currency === "INR" ? "₹" : "$"}{initialBalance.toLocaleString()}
-               </div>
-            </div>
-
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl flex flex-col justify-center items-center text-center">
-               <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center mb-4 border border-yellow-500/20">
-                <i className="las la-chart-line text-4xl text-yellow-500"></i>
-               </div>
-               <h3 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Total Return</h3>
-               <p className={`text-4xl font-black tracking-tight ${overallPnL >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
-                 {overallPnL >= 0 ? '+' : ''}{((overallPnL / initialBalance) * 100).toFixed(2)}%
-               </p>
-               <div className="mt-4 px-4 py-1.5 bg-[#fafafa] dark:bg-[#0a0f1c] rounded-full border border-yellow-200 dark:border-slate-800 text-sm font-bold text-gray-700 dark:text-slate-300">
-                 {overallPnL >= 0 ? '+' : ''}{account.currency === "INR" ? "₹" : "$"}{Math.abs(overallPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Profit
-               </div>
-            </div>
-
-            <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl flex flex-col justify-center items-center text-center">
-               <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4 border border-purple-500/20">
-                <i className="las la-chart-pie text-4xl text-purple-500"></i>
-               </div>
-               <h3 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Trade Frequency</h3>
-               <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                 {totalTrades} <span className="text-xl text-gray-400 dark:text-slate-500">trades</span>
-               </p>
-               <div className="mt-4 px-4 py-1.5 bg-[#fafafa] dark:bg-[#0a0f1c] rounded-full border border-yellow-200 dark:border-slate-800 text-sm font-bold text-gray-700 dark:text-slate-300">
-                 {tradingDaysCount} Active Days
-               </div>
-            </div>
-
-          </div>
-
-          <div className="bg-white dark:bg-[#111827] rounded-2xl border border-yellow-200 dark:border-slate-800 p-6 shadow-xl">
-             <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">Recent Activity</h2>
-             <TradeJournal trades={trades.slice(0, 5)} onDeleteTrade={handleDeleteTrade} onEditTrade={handleEditTrade} />
-          </div>
+          </Card>
         </div>
       )}
 
@@ -505,113 +566,6 @@ export default function AccountDetailView() {
         accountCurrency={account.currency as "USD" | "INR"}
         onUpdated={fetchData} 
       />
-
-      {tradeToDelete && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-[#f0f0f0] dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
-            onClick={() => !isDeleting && setTradeToDelete(null)}
-          />
-          <div className="relative w-full max-w-sm bg-white dark:bg-[#111827] border border-yellow-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
-                <i className="las la-trash-alt text-4xl text-rose-500"></i>
-              </div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Trade?</h2>
-              <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">Are you sure you want to delete this trade? This action cannot be undone.</p>
-              
-              <div className="flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setTradeToDelete(null)}
-                  disabled={isDeleting}
-                  className="flex-1 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition-colors rounded-xl bg-[#e5e7eb] dark:bg-slate-800 hover:bg-slate-700 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  onClick={confirmDeleteTrade}
-                  disabled={isDeleting}
-                  className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:bg-rose-600/50 text-gray-900 dark:text-white text-sm font-bold rounded-xl transition shadow-[0_0_15px_rgba(225,29,72,0.2)]"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Credentials Modal */}
-      {isCredentialsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-[#f0f0f0]/90 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
-            onClick={() => setIsCredentialsModalOpen(false)}
-          />
-          <div className="relative w-full max-w-md bg-white dark:bg-[#111827] border border-yellow-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-            <div className="p-6 border-b border-yellow-200 dark:border-slate-800/50 flex justify-between items-center bg-gray-50 dark:bg-gray-950">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <i className="las la-key text-yellow-500 text-2xl"></i> Account Credentials
-              </h2>
-              <button 
-                onClick={() => setIsCredentialsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#e5e7eb] dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                <i className="las la-times"></i>
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1.5">MetaTrader 5 Login</label>
-                <div className="w-full bg-gray-50 dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-mono font-bold flex justify-between items-center group">
-                  <span>{account.mt5_login || "Not provided"}</span>
-                  {account.mt5_login && (
-                    <button onClick={() => { navigator.clipboard.writeText(account.mt5_login!); toast.success("Copied!"); }} className="text-gray-400 dark:text-slate-500 hover:text-blue-500 transition-colors">
-                      <i className="las la-copy text-lg"></i>
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1.5">MetaTrader 5 Server</label>
-                <div className="w-full bg-gray-50 dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-mono font-bold flex justify-between items-center group">
-                  <span>{account.mt5_server || "Not provided"}</span>
-                  {account.mt5_server && (
-                    <button onClick={() => { navigator.clipboard.writeText(account.mt5_server!); toast.success("Copied!"); }} className="text-gray-400 dark:text-slate-500 hover:text-blue-500 transition-colors">
-                      <i className="las la-copy text-lg"></i>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1.5">Investor Password</label>
-                <div className="w-full bg-gray-50 dark:bg-[#0a0f1c] border border-yellow-300 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-mono font-bold flex justify-between items-center group">
-                  <span>{account.investor_password ? "••••••••" : "Not provided"}</span>
-                  {account.investor_password && (
-                    <button onClick={() => { navigator.clipboard.writeText(account.investor_password!); toast.success("Copied!"); }} className="text-gray-400 dark:text-slate-500 hover:text-blue-500 transition-colors">
-                      <i className="las la-copy text-lg"></i>
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              <div className="pt-4 flex justify-end">
-                <button 
-                  onClick={() => setIsCredentialsModalOpen(false)}
-                  className="px-6 py-2.5 bg-[#e5e7eb] dark:bg-slate-800 hover:bg-slate-700 text-gray-700 dark:text-white font-bold rounded-xl transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
