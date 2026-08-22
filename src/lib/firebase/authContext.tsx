@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "./config";
 
 interface AuthContextType {
@@ -26,37 +26,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        // 1. Set user and clear loading IMMEDIATELY — don't wait for Firestore
-        setUser(firebaseUser);
-        setLoading(false);
+    let unsubscribeSnapshot: () => void;
 
-        // 2. Fetch role in background (non-blocking)
-        getDoc(doc(db, "users", firebaseUser.uid))
-          .then((docSnap) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // 1. Set user IMMEDIATELY
+        setUser(firebaseUser);
+
+        // 2. Fetch role and tier using a real-time listener, THEN clear loading
+        unsubscribeSnapshot = onSnapshot(
+          doc(db, "users", firebaseUser.uid),
+          (docSnap) => {
             if (docSnap.exists()) {
-              setRole(docSnap.data().role as "admin" | "user");
-              setTier(docSnap.data().subscription_tier || "free");
+              const data = docSnap.data();
+              setRole(data.role as "admin" | "user");
+              setTier(data.subscription_tier || "free");
             } else {
               setRole("user");
               setTier("free");
             }
-          })
-          .catch(() => {
-            setRole("user"); // default on error
+            // Clear loading only after we have the real tier
+            setLoading(false);
+          },
+          (error) => {
+            console.error("Error listening to user document:", error);
+            setRole("user");
             setTier("free");
-          });
+            setLoading(false);
+          }
+        );
       } else {
         // No user — clear everything and stop loading
         setUser(null);
         setRole(null);
         setTier(null);
         setLoading(false);
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
 
   return (

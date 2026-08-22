@@ -66,6 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Overview", href: "/admin/dashboard", icon: "las la-tachometer-alt" },
         { name: "Users", href: "/admin/users", icon: "las la-users" },
         { name: "Accounts", href: "/admin/accounts", icon: "las la-wallet" },
+        { name: "Transactions", href: "/admin/transactions", icon: "las la-file-invoice-dollar", tag: "NEW" },
         { name: "Trades", href: "/admin/trades", icon: "las la-book-open" },
         { name: "Strategies", href: "/admin/strategies", icon: "las la-chess-knight", tag: "NEW" },
       ]

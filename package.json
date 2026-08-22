@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "firebase": "^12.18.0",
     "imagekit": "^6.0.0",
     "lucide-react": "^1.33.0",
@@ -17,10 +18,12 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hot-toast": "^2.6.0",
+    "react-qr-code": "^2.2.0",
     "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

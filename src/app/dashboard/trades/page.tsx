@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
+import { useTierTheme } from "@/hooks/useTierTheme";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
@@ -10,6 +11,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function GlobalTradesPage() {
   const { user } = useAuth();
+  const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function GlobalTradesPage() {
               placeholder="Search symbols (e.g. XAUUSD)" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 text-sm transition-all"
+              className="w-full bg-white dark:bg-[#111318] border border-gray-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 text-sm transition-all"
             />
           </div>
           
@@ -101,7 +103,7 @@ export default function GlobalTradesPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div className={`border overflow-hidden ${theme.card}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs uppercase text-gray-400 dark:text-slate-500 font-extrabold tracking-wider border-b border-yellow-200 dark:border-slate-800">

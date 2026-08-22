@@ -99,20 +99,24 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 font-sans">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-            <i className="las la-users text-3xl text-blue-500"></i>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white dark:bg-[#111] p-8 md:p-10 rounded-[2rem] shadow-[0_0_30px_rgba(168,85,247,0.05)] border border-purple-100 dark:border-[#523e6b] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i className="las la-shield-alt"></i> Admin Control
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter flex items-center gap-3 mb-2">
+            <i className="las la-users text-purple-500"></i>
             User Management
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm font-medium mt-1">View, edit, or delete registered users.</p>
+          <p className="text-gray-500 dark:text-slate-400 font-medium">View, edit, or delete registered users.</p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-visible">
+      <div className="bg-white dark:bg-[#111318] border border-gray-200 dark:border-white/5 rounded-3xl shadow-xl overflow-visible">
         <div className="overflow-visible">
           <table className="w-full text-left text-sm text-gray-700 dark:text-slate-300">
-            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
+            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-white/5">
               <tr>
                 <th className="px-4 md:px-6 py-4">User</th>
                 <th className="px-4 md:px-6 py-4 hidden md:table-cell">Plan & Limits</th>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
+import { useTierTheme } from "@/hooks/useTierTheme";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { StrategyDoc } from "@/lib/firebase/schema";
@@ -10,6 +11,7 @@ import toast from "react-hot-toast";
 
 export default function StrategiesPage() {
   const { user } = useAuth();
+  const theme = useTierTheme();
   const [strategies, setStrategies] = useState<StrategyDoc[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -234,7 +236,7 @@ export default function StrategiesPage() {
         
         <button 
           onClick={openCreateModal}
-          className="relative z-10 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black text-sm font-black rounded-2xl transition-all shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-105 w-full md:w-auto shrink-0"
+          className={theme.buttonPrimary}
         >
           <i className="las la-plus text-lg"></i>
           Create Strategy
@@ -258,7 +260,7 @@ export default function StrategiesPage() {
           </p>
           <button 
             onClick={openCreateModal}
-            className="px-8 py-4 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-black font-black rounded-2xl transition-all shadow-xl hover:-translate-y-1 w-full sm:w-auto"
+            className={theme.buttonPrimary}
           >
             Draft Your First Strategy
           </button>
@@ -266,7 +268,7 @@ export default function StrategiesPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           {strategies.map(strategy => (
-            <div key={strategy.id} className="bg-white dark:bg-[#111318] rounded-[2.5rem] shadow-sm hover:shadow-2xl border border-gray-100 dark:border-white/5 hover:border-yellow-500/50 transition-all duration-500 group flex flex-col h-full relative overflow-hidden">
+            <div key={strategy.id} className={`${theme.card} group flex flex-col h-full relative`}>
               
               {/* Card Image Header */}
               {strategy.image_url ? (
@@ -349,7 +351,7 @@ export default function StrategiesPage() {
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">
                       Core Rules
                     </h4>
-                    <span className="px-2.5 py-1 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-500 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                    <span className={theme.badge}>
                       {strategy.rules.length} Rules
                     </span>
                   </div>

@@ -10,6 +10,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useTierTheme } from "@/hooks/useTierTheme";
+import UpgradeCelebration from "@/components/ui/UpgradeCelebration";
 
 interface NavItem {
   name: string;
@@ -45,56 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, loading, router, role]);
 
-  const getThemeVars = () => {
-    switch (tier) {
-      case "elite":
-        return {
-          bg: "bg-purple-50 dark:bg-purple-500/10 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-purple-500/10 before:via-fuchsia-500/10 before:to-purple-500/10 before:animate-gradient-x",
-          border: "border-purple-300 dark:border-[#523e6b] shadow-[0_0_15px_rgba(168,85,247,0.1)]",
-          text: "text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-gradient-x drop-shadow-sm",
-          iconText: "text-purple-600 dark:text-purple-400 animate-pulse",
-          activeBg: "bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-gradient-x text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-purple-400/50",
-          activeIcon: "text-white drop-shadow-md",
-          badgeBg: "bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white shadow-lg animate-pulse",
-          activeBadgeBg: "bg-white text-purple-600 shadow-md",
-        };
-      case "pro":
-        return {
-          bg: "bg-yellow-50 dark:bg-yellow-500/10 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-yellow-500/5 before:via-amber-500/10 before:to-yellow-500/5 before:animate-pulse",
-          border: "border-yellow-200 dark:border-[#333022] shadow-[0_0_10px_rgba(234,179,8,0.1)]",
-          text: "text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-amber-600 drop-shadow-sm",
-          iconText: "text-yellow-500 animate-pulse",
-          activeBg: "bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-yellow-400/50",
-          activeIcon: "text-black drop-shadow-md",
-          badgeBg: "bg-gradient-to-r from-yellow-400 to-amber-500 text-black shadow-md",
-          activeBadgeBg: "bg-black text-yellow-500 shadow-sm",
-        };
-      case "starter":
-        return {
-          bg: "bg-blue-50 dark:bg-blue-500/10 transition-colors duration-500",
-          border: "border-blue-200 dark:border-[#1a2838] hover:shadow-[0_0_10px_rgba(59,130,246,0.15)] transition-shadow duration-300",
-          text: "text-blue-600 dark:text-blue-400",
-          iconText: "text-blue-500 group-hover:animate-pulse",
-          activeBg: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.3)] border border-blue-400/30",
-          activeIcon: "text-white",
-          badgeBg: "bg-blue-500 text-white",
-          activeBadgeBg: "bg-white text-blue-600",
-        };
-      default: // free
-        return {
-          bg: "bg-gray-100 dark:bg-white/5 transition-colors duration-300",
-          border: "border-gray-200 dark:border-[#222] hover:border-gray-300 dark:hover:border-[#333] transition-colors",
-          text: "text-gray-600 dark:text-gray-400",
-          iconText: "text-gray-600 dark:text-gray-400",
-          activeBg: "bg-gray-900 dark:bg-white text-white dark:text-black shadow-sm",
-          activeIcon: "text-white dark:text-black",
-          badgeBg: "bg-gray-900 dark:bg-white text-white dark:text-black",
-          activeBadgeBg: "bg-gray-200 dark:bg-[#222] text-black dark:text-white",
-        };
-    }
-  };
-
-  const theme = getThemeVars();
+  const theme = useTierTheme();
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -211,10 +164,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Header/Logo */}
           <div className="pt-8 pb-8 px-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <i className={`las la-shield-alt text-4xl transition-colors duration-300 ${theme.iconText}`}></i>
+              <i className={`las la-shield-alt text-4xl transition-colors duration-300 ${theme.icon}`}></i>
               <div className="flex flex-col leading-tight">
                 <span className="text-gray-900 dark:text-white font-black tracking-widest text-lg transition-colors duration-300">JOURNAL</span>
-                <span className={`${theme.text} font-black text-xs uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"}</span>
+                <UpgradeCelebration tier={tier}>
+                  <span className={`${theme.textHighlight} font-black text-xs uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"}</span>
+                </UpgradeCelebration>
               </div>
             </div>
             <button className="md:hidden text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-gray-900 dark:text-white" onClick={() => setIsMobileMenuOpen(false)}>
@@ -237,24 +192,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         key={item.name} 
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`group flex items-center justify-between px-4 py-3 rounded-full transition-all duration-200 text-[15px] font-bold ${
+                        className={`group flex items-center justify-between px-4 py-3 text-sm transition-all duration-300 ${
                           isActive 
-                            ? theme.activeBg
-                            : "text-gray-700 dark:text-slate-300 hover:bg-[#f5f5f5] dark:bg-[#1a1a1a] hover:text-gray-900 dark:text-white"
+                            ? theme.sidebarActive 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 mx-2 rounded-xl'
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <i className={`${item.icon} text-[22px] ${isActive ? theme.activeIcon : "text-gray-500 dark:text-slate-400 group-hover:text-gray-900 dark:text-white transition-colors"}`}></i>
+                          <i className={`${item.icon} text-[22px] ${isActive ? theme.icon : "text-gray-500 dark:text-slate-400 group-hover:text-gray-900 dark:text-white transition-colors"}`}></i>
                           {item.name}
                         </div>
                         
                         {item.badge && (
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${isActive ? theme.activeBadgeBg : theme.badgeBg}`}>
+                          <div className={theme.badge}>
                             {item.badge}
                           </div>
                         )}
                         {item.tag && (
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wider ${isActive ? theme.activeBadgeBg : theme.badgeBg}`}>
+                          <span className={theme.badge}>
                             {item.tag}
                           </span>
                         )}
@@ -317,7 +272,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <i className="las la-pen text-gray-400 opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
                   </div>
                 )}
-                <div className={`text-xs font-black truncate uppercase tracking-widest ${theme.text}`}>
+                <div className={`text-xs font-black truncate uppercase tracking-widest ${theme.textHighlight}`}>
                   {tier ? tier : "FREE TIER"}
                 </div>
               </div>
@@ -358,14 +313,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-            {/* Upgrade Banner - Only show if not Elite */}
-            {tier !== 'elite' && (
-              <div className={`mt-4 rounded-xl p-3 border border-gray-100 dark:border-white/5 flex items-center justify-between ${theme.bg}`}>
+            {/* Upgrade Banner - Only show if free */}
+            {(tier === 'free' || !tier) && (
+              <div className={`m-4 rounded-xl p-3 border border-gray-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-white/5`}>
                 <div>
                   <h5 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest mb-0.5">Upgrade Plan</h5>
                   <p className="text-[9px] text-gray-500 dark:text-slate-400 font-medium">Unlock more features</p>
                 </div>
-                <Link href="/pricing" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm ${theme.badgeBg}`}>
+                <Link href="/pricing" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm ${theme.badge}`}>
                   <i className="las la-arrow-right"></i>
                 </Link>
               </div>

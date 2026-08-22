@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
+import { useTierTheme } from "@/hooks/useTierTheme";
 import { db } from "@/lib/firebase/config";
 import { collection, addDoc, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { provisionMetaApiAccount } from "@/app/actions/mt5Actions";
@@ -12,6 +13,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const theme = useTierTheme();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [isFetchingAccounts, setIsFetchingAccounts] = useState(true);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
@@ -126,7 +128,7 @@ export default function UserDashboard() {
 
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-black text-sm font-bold rounded-lg shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all shrink-0"
+            className={theme.buttonPrimary}
           >
             <i className="las la-plus text-[16px]"></i>
             Add
@@ -156,7 +158,7 @@ export default function UserDashboard() {
           accounts.map(account => (
             <div 
               key={account.id} 
-              className={`group relative bg-white dark:bg-[#111318] rounded-[20px] p-6 flex flex-col justify-between transition-all overflow-hidden border-2 ${account.account_type === "real" ? "border-emerald-900/50 hover:border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.02)] hover:shadow-[0_0_30px_rgba(16,185,129,0.08)]" : "border-blue-900/50 hover:border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.02)] hover:shadow-[0_0_30px_rgba(59,130,246,0.08)]"}`}
+              className={`group relative p-6 flex flex-col justify-between transition-all overflow-hidden border ${theme.card}`}
             >
               <div>
                 {/* Header */}
@@ -226,7 +228,7 @@ export default function UserDashboard() {
                       icon: 'ℹ️',
                     });
                   }}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 dark:bg-[#252830] hover:bg-gray-200 dark:hover:bg-[#2c3038] text-gray-900 dark:text-white text-[13px] font-bold rounded-[10px] transition-colors"
+                  className={theme.buttonSecondary}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   Credentials
@@ -234,7 +236,7 @@ export default function UserDashboard() {
                 
                 <Link 
                   href={`/dashboard/accounts/${account.id}`}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black text-[13px] font-extrabold rounded-[10px] transition-all"
+                  className={theme.buttonPrimary}
                 >
                   <i className="las la-eye text-[16px]"></i>
                   View Dashboard
@@ -299,7 +301,7 @@ export default function UserDashboard() {
 
               <div className="pt-2 flex justify-end gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors rounded-lg hover:bg-[#e5e7eb] dark:bg-slate-800">Cancel</button>
-                <button type="submit" disabled={isCreatingAccount} className="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 disabled:opacity-50 text-black px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                <button type="submit" disabled={isCreatingAccount} className={theme.buttonPrimary}>
                   {isCreatingAccount ? "Creating..." : "Create Account"}
                 </button>
               </div>

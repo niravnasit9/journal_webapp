@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase/config";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import QRCode from "react-qr-code";
 
 const planDetails: Record<string, { name: string, monthly: number, yearly: number }> = {
   starter: { name: "Starter Plan", monthly: 15, yearly: 144 },
@@ -23,11 +24,12 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(initialBilling as "monthly" | "yearly");
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "stripe" | "crypto">("card");
   const [selectedCryptoId, setSelectedCryptoId] = useState<string>("USDT_TRC20");
   const [isProcessing, setIsProcessing] = useState(false);
   const [cryptoInvoiceActive, setCryptoInvoiceActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour for crypto payment
+  const [txid, setTxid] = useState("");
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes for crypto payment
 
   const plan = planDetails[tier as string];
 
@@ -60,32 +62,47 @@ export default function CheckoutPage() {
   const amount = billingCycle === "yearly" ? plan.yearly : plan.monthly;
 
   const handleCheckout = async () => {
-    if (paymentMethod === "crypto" && !cryptoInvoiceActive) {
+    if (!cryptoInvoiceActive) {
       setCryptoInvoiceActive(true);
       return;
     }
 
-    setIsProcessing(true);
-    
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    if (cryptoInvoiceActive) {
+      if (!txid || txid.trim().length < 10) {
+        setVerificationError("Please enter a valid Transaction Hash (TxID)");
+        return;
+      }
 
-    try {
-      // Mock successful payment - update user doc
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        subscription_tier: tier,
-        subscription_status: "active",
-        subscription_billing: billingCycle
-      });
+      setIsProcessing(true);
+      setVerificationError(null);
+      try {
+        const response = await fetch('/api/checkout/verify-crypto', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: user.uid,
+            txid: txid.trim(),
+            tier: tier,
+            cryptoId: selectedCryptoId,
+            billingCycle: billingCycle
+          })
+        });
 
-      toast.success(`Successfully subscribed to ${plan.name}!`);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Payment failed", error);
-      toast.error("Payment processing failed. Please try again.");
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || "Payment verification failed");
+        }
+
+        toast.success(`Successfully subscribed to ${plan.name}!`);
+        router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Payment verification failed", error);
+      setVerificationError(error.message || "Payment verification failed. Please try again.");
+    } finally {
       setIsProcessing(false);
     }
+    } // closes if (cryptoInvoiceActive)
   };
 
   const formatTime = (seconds: number) => {
@@ -108,6 +125,46 @@ export default function CheckoutPage() {
 
   const selectedCrypto = cryptoOptions.find(c => c.id === selectedCryptoId)!;
   const cryptoAmount = (amount * selectedCrypto.rate).toFixed(selectedCrypto.symbol.startsWith('USD') ? 2 : 6);
+
+  const getCryptoURI = (crypto: typeof cryptoOptions[0], overrideAmount?: string) => {
+    const address = crypto.depositAddress;
+    const amountToUse = overrideAmount || cryptoAmount;
+    
+    // Helper to format amount to smallest unit (e.g. Wei) without floating point issues
+    const toSmallestUnit = (amtStr: string, decimals: number) => {
+      let [whole, fraction = ""] = amtStr.split(".");
+      fraction = fraction.padEnd(decimals, "0").substring(0, decimals);
+      return (whole + fraction).replace(/^0+/, '') || '0';
+    };
+
+    // TRON network
+    if (crypto.network === 'TRC20') {
+      return `tron:${address}?amount=${amountToUse}`;
+    }
+    
+    // EVM Networks (ERC20 / BEP20)
+    // For tokens, we use the contract transfer method. Trust Wallet sometimes ignores uint256, 
+    // so we pass multiple amount fallbacks (uint256, value) to force it to autofill.
+    if (crypto.network === 'BEP20') {
+      const val18 = toSmallestUnit(amountToUse, 18);
+      if (crypto.symbol === 'USDT') return `ethereum:0x55d398326f99059fF775485246999027B3197955@56/transfer?address=${address}&uint256=${val18}&value=${val18}`;
+      if (crypto.symbol === 'USDC') return `ethereum:0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d@56/transfer?address=${address}&uint256=${val18}&value=${val18}`;
+      if (crypto.symbol === 'BNB') return `ethereum:${address}@56?value=${val18}`;
+    }
+    
+    if (crypto.network === 'ERC20') {
+      const val6 = toSmallestUnit(amountToUse, 6);
+      const val18 = toSmallestUnit(amountToUse, 18);
+      if (crypto.symbol === 'USDT') return `ethereum:0xdAC17F958D2ee523a2206206994597C13D831ec7@1/transfer?address=${address}&uint256=${val6}&value=${val6}`;
+      if (crypto.symbol === 'USDC') return `ethereum:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48@1/transfer?address=${address}&uint256=${val6}&value=${val6}`;
+      if (crypto.symbol === 'ETH') return `ethereum:${address}@1?value=${val18}`;
+    }
+    
+    // Bitcoin uses standard BIP21
+    if (crypto.symbol === 'BTC') return `bitcoin:${address}?amount=${amountToUse}`;
+    
+    return address;
+  };
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050810] font-sans relative overflow-x-hidden selection:bg-indigo-500/30">
@@ -135,119 +192,17 @@ export default function CheckoutPage() {
           <div className="space-y-6">
             {!cryptoInvoiceActive ? (
               <>
-                {/* Payment Method Selector */}
-                <div className="grid grid-cols-3 gap-4">
-                  <button 
-                    onClick={() => setPaymentMethod("card")}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                      paymentMethod === "card" 
-                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-md" 
-                        : "border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-white/20"
-                    }`}
-                  >
-                    <i className="las la-credit-card text-2xl"></i>
-                    <span className="text-xs font-black uppercase tracking-widest">Card</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => setPaymentMethod("stripe")}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                      paymentMethod === "stripe" 
-                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-md" 
-                        : "border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-white/20"
-                    }`}
-                  >
-                    <i className="lab la-stripe text-2xl"></i>
-                    <span className="text-xs font-black uppercase tracking-widest">Stripe</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => setPaymentMethod("crypto")}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                      paymentMethod === "crypto" 
-                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-md" 
-                        : "border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:hover:border-white/20"
-                    }`}
-                  >
-                    <i className="lab la-bitcoin text-2xl"></i>
-                    <span className="text-xs font-black uppercase tracking-widest">Crypto</span>
-                  </button>
-                </div>
-
                 {/* Dynamic Payment Details UI */}
                 <div className="bg-white/60 dark:bg-[#111318]/60 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[24px] p-6 shadow-xl min-h-[250px]">
-              
-              {paymentMethod === "card" && (
-                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                  <div>
-                    <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">Card Information</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i className="las la-credit-card text-gray-400 text-lg"></i>
-                      </div>
-                      <input 
-                        type="text" 
-                        placeholder="0000 0000 0000 0000" 
-                        className="w-full pl-12 pr-4 py-3 bg-white dark:bg-[#0a0f1c] border border-gray-200 dark:border-[#2a2f3a] rounded-xl text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">Expiry Date</label>
-                      <input 
-                        type="text" 
-                        placeholder="MM/YY" 
-                        className="w-full px-4 py-3 bg-white dark:bg-[#0a0f1c] border border-gray-200 dark:border-[#2a2f3a] rounded-xl text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">CVC</label>
-                      <div className="relative">
-                        <input 
-                          type="text" 
-                          placeholder="123" 
-                          className="w-full px-4 py-3 bg-white dark:bg-[#0a0f1c] border border-gray-200 dark:border-[#2a2f3a] rounded-xl text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                        />
-                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                          <i className="las la-lock text-gray-400"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">Name on Card</label>
-                    <input 
-                      type="text" 
-                      placeholder="John Doe" 
-                      className="w-full px-4 py-3 bg-white dark:bg-[#0a0f1c] border border-gray-200 dark:border-[#2a2f3a] rounded-xl text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === "stripe" && (
-                <div className="flex flex-col items-center justify-center py-10 animate-in fade-in zoom-in-95 duration-300 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-[#635BFF]/10 text-[#635BFF] flex items-center justify-center mb-4">
-                    <i className="lab la-stripe text-4xl"></i>
-                  </div>
-                  <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">Checkout with Stripe</h3>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium max-w-[250px]">
-                    You will be redirected to the secure Stripe checkout portal to complete your purchase.
-                  </p>
-                </div>
-              )}
-
-              {paymentMethod === "crypto" && (
-                <div className="flex flex-col items-center justify-center py-6 animate-in fade-in zoom-in-95 duration-300 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4">
-                    <i className="lab la-bitcoin text-4xl"></i>
-                  </div>
-                  <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">Pay with Crypto</h3>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium max-w-[280px] mb-6">
-                    Select a cryptocurrency below. An exact deposit address will be generated on the next step.
-                  </p>
                   
+                  <div className="flex flex-col items-center justify-center py-2 animate-in fade-in zoom-in-95 duration-300 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-4">
+                      <i className="las la-wallet text-4xl"></i>
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Select Cryptocurrency</h3>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 font-medium max-w-[320px] mb-8">
+                      Choose your preferred network and coin. A unique deposit address will be generated on the next step.
+                    </p>
                   <div className="flex flex-col gap-3 w-full max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     {cryptoOptions.map(coin => (
                       <button
@@ -285,9 +240,8 @@ export default function CheckoutPage() {
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-            </>
+              </div>
+              </>
             ) : (
               /* CRYPTO INVOICE STATE */
               <div className="bg-white dark:bg-[#111318] border border-gray-200 dark:border-slate-800 rounded-[24px] overflow-hidden shadow-2xl animate-in slide-in-from-right-8 duration-500">
@@ -305,9 +259,34 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="p-6 md:p-8 flex flex-col items-center text-center">
-                  <div className="mb-6 w-48 h-48 bg-white p-2 rounded-2xl shadow-md border border-gray-200">
-                    {/* Mock QR Code - In production replace with real generator or static images */}
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${selectedCrypto.depositAddress}`} alt="QR Code" className="w-full h-full opacity-90" />
+                  
+                  {verificationError && (
+                    <div className="w-full bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl p-4 flex items-start gap-3 text-left mb-6 animate-in zoom-in-95 duration-300 shadow-sm shadow-rose-500/10">
+                      <i className="las la-times-circle text-rose-500 text-xl shrink-0 mt-0.5"></i>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-rose-800 dark:text-rose-300 mb-1">Verification Failed</h4>
+                        <p className="text-xs text-rose-700 dark:text-rose-400 font-medium leading-relaxed">
+                          {verificationError}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warning Message at Top */}
+                  <div className="w-full bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl p-4 flex items-start gap-3 text-left mb-6">
+                    <i className="las la-exclamation-triangle text-rose-500 text-xl shrink-0 mt-0.5"></i>
+                    <p className="text-xs text-rose-700 dark:text-rose-400 font-bold leading-relaxed">
+                      Only send {selectedCrypto.name} ({selectedCrypto.network}) assets to this address. Other assets will be lost forever.
+                    </p>
+                  </div>
+
+                  <div className="mb-6 w-48 h-48 bg-white p-3 rounded-2xl shadow-md border border-gray-200 flex items-center justify-center">
+                    <QRCode 
+                      value={getCryptoURI(selectedCrypto)} 
+                      size={164}
+                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                      viewBox={`0 0 164 164`}
+                    />
                   </div>
 
                   <h3 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-1">Amount to Send</h3>
@@ -338,12 +317,25 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="w-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 flex items-start gap-3 text-left">
+                  <div className="w-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 flex items-start gap-3 text-left mb-6">
                     <i className="las la-info-circle text-blue-500 text-xl shrink-0 mt-0.5"></i>
                     <p className="text-xs text-blue-600 dark:text-blue-400 font-medium leading-relaxed">
-                      Send exactly <strong>{cryptoAmount} {selectedCrypto.symbol}</strong> to the address above over the <strong>{selectedCrypto.network}</strong> network. Sending via a different network may result in loss of funds.
+                      Send exactly <strong>{cryptoAmount} {selectedCrypto.symbol}</strong> to the address above over the <strong>{selectedCrypto.network}</strong> network.
                     </p>
                   </div>
+
+                  <h3 className="text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Verify Payment</h3>
+                  
+                  <div className="w-full relative mb-12">
+                    <input 
+                      type="text" 
+                      placeholder="Paste your Transaction Hash (TxID) here" 
+                      value={txid}
+                      onChange={(e) => setTxid(e.target.value)}
+                      className="w-full bg-white dark:bg-[#0a0f1c] border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all placeholder:font-sans placeholder:text-gray-400"
+                    />
+                  </div>
+
                 </div>
               </div>
             )}
@@ -362,13 +354,9 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   {cryptoInvoiceActive 
-                    ? "I have made the payment" 
-                    : paymentMethod === "stripe" 
-                      ? "Proceed to Stripe" 
-                      : paymentMethod === "crypto" 
-                        ? "Generate Invoice" 
-                        : `Pay $${amount}`}
-                  <i className={cryptoInvoiceActive ? "las la-check text-lg" : "las la-arrow-right text-lg"}></i>
+                    ? "Verify Payment & Subscribe" 
+                    : "Generate Invoice"}
+                  <i className={cryptoInvoiceActive ? "las la-check-circle text-lg" : "las la-arrow-right text-lg"}></i>
                 </>
               )}
             </button>
