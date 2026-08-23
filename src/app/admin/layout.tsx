@@ -31,6 +31,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     if (!loading && !user) {
       document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       router.push("/login");
@@ -122,7 +131,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex-1 overflow-y-auto no-scrollbar pb-6 flex flex-col">
           
           <div className="pt-8 pb-6 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link href="/admin/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
               <div className="w-10 h-10 rounded-xl bg-info-bg border border-info/20 flex items-center justify-center shrink-0">
                 <i className="las la-user-shield text-xl text-info"></i>
               </div>
@@ -132,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </h1>
                 <p className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">Admin Panel</p>
               </div>
-            </div>
+            </Link>
             
             <button 
               className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-elevated text-secondary hover:text-primary border border-default"
@@ -215,14 +224,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Mobile Header Topbar */}
         <div className="md:hidden sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-subtle px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/admin/dashboard" className="flex items-center gap-2">
              <div className="w-8 h-8 rounded-lg bg-info flex items-center justify-center text-inverse">
                 <i className="las la-user-shield text-sm"></i>
               </div>
               <h1 className="text-lg font-bold text-primary tracking-tighter leading-none">
                 ADMIN<span className="text-info">PANEL</span>
               </h1>
-          </div>
+          </Link>
           <button 
             className="w-10 h-10 flex items-center justify-center rounded-xl bg-elevated text-secondary hover:text-primary border border-default"
             onClick={() => setIsMobileMenuOpen(true)}

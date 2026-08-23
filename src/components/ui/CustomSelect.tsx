@@ -37,14 +37,14 @@ export default function CustomSelect({ options, value, onChange, className = "",
       
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg ${icon ? 'pl-9' : 'pl-4'} pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 text-sm transition-all cursor-pointer flex justify-between items-center`}
+        className={`w-full min-h-[44px] bg-[#fafafa] dark:bg-[#0a0f1c] border border-gray-200 dark:border-slate-800 rounded-lg ${icon ? 'pl-9' : 'pl-4'} pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 hover:border-gray-300 dark:hover:border-slate-700 text-sm transition-all cursor-pointer flex justify-between items-center`}
       >
         <span className="truncate">{selectedOption?.label}</span>
         <i className={`las la-angle-down text-[12px] absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-[#111318] border border-gray-200 dark:border-slate-800 rounded-xl shadow-2xl py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-200 max-h-60 overflow-y-auto custom-scrollbar">
+        <div className="absolute z-[9999] mt-1 w-full bg-white dark:bg-[#111318] border border-gray-200 dark:border-slate-800 rounded-xl shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100 max-h-60 overflow-y-auto custom-scrollbar">
           {options.map((option) => (
             <div
               key={option.value}
@@ -52,9 +52,9 @@ export default function CustomSelect({ options, value, onChange, className = "",
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+              className={`px-4 py-3 min-h-[44px] flex items-center text-sm cursor-pointer transition-colors ${
                 value === option.value 
-                  ? 'bg-yellow-50 dark:bg-[#1f2229] text-yellow-600 dark:text-yellow-500 font-bold' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold' 
                   : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]'
               }`}
             >

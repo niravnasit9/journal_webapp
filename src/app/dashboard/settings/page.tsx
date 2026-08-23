@@ -6,8 +6,11 @@ import { auth, db } from "@/lib/firebase/config";
 import { updatePassword } from "firebase/auth";
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, writeBatch } from "firebase/firestore";
 import toast from "react-hot-toast";
+import Link from "next/link";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useTierTheme } from "@/hooks/useTierTheme";
+import { useTierAccess } from "@/hooks/useTierAccess";
+import { getPricingPlanList } from "@/lib/pricingConfig";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -15,6 +18,10 @@ import { Input } from "@/components/ui/Input";
 export default function SettingsPage() {
   const { user } = useAuth();
   const theme = useTierTheme();
+  const { activeTierKey } = useTierAccess();
+  
+  const pricingPlans = getPricingPlanList();
+  const currentPlan = pricingPlans.find(p => p.id === activeTierKey) || pricingPlans[0];
   
   // Profile State
   const [name, setName] = useState("");
@@ -234,7 +241,51 @@ export default function SettingsPage() {
           </Card>
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-8">
+          {/* Billing & Subscription */}
+          <Card className="shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-subtle">
+              <h2 className="text-lg font-bold text-primary flex items-center gap-2 tracking-tight">
+                <i className="las la-credit-card text-xl text-info"></i>
+                Billing & Subscription
+              </h2>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="bg-base border border-default rounded-xl p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Current Plan</p>
+                    <h3 className="text-xl font-black text-primary capitalize">{currentPlan.name}</h3>
+                  </div>
+                  <div className="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <i className="las la-check-circle"></i> Active
+                  </div>
+                </div>
+                
+                <div className="space-y-2 mt-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-secondary font-medium">Price:</span>
+                    <span className="text-primary font-bold">
+                      {currentPlan.priceMonthly === 0 ? "Free" : `$${currentPlan.priceMonthly}/mo`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary font-medium">Next Billing:</span>
+                    <span className="text-primary font-bold">—</span> {/* To be driven by backend */}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Link href="/pricing" className="w-full flex items-center justify-center py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-sm text-sm">
+                  Upgrade Plan
+                </Link>
+                {/* Note: "Cancel" button is omitted here deliberately unless a billing portal integration is active */}
+              </div>
+            </div>
+          </Card>
+
           <Card className="border-danger shadow-sm overflow-hidden bg-danger-bg/50">
             <div className="p-6 border-b border-danger/20">
               <h2 className="text-lg font-bold text-danger flex items-center gap-2 tracking-tight">

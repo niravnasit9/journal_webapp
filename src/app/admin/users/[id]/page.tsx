@@ -21,6 +21,8 @@ export default function AdminUserDetailPage() {
   const [loading, setLoading] = useState(true);
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, accountId: string}>({isOpen: false, accountId: ""});
 
+  const [activeTab, setActiveTab] = useState<"Profile" | "Subscription" | "Accounts" | "Trades" | "Transactions">("Profile");
+
   // Edit User State
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
@@ -156,10 +158,27 @@ export default function AdminUserDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex border-b border-subtle mb-6 overflow-x-auto no-scrollbar">
+        {["Profile", "Subscription", "Accounts", "Trades", "Transactions"].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as any)}
+            className={`px-6 py-3 font-bold text-sm tracking-widest uppercase transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === tab 
+                ? "border-info text-info bg-info/5" 
+                : "border-transparent text-secondary hover:text-primary hover:border-subtle"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
         
-        {/* User Profile Card */}
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl self-start space-y-6">
+        {/* User Profile Tab */}
+        {activeTab === "Profile" && (
+          <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-yellow-200 dark:border-slate-800 shadow-xl self-start space-y-6 max-w-2xl">
           <div className="flex items-center gap-4 border-b border-yellow-200 dark:border-slate-800 pb-6">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center border border-yellow-300 dark:border-slate-700">
               <span className="text-2xl font-black text-gray-900 dark:text-white">{userDoc.email.charAt(0).toUpperCase()}</span>
@@ -222,9 +241,36 @@ export default function AdminUserDetailPage() {
                {userDoc.uid}
              </code>
           </div>
-        </div>
+         </div>
+        )}
+
+        {/* Other Tabs placeholders */}
+        {activeTab === "Subscription" && (
+          <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 text-center">
+            <i className="las la-crown text-4xl mb-2"></i>
+            <p className="font-bold">Subscription Info</p>
+            <p className="text-sm">Tier: {userDoc.subscription_tier || (userDoc as any).tier || "Free"}</p>
+          </div>
+        )}
+
+        {activeTab === "Trades" && (
+          <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 text-center">
+            <i className="las la-chart-bar text-4xl mb-2"></i>
+            <p className="font-bold">User Trades</p>
+            <p className="text-sm">Trade history will be rendered here.</p>
+          </div>
+        )}
+
+        {activeTab === "Transactions" && (
+          <div className="bg-white dark:bg-[#111318] border border-yellow-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 text-center">
+            <i className="las la-receipt text-4xl mb-2"></i>
+            <p className="font-bold">Transaction History</p>
+            <p className="text-sm">Invoices and payments will be rendered here.</p>
+          </div>
+        )}
 
         {/* User's Accounts List */}
+        {activeTab === "Accounts" && (
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <i className="las la-wallet text-2xl text-blue-500"></i>
@@ -329,6 +375,7 @@ export default function AdminUserDetailPage() {
             </div>
           )}
         </div>
+        )}
 
       </div>
       <ConfirmModal

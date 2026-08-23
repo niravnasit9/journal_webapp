@@ -37,13 +37,13 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      router.push("/dashboard");
+    if (!authLoading && user && !loading) {
+      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, role, loading]);
 
   if (authLoading) {
     return (
@@ -103,10 +103,9 @@ export default function LoginPage() {
       // Set session cookie (httpOnly not available on client, but we keep it short-lived)
       document.cookie = `userRole=${role}; path=/; max-age=86400; SameSite=Strict`;
 
-      router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
+      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
-    } finally {
       setLoading(false);
     }
   };

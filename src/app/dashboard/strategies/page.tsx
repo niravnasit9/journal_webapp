@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { useTierTheme } from "@/hooks/useTierTheme";
+import { useTierAccess } from "@/hooks/useTierAccess";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { StrategyDoc } from "@/lib/firebase/schema";
@@ -12,6 +13,8 @@ import toast from "react-hot-toast";
 export default function StrategiesPage() {
   const { user } = useAuth();
   const theme = useTierTheme();
+  const { maxStrategies, hasReachedLimit } = useTierAccess();
+  
   const [strategies, setStrategies] = useState<StrategyDoc[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -218,7 +221,7 @@ export default function StrategiesPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto font-sans pb-24 px-4 sm:px-6 lg:px-8 pt-8">
       
-      {/* Premium Header */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white dark:bg-[#111318] p-8 md:p-10 rounded-[2rem] shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
         
@@ -234,13 +237,27 @@ export default function StrategiesPage() {
           </p>
         </div>
         
-        <button 
-          onClick={openCreateModal}
-          className={theme.buttonPrimary}
-        >
-          <i className="las la-plus text-lg"></i>
-          Create Strategy
-        </button>
+        <div className="flex flex-col items-end gap-2 relative z-10">
+          <button 
+            onClick={openCreateModal}
+            disabled={hasReachedLimit(strategies.length, 'maxStrategies')}
+            className={`${theme.buttonPrimary} disabled:opacity-50 disabled:cursor-not-allowed group relative`}
+          >
+            <i className="las la-plus text-lg"></i>
+            Create Strategy
+            {hasReachedLimit(strategies.length, 'maxStrategies') && (
+              <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 w-64 bg-slate-900 text-white text-xs p-3 rounded-lg shadow-xl z-50">
+                You have reached your plan limit of {maxStrategies} strategies. Upgrade to Pro for unlimited strategies!
+              </div>
+            )}
+          </button>
+          
+          {hasReachedLimit(strategies.length, 'maxStrategies') && (
+            <p className="text-xs text-amber-500 font-bold flex items-center gap-1">
+              <i className="las la-lock"></i> Plan limit reached ({maxStrategies}/{maxStrategies})
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Main Grid */}

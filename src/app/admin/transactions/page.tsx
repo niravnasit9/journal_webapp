@@ -206,7 +206,7 @@ export default function TransactionsAdminPage() {
                 </tr>
               ) : (
                 filteredTx.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-elevated transition-colors group">
+                  <tr key={tx.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-primary">
                         {formatDate(tx.processedAt)}
@@ -218,7 +218,7 @@ export default function TransactionsAdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-medium text-primary bg-elevated px-2.5 py-1 rounded-lg border border-default">
+                        <span className="font-mono text-sm text-slate-500 bg-elevated px-2.5 py-1 rounded-lg border border-default">
                           {truncate(tx.id, 16)}
                         </span>
                         <button 
@@ -251,7 +251,7 @@ export default function TransactionsAdminPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-base font-bold text-success">
+                      <div className="text-base font-medium text-success">
                         ${tx.amountUsd}
                       </div>
                       <div className="text-xs font-bold text-muted mt-1 uppercase tracking-wider">
@@ -276,43 +276,42 @@ export default function TransactionsAdminPage() {
         </div>
       </Card>
 
-      {/* Transaction Details Premium Modal */}
+      {/* Transaction Detail Drawer */}
       {selectedTx && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <Card className="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            
-            <div className="p-6 border-b border-subtle flex justify-between items-center bg-elevated">
-              <h2 className="text-xl font-bold text-primary flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-info-bg border border-info/20 flex items-center justify-center text-info">
-                  <i className="las la-receipt text-2xl"></i>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            className="absolute inset-y-0 right-0 w-full max-w-xl bg-surface border-l border-subtle shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+          >
+            {/* Drawer Header */}
+            <div className="flex justify-between items-center p-6 border-b border-subtle bg-base">
+              <h2 className="text-lg font-bold text-primary flex items-center gap-3">
+                <div className="w-10 h-10 bg-info-bg text-info rounded-xl flex items-center justify-center border border-info/20">
+                  <i className="las la-file-invoice text-xl"></i>
                 </div>
-                Digital Receipt
+                Transaction Details
               </h2>
               <button 
-                onClick={() => { setSelectedTx(null); setIsEditing(false); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface hover:bg-elevated text-muted hover:text-primary transition-colors border border-default"
+                onClick={() => setSelectedTx(null)}
+                className="w-10 h-10 bg-elevated hover:bg-subtle text-secondary hover:text-primary transition-colors rounded-full flex items-center justify-center"
               >
                 <i className="las la-times text-xl"></i>
               </button>
             </div>
-            
-            <div className="p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-elevated p-4 rounded-xl border border-default">
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Transaction Hash</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-xs font-bold text-primary break-all">{selectedTx.id}</p>
-                      <button onClick={() => copyToClipboard(selectedTx.id)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface text-muted hover:text-info border border-default shrink-0 transition-colors"><i className="las la-copy text-lg"></i></button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-elevated p-4 rounded-xl border border-default">
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">User ID</p>
+
+            {/* Drawer Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+                  <i className="las la-user text-info text-lg"></i> User Info
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">User ID</p>
                     <p className="font-mono text-sm text-primary">{selectedTx.uid}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Plan Tier</p>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Plan Tier</p>
                     {isEditing ? (
                       <select 
                         value={editData.tier || 'free'}
@@ -329,31 +328,39 @@ export default function TransactionsAdminPage() {
                     )}
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-4">
-                  <div className="bg-elevated p-4 rounded-xl border border-default">
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Network / Token</p>
-                    <p className="text-sm font-bold text-primary">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
-                  </div>
-                  
-                  <div className="bg-success-bg p-4 rounded-xl border border-success/20">
-                    <p className="text-[10px] font-bold text-success uppercase tracking-widest mb-1.5">Amount Verified</p>
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+                  <i className="las la-wallet text-info text-lg"></i> Payment Info
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Amount Verified</p>
                     {isEditing ? (
                       <input 
                         type="number"
                         value={editData.amountUsd !== undefined ? editData.amountUsd : ''}
                         onChange={e => setEditData(prev => ({...prev, amountUsd: Number(e.target.value)}))}
-                        className="w-full bg-surface border border-success/30 rounded-lg px-3 py-2 text-lg font-bold focus:outline-none focus:ring-1 focus:ring-success text-success mt-1"
+                        className="w-full bg-surface border border-default rounded-lg px-3 py-2 text-lg font-bold focus:outline-none focus:ring-1 focus:ring-success text-success"
                         placeholder="0.00"
                       />
                     ) : (
-                      <p className="text-2xl font-bold text-success">${selectedTx.amountUsd} USD</p>
+                      <p className="text-xl font-medium text-success">${selectedTx.amountUsd} USD</p>
                     )}
-                    <p className="text-xs font-bold text-success/70 mt-1">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
                   </div>
-                  
                   <div>
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Status</p>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Crypto Received</p>
+                    <p className="text-sm font-bold text-primary">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Network / Token</p>
+                    <p className="text-sm font-bold text-primary">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Status</p>
                     {isEditing ? (
                       <select 
                         value={editData.status || 'SUCCESS'}
@@ -379,33 +386,40 @@ export default function TransactionsAdminPage() {
                 </div>
               </div>
 
-              <hr className="my-6 border-subtle" />
-
-              <h3 className="text-sm font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-widest">
-                <i className="las la-link text-info text-lg"></i>
-                Blockchain Metadata
-              </h3>
-
-              <div className="space-y-3 bg-elevated p-5 rounded-xl border border-default">
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Block Timestamp:</span>
-                  <span className="text-sm font-mono font-medium text-primary">{formatDate(selectedTx.timestamp)}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">From Address (Sender):</span>
-                  <span className="text-xs font-mono font-medium text-primary break-all">{selectedTx.fromAddress}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">To Address (Deposit):</span>
-                  <span className="text-xs font-mono font-medium text-primary break-all">{selectedTx.toAddress}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 border-b border-subtle pb-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Transaction Fee:</span>
-                  <span className="text-sm font-mono font-medium text-primary">{selectedTx.transactionFee}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted">System Processed At:</span>
-                  <span className="text-sm font-mono font-medium text-primary">{formatDate(selectedTx.processedAt)}</span>
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+                  <i className="las la-link text-info text-lg"></i> Blockchain Metadata
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Transaction Hash</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-mono text-sm text-primary break-all">{selectedTx.id}</p>
+                      <button onClick={() => copyToClipboard(selectedTx.id)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-primary transition-colors shrink-0"><i className="las la-copy text-lg"></i></button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Block Timestamp</p>
+                      <p className="font-mono text-sm text-primary">{formatDate(selectedTx.timestamp)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">System Processed</p>
+                      <p className="font-mono text-sm text-primary">{formatDate(selectedTx.processedAt)}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">From Address</p>
+                    <p className="font-mono text-xs text-primary break-all">{selectedTx.fromAddress}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">To Address</p>
+                    <p className="font-mono text-xs text-primary break-all">{selectedTx.toAddress}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Transaction Fee</p>
+                    <p className="font-mono text-sm text-primary">{selectedTx.transactionFee}</p>
+                  </div>
                 </div>
               </div>
               
@@ -419,59 +433,26 @@ export default function TransactionsAdminPage() {
               )}
             </div>
             
-            <div className="p-4 md:p-5 border-t border-subtle bg-elevated flex flex-col md:flex-row justify-between items-center gap-4">
-              
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                {!isEditing ? (
-                  <>
-                    <Button 
-                      variant="outline"
-                      onClick={() => { setIsEditing(true); setEditData(selectedTx); }}
-                      leftIcon={<i className="las la-pen text-base"></i>}
-                      className="flex-1 md:flex-none"
-                    >
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="danger"
-                      onClick={() => handleDelete(selectedTx.id)} 
-                      leftIcon={<i className="las la-trash text-base"></i>}
-                      className="flex-1 md:flex-none"
-                    >
-                      Delete
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      variant="primary"
-                      onClick={handleSaveEdit} 
-                      leftIcon={<i className="las la-save text-base"></i>}
-                      className="flex-1 md:flex-none"
-                    >
-                      Save Changes
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => setIsEditing(false)} 
-                      className="flex-1 md:flex-none"
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )}
-              </div>
-
+            {/* Drawer Footer */}
+            <div className="p-4 border-t border-subtle bg-surface/80 backdrop-blur-md sticky bottom-0 flex flex-col sm:flex-row gap-3">
               <Button 
-                variant="secondary"
+                variant="ghost"
+                onClick={() => copyToClipboard(selectedTx.id)}
+                leftIcon={<i className="las la-copy text-lg"></i>}
+                className="w-full sm:flex-1"
+              >
+                Copy ID
+              </Button>
+              <Button 
+                variant="primary"
                 onClick={() => window.open(selectedTx.network === 'BEP20' || selectedTx.network === 'ERC20' ? `https://bscscan.com/tx/${selectedTx.id}` : `https://tronscan.org/#/transaction/${selectedTx.id}`, '_blank')}
                 rightIcon={<i className="las la-external-link-alt text-lg"></i>}
-                className="w-full md:w-auto uppercase tracking-widest font-bold"
+                className="w-full sm:flex-1"
               >
-                View on Explorer
+                Explorer
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>

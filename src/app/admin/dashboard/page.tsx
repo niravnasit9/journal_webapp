@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/lib/firebase/authContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -15,7 +15,10 @@ export default function AdminDashboardOverview() {
     totalUsers: 0,
     totalAccounts: 0,
     totalTrades: 0,
-    activeFirms: 0
+    activeFirms: 0,
+    monthlyRevenue: 0,
+    activeSubscribers: 0,
+    successfulPayments: 0
   });
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,12 +34,32 @@ export default function AdminDashboardOverview() {
       const accountsSnap = await getDocs(collection(db, "accounts"));
       const tradesSnap = await getDocs(collection(db, "trades"));
       const firmsSnap = await getDocs(collection(db, "prop_firms"));
+      
+      let monthlyRevenue = 0;
+      let successfulPayments = 0;
+      try {
+        const txSnap = await getDocs(query(collection(db, "transactions"), where("status", "==", "success")));
+        successfulPayments = txSnap.docs.length;
+        txSnap.docs.forEach(doc => {
+          monthlyRevenue += (doc.data().amount || 0);
+        });
+      } catch(e) {
+        // Transactions collection might not exist yet
+      }
+
+      const activeSubscribers = usersSnap.docs.filter(d => {
+        const tier = d.data().subscription_tier || d.data().tier || 'free';
+        return tier !== 'free';
+      }).length;
 
       setStats({
         totalUsers: usersSnap.docs.length,
         totalAccounts: accountsSnap.docs.length,
         totalTrades: tradesSnap.docs.length,
-        activeFirms: firmsSnap.docs.filter(d => d.data().is_active).length
+        activeFirms: firmsSnap.docs.filter(d => d.data().is_active).length,
+        monthlyRevenue,
+        activeSubscribers,
+        successfulPayments
       });
 
       const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -79,6 +102,44 @@ export default function AdminDashboardOverview() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
+        <Card className="p-6 border-default shadow-sm hover:border-emerald-500 transition-colors group">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+              <i className="las la-dollar-sign text-2xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Monthly Revenue</h3>
+          </div>
+          <p className="text-3xl font-extrabold text-primary tracking-tight">
+            ${stats.monthlyRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        </Card>
+
+        <Card className="p-6 border-default shadow-sm hover:border-indigo-500 transition-colors group">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+              <i className="las la-crown text-2xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Active Subscribers</h3>
+          </div>
+          <p className="text-3xl font-extrabold text-primary tracking-tight">
+            {stats.activeSubscribers}
+          </p>
+        </Card>
+
+        <Card className="p-6 border-default shadow-sm hover:border-blue-500 transition-colors group">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+              <i className="las la-file-invoice-dollar text-2xl"></i>
+            </div>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Successful Payments</h3>
+          </div>
+          <p className="text-3xl font-extrabold text-primary tracking-tight">
+            {stats.successfulPayments}
+          </p>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

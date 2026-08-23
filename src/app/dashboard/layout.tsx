@@ -40,6 +40,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [newDisplayName, setNewDisplayName] = useState("");
 
   useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     if (!loading) {
       if (!user) {
         document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -179,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 overflow-y-auto no-scrollbar pb-6 flex flex-col">
           
           <div className="pt-8 pb-8 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
               <i className={`las la-shield-alt text-3xl transition-colors duration-300 ${theme.icon}`}></i>
               <div className="flex flex-col leading-tight">
                 <span className="text-primary font-bold tracking-widest text-lg transition-colors duration-300">PROFITPULSE</span>
@@ -187,7 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className={`${theme.textHighlight} text-[10px] uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"} PLAN</span>
                 </UpgradeCelebration>
               </div>
-            </div>
+            </Link>
             <button className="md:hidden text-secondary hover:text-primary" onClick={() => setIsMobileMenuOpen(false)}>
               <i className="las la-times text-2xl"></i>
             </button>
@@ -308,10 +317,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Top Header */}
         <div className="md:hidden h-16 border-b border-subtle bg-surface flex items-center justify-between px-4 sticky top-0 z-30 shadow-sm">
-          <div className="flex items-center gap-2 text-primary font-bold tracking-tight">
+          <Link href="/dashboard" className="flex items-center gap-2 text-primary font-bold tracking-tight">
              <i className="las la-shield-alt text-2xl text-primary"></i>
             <span>ProfitPulse</span>
-          </div>
+          </Link>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
             className="text-secondary p-2 -mr-2 hover:text-primary"

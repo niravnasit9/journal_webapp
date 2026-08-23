@@ -18,10 +18,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative">
           <select
             ref={ref}
-            className={`w-full bg-surface border rounded-lg px-3 py-2 text-sm text-primary focus:outline-none focus:ring-1 transition-colors appearance-none ${
+            className={`w-full min-h-[44px] bg-surface border rounded-lg px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed ${
               error 
                 ? "border-danger focus:ring-danger" 
-                : "border-default focus:border-strong focus:ring-blue-500"
+                : "border-default hover:border-strong focus:border-strong focus:ring-blue-500"
             } ${className}`}
             {...props}
           >
