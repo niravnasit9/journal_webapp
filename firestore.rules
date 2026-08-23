@@ -8,26 +8,58 @@ service cloud.firestore {
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Function to check if user owns the document
+    // Function to check if user owns the document (using uid)
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
     match /users/{userId} {
+      // Users can only read/write their own profile. Admins can read/write all.
       allow read, write: if isOwner(userId) || isAdmin();
     }
     
     match /accounts/{accountId} {
-      // Allow read/write if the user is admin, or if the user is the owner (checking the owner_uid field)
-      allow read, write: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
-      // Allow create if admin, or if the user is creating for themselves
+      // Allow read/update/delete if admin, or if the user is the owner (checking owner_uid)
+      allow read, update, delete: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+      // Allow create if admin, or if creating for themselves
       allow create: if isAdmin() || (request.auth != null && request.resource.data.owner_uid == request.auth.uid);
-      
-      match /trades/{tradeId} {
-        allow read, write: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(accountId)).data.owner_uid == request.auth.uid);
-      }
     }
     
+    match /trades/{tradeId} {
+      // Trades are a top-level collection referencing an account_id
+      allow read, update, delete: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.owner_uid == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(request.resource.data.account_id)).data.owner_uid == request.auth.uid);
+    }
+    
+    match /strategies/{strategyId} {
+      allow read: if (resource != null && resource.data.is_public == true) || isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.owner_uid == request.auth.uid);
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+    }
+
+    match /goals/{goalId} {
+      allow read, update, delete: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.owner_uid == request.auth.uid);
+    }
+
+    match /support_tickets/{ticketId} {
+      allow read, update, delete: if isAdmin() || (request.auth != null && resource.data.user_id == request.auth.uid);
+      allow create: if isAdmin() || (request.auth != null && request.resource.data.user_id == request.auth.uid);
+    }
+
+    match /processed_txids/{txId} {
+      // Transactions should be strictly read-only for users, modifiable only by system/admin
+      allow read: if isAdmin() || (request.auth != null && (resource.data.uid == request.auth.uid || resource.data.used_by == request.auth.uid));
+      allow write: if isAdmin();
+    }
+
+    match /prop_firms/{firmId} {
+      // Prop firms are global master data. Everyone can read, only admin can write.
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Fallbacks for any forgotten subcollections on accounts (though they should be top level now)
     match /account_snapshots/{snapshotId} {
       allow read, write: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.owner_uid == request.auth.uid);
     }
@@ -35,12 +67,6 @@ service cloud.firestore {
     match /funded_account_rules/{ruleId} {
       allow read: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/accounts/$(resource.data.account_id)).data.owner_uid == request.auth.uid);
       allow write: if isAdmin();
-    }
-    
-    match /strategies/{strategyId} {
-      allow read: if (resource != null && resource.data.is_public == true) || isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
-      allow create: if isAdmin() || (request.auth != null && request.resource.data.owner_uid == request.auth.uid);
-      allow update, delete: if isAdmin() || (request.auth != null && resource.data.owner_uid == request.auth.uid);
     }
   }
 }

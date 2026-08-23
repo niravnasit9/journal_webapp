@@ -34,7 +34,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
       
       if (account.prop_firm && account.prop_plan_name && propFirms.length > 0) {
         const firm = propFirms.find(f => f.name === account.prop_firm);
-        const plan = firm?.plans?.find(p => (p.program_name || p.name) === account.prop_plan_name && p.phase_name === (account.prop_plan_phase || undefined));
+        const plan = firm?.plans?.find(p => (p.program_name || p.name) === account.prop_plan_name && p.phase_name === (account.prop_plan_phase || undefined) && p.account_size === account.initial_balance);
         if (plan) {
           setSelectedProgramId(plan.program_id);
           setSelectedSize(plan.account_size.toString());

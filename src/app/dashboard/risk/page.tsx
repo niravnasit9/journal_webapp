@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
 import CustomSelect from "@/components/ui/CustomSelect";
 
+import { calculateAccountRisk, RiskMetrics } from "@/lib/riskEngine";
+
 export default function RiskCenterPage() {
   const { user } = useAuth();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
@@ -71,59 +73,13 @@ export default function RiskCenterPage() {
   // Calculate Risk per Account
   const getAccountRisk = (acc: AccountDoc) => {
     const accTrades = trades[acc.id] || [];
-    const initialBalance = acc.initial_balance || 0;
+    const metrics = calculateAccountRisk(acc, accTrades);
     
-    // Overall PnL
-    const overallPnL = accTrades.reduce((sum, t) => sum + (t.profit_loss - (t.commission || 0)), 0);
-    const currentBalance = initialBalance + overallPnL;
-    
-    // Highest Watermark for trailing drawdown
-    let highestWatermark = initialBalance;
-    let runningBalance = initialBalance;
-    accTrades.forEach(t => {
-      runningBalance += (t.profit_loss - (t.commission || 0));
-      if (acc.drawdown_type === 'trailing' && runningBalance > highestWatermark) {
-        highestWatermark = runningBalance;
-      }
-    });
-
-    // Drawdown threshold
-    const maxDrawdownPct = acc.max_drawdown_pct || 10;
-    let maxDrawdownThreshold = 0;
-    if (acc.drawdown_type === 'trailing') {
-      maxDrawdownThreshold = highestWatermark * (1 - (maxDrawdownPct / 100));
-    } else {
-      maxDrawdownThreshold = initialBalance * (1 - (maxDrawdownPct / 100));
-    }
-
-    const overallDrawdownRemaining = currentBalance - maxDrawdownThreshold;
-    const overallDrawdownUsedPct = maxDrawdownThreshold > 0 ? ((initialBalance - currentBalance) / (initialBalance - maxDrawdownThreshold)) * 100 : 0;
-    const isOverallBlown = currentBalance <= maxDrawdownThreshold;
-
-    // Daily Drawdown threshold
-    const dailyLossLimitPct = acc.daily_loss_limit_pct || 5;
-    const dailyPnL: Record<string, number> = {};
-    accTrades.forEach(t => {
-      const dateStr = new Date(t.close_time).toISOString().split('T')[0];
-      dailyPnL[dateStr] = (dailyPnL[dateStr] || 0) + (t.profit_loss - (t.commission || 0));
-    });
-    
-    const currentDay = accTrades.length > 0 ? new Date(accTrades[accTrades.length - 1].close_time).toISOString().split('T')[0] : '';
-    const currentDailyPnL = currentDay ? (dailyPnL[currentDay] || 0) : 0;
-    
-    // Using balance-based daily drawdown logic (end of day balance vs current balance)
-    let startOfDayBalance = currentBalance - currentDailyPnL;
-    const dailyLossLimitValue = (startOfDayBalance * dailyLossLimitPct) / 100;
-    
-    const dailyDrawdownRemaining = dailyLossLimitValue + currentDailyPnL;
-    const dailyDrawdownUsedPct = dailyLossLimitValue > 0 ? (Math.max(0, -currentDailyPnL) / dailyLossLimitValue) * 100 : 0;
-    const isDailyBlown = currentDailyPnL <= -dailyLossLimitValue;
-
     // Prop Firm Rules targeting
     let applicableRules: any[] = [];
     if (acc.prop_firm && propFirms[acc.prop_firm]) {
       const firm = propFirms[acc.prop_firm];
-      applicableRules = firm.rules.filter(rule => {
+      applicableRules = firm.rules.filter((rule: any) => {
         if (rule.applicable_plan_ids && rule.applicable_plan_ids.length > 0 && acc.prop_plan_name) {
           return true;
         }
@@ -132,19 +88,7 @@ export default function RiskCenterPage() {
     }
 
     return {
-      initialBalance,
-      currentBalance,
-      overallPnL,
-      highestWatermark,
-      maxDrawdownThreshold,
-      overallDrawdownRemaining,
-      overallDrawdownUsedPct: Math.max(0, Math.min(100, overallDrawdownUsedPct)),
-      isOverallBlown,
-      dailyLossLimitValue,
-      currentDailyPnL,
-      dailyDrawdownRemaining,
-      dailyDrawdownUsedPct: Math.max(0, Math.min(100, dailyDrawdownUsedPct)),
-      isDailyBlown,
+      ...metrics,
       applicableRules
     };
   };

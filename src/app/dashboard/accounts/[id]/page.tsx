@@ -47,7 +47,13 @@ export default function AccountDetailView() {
       const accRef = doc(db, "accounts", accountId);
       const accSnap = await getDoc(accRef);
       if (accSnap.exists()) {
-        setAccount({ id: accSnap.id, ...accSnap.data() } as AccountDoc);
+        const data = accSnap.data() as AccountDoc;
+        if (data.owner_uid !== user?.uid) {
+          console.error("Unauthorized access to account!");
+          router.push("/dashboard");
+          return;
+        }
+        setAccount({ ...data, id: accSnap.id });
       } else {
         console.error("No such account!");
         router.push("/dashboard");
