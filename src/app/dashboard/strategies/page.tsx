@@ -9,9 +9,10 @@ import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "fireb
 import { StrategyDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
+import { DEMO_STRATEGIES } from "@/lib/adminDemoData";
 
 export default function StrategiesPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const theme = useTierTheme();
   const { maxStrategies, hasReachedLimit } = useTierAccess();
   
@@ -39,12 +40,19 @@ export default function StrategiesPage() {
     if (user) {
       fetchStrategies();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchStrategies = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setStrategies(DEMO_STRATEGIES);
+        setLoading(false);
+        return;
+      }
+
       const q = query(collection(db, "strategies"), where("owner_uid", "==", user.uid));
       const snap = await getDocs(q);
       const docs = snap.docs.map(d => ({ ...d.data(), id: d.id } as StrategyDoc));

@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  if (loading || !user || !user.emailVerified) {
+  if (loading || !user || (!user.emailVerified && role !== "admin")) {
     return <div className="min-h-screen bg-base flex items-center justify-center transition-colors duration-300"><LoadingSpinner className="w-12 h-12" /></div>;
   }
 
@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     {
       title: "ANALYTICS",
       items: [
-        { name: "Performance", href: "/dashboard/performance", icon: "las la-chart-bar" },
+        { name: "Analytics", href: "/dashboard/analytics", icon: "las la-chart-pie" },
         { name: "Risk Center", href: "/dashboard/risk", icon: "las la-shield-alt" },
         { name: "Insights", href: "/dashboard/insights", icon: "las la-lightbulb" },
         { name: "Reports", href: "/dashboard/reports", icon: "las la-file-alt" },
@@ -164,10 +164,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       title: "SYSTEM",
       items: [
         { name: "Notifications", href: "/dashboard/notifications", icon: "las la-bell" },
+        { name: "Transactions", href: "/dashboard/transactions", icon: "las la-cog" },
         { name: "Settings", href: "/dashboard/settings", icon: "las la-cog" },
       ]
     }
   ];
+
+  if (role === "admin") {
+    navSections[navSections.length - 1].items.push({
+      name: "Return to Admin",
+      href: "/admin/dashboard",
+      icon: "las la-user-shield",
+      tag: "ADMIN"
+    });
+  }
 
   return (
     <div className="min-h-screen bg-base flex font-sans transition-colors duration-300">
@@ -210,7 +220,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </h4>
                 <div className="space-y-1">
                   {section.items.map((item) => {
-                    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    const isActive = item.href === '/dashboard' 
+                      ? pathname === '/dashboard' 
+                      : (pathname === item.href || pathname.startsWith(`${item.href}/`));
                     return (
                       <Link 
                         key={item.name} 

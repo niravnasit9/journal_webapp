@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/Button";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
+import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 
 export default function ReportsPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,12 +26,20 @@ export default function ReportsPage() {
   
   useEffect(() => {
     if (user) fetchData();
-  }, [user]);
+  }, [user, role]);
 
   const fetchData = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setAccounts(DEMO_ACCOUNTS);
+        setTrades(DEMO_TRADES);
+        setLoading(false);
+        return;
+      }
+
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
       const accDocs = accSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));

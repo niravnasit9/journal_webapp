@@ -50,14 +50,23 @@ export interface TradeDoc {
   lot_size: number;
   open_price: number;
   close_price: number;
-  open_time: any;
-  close_time: any;
+  open_time: string;
+  close_time: string;
   pips: number;
   profit_loss: number;
   commission: number;
   swap?: number;
   magic_number?: string;
   comment?: string;
+  highest_price_reached?: number;
+  lowest_price_reached?: number;
+  mfe_pips?: number;
+  mae_pips?: number;
+  mfe_usd?: number;
+  mae_usd?: number;
+  news_event?: string | null;
+  impact?: string | null;
+  news_volatility_flag?: boolean;
 
   // Psychological Analytics
   emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
@@ -65,7 +74,15 @@ export interface TradeDoc {
   strategy_tag: string;
   notes: string;
   screenshot_url: string;
+  entry_chart_url?: string;
+  exit_chart_url?: string;
   mistake_tags: string[];
+
+  // Smart Form Fields
+  stop_loss_price?: number;
+  take_profit_price?: number;
+  risk_reward_ratio?: number;
+  execution_score?: "Perfect" | "Early Entry" | "Late Exit" | "FOMO" | "None";
 }
 
 export interface PropFirmRule {

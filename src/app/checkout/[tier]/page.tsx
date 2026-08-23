@@ -38,8 +38,8 @@ export default function CheckoutPage() {
   
   // UI States
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [txid, setTxid] = useState("");
+  const [isSuccess, setIsSuccess] = useState(true); // TEMP FORCED TRUE FOR UI REVIEW
+  const [txid, setTxid] = useState("0x123abc456def7890123456789abcdef1234567890"); // TEMP FORCED FOR UI REVIEW
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes for crypto payment
 
@@ -116,29 +116,67 @@ export default function CheckoutPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 font-sans">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center">
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
-            <i className="las la-check text-3xl font-bold"></i>
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Payment Successful!</h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Your account has been upgraded to the <strong className="text-slate-900 dark:text-white">{plan.name}</strong> plan.
-          </p>
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none text-center relative overflow-hidden">
           
-          <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 mb-8 text-left border border-slate-100 dark:border-slate-800 text-sm">
-            <div className="flex justify-between mb-2">
-              <span className="text-slate-500">Amount Paid:</span>
-              <span className="font-bold text-slate-900 dark:text-white">${amount}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Transaction ID:</span>
-              <span className="font-mono text-xs text-slate-900 dark:text-white truncate max-w-[150px]">{txid}</span>
-            </div>
-          </div>
+          {/* Decorative Background Blob */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-          <Link href="/dashboard" className="w-full flex items-center justify-center py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-indigo-600/20">
-            Go to Dashboard
-          </Link>
+          <div className="relative z-10">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm ring-8 ring-emerald-50 dark:ring-emerald-900/20">
+              <i className="las la-check text-4xl font-bold"></i>
+            </div>
+            
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Payment Successful</h1>
+            <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm sm:text-base">
+              Your account has been upgraded and your features are now active.
+            </p>
+            
+            {/* Receipt Card */}
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 mb-8 text-left border border-slate-100 dark:border-slate-700/50 space-y-4">
+              <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-700/50">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Plan Activated</span>
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 text-xs font-bold rounded-full capitalize">
+                  {plan.name} Tier
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount Paid</span>
+                <span className="text-lg font-bold text-slate-900 dark:text-white">${amount.toFixed(2)}</span>
+              </div>
+              
+              {cryptoInvoiceActive && selectedCryptoId && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Network</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {cryptoOptions.find(c => c.id === selectedCryptoId)?.network} • {cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaction ID</span>
+                <div className="flex items-center gap-2 max-w-[60%]">
+                  <span className="font-mono text-sm text-slate-900 dark:text-white truncate">{txid}</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(txid);
+                      toast.success("Transaction ID copied");
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
+                    title="Copy Transaction ID"
+                  >
+                    <i className="las la-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <Link href="/dashboard" className="w-full flex items-center justify-center py-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold rounded-xl transition-colors shadow-lg shadow-slate-900/20 dark:shadow-white/10 group">
+              Go to Dashboard
+              <i className="las la-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -14,6 +14,14 @@ export async function addManualTradeAction(accountId: string, data: {
   commission: number;
   emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
   setup_grade?: "A+" | "A" | "B" | "C";
+  open_time?: string;
+  close_time?: string;
+  stop_loss_price?: number;
+  take_profit_price?: number;
+  risk_reward_ratio?: number;
+  entry_chart_url?: string;
+  exit_chart_url?: string;
+  execution_score?: "Perfect" | "Early Entry" | "Late Exit" | "FOMO" | "None";
 }) {
   try {
     const batch = writeBatch(db);
@@ -28,8 +36,8 @@ export async function addManualTradeAction(accountId: string, data: {
       lot_size: Number(data.lot_size),
       open_price: Number(data.open_price),
       close_price: Number(data.close_price),
-      open_time: new Date().toISOString(),
-      close_time: new Date().toISOString(),
+      open_time: data.open_time || new Date().toISOString(),
+      close_time: data.close_time || new Date().toISOString(),
       pips: 0,
       profit_loss: Number(data.profit_loss),
       commission: Number(data.commission),
@@ -40,6 +48,12 @@ export async function addManualTradeAction(accountId: string, data: {
       mistake_tags: [],
       emotion: data.emotion,
       setup_grade: data.setup_grade,
+      stop_loss_price: data.stop_loss_price,
+      take_profit_price: data.take_profit_price,
+      risk_reward_ratio: data.risk_reward_ratio,
+      entry_chart_url: data.entry_chart_url,
+      exit_chart_url: data.exit_chart_url,
+      execution_score: data.execution_score,
     };
     batch.set(newTradeRef, tradeData);
 
@@ -117,6 +131,14 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
   commission: number;
   emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
   setup_grade?: "A+" | "A" | "B" | "C";
+  open_time?: string;
+  close_time?: string;
+  stop_loss_price?: number;
+  take_profit_price?: number;
+  risk_reward_ratio?: number;
+  entry_chart_url?: string;
+  exit_chart_url?: string;
+  execution_score?: "Perfect" | "Early Entry" | "Late Exit" | "FOMO" | "None";
 }) {
   try {
     const batch = writeBatch(db);
@@ -141,6 +163,14 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
       commission: Number(data.commission),
       emotion: data.emotion,
       setup_grade: data.setup_grade,
+      stop_loss_price: data.stop_loss_price,
+      take_profit_price: data.take_profit_price,
+      risk_reward_ratio: data.risk_reward_ratio,
+      entry_chart_url: data.entry_chart_url,
+      exit_chart_url: data.exit_chart_url,
+      execution_score: data.execution_score,
+      ...(data.open_time && { open_time: data.open_time }),
+      ...(data.close_time && { close_time: data.close_time }),
     });
 
     // 3. Fetch account and adjust balance

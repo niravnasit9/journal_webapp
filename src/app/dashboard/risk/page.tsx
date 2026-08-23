@@ -12,25 +12,45 @@ import Link from "next/link";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 import { calculateAccountRisk, RiskMetrics } from "@/lib/riskEngine";
+import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
+import { DrawdownGuardian } from "@/components/risk/DrawdownGuardian";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
+import { getLocalJsDate } from "@/lib/dateUtils";
 
 export default function RiskCenterPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [trades, setTrades] = useState<Record<string, TradeDoc[]>>({});
   const [propFirms, setPropFirms] = useState<Record<string, PropFirmDoc>>({});
   const [loading, setLoading] = useState(true);
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('all');
+  const [dateFilter, setDateFilter] = useState<DateRange>({ preset: 'all', start: null, end: null });
 
   useEffect(() => {
     if (user) {
       fetchRiskData();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchRiskData = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setAccounts(DEMO_ACCOUNTS);
+        const tMap: Record<string, TradeDoc[]> = {};
+        for (const t of DEMO_TRADES) {
+          if (!tMap[t.account_id]) tMap[t.account_id] = [];
+          tMap[t.account_id].push(t);
+        }
+        setTrades(tMap);
+        setPropFirms({});
+        setLoading(false);
+        return;
+      }
+
       // Fetch user accounts
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
@@ -72,7 +92,16 @@ export default function RiskCenterPage() {
 
   // Calculate Risk per Account
   const getAccountRisk = (acc: AccountDoc) => {
-    const accTrades = trades[acc.id] || [];
+    let accTrades = trades[acc.id] || [];
+    
+    // Apply Date Range Filter
+    if (dateFilter.start && dateFilter.end) {
+      accTrades = accTrades.filter(t => {
+        const d = getLocalJsDate(t.close_time);
+        return d && d >= dateFilter.start! && d <= dateFilter.end!;
+      });
+    }
+
     const metrics = calculateAccountRisk(acc, accTrades);
     
     // Prop Firm Rules targeting
@@ -102,25 +131,31 @@ export default function RiskCenterPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <i className="las la-shield-alt text-3xl text-danger"></i>
+            <i className="las la-shield-alt text-3xl text-indigo-500"></i>
             Risk Center
           </h1>
-          <p className="text-secondary text-sm mt-1">Monitor your drawdowns, exposure, and account health.</p>
+          <p className="text-secondary text-sm mt-1">Monitor drawdown limits and protect your capital.</p>
         </div>
         
-        {accounts.length > 0 && (
-          <div className="w-full md:w-64 relative z-20">
-            <CustomSelect 
-              options={[
-                { value: "ALL", label: "All Accounts" },
-                ...accounts.map(acc => ({ value: acc.id, label: acc.label }))
-              ]}
-              value={selectedAccountId}
-              onChange={setSelectedAccountId}
-              icon="las la-wallet"
-            />
-          </div>
-        )}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <DateRangePicker 
+            value={dateRangePreset}
+            onChange={(range) => {
+              setDateRangePreset(range.preset);
+              setDateFilter(range);
+            }}
+          />
+          <CustomSelect
+            options={[
+              { value: "ALL", label: "All Accounts" },
+              ...accounts.map(a => ({ value: a.id, label: a.label }))
+            ]}
+            value={selectedAccountId}
+            onChange={setSelectedAccountId}
+            icon="las la-wallet"
+            className="w-[200px]"
+          />
+        </div>
       </div>
 
       {accounts.length === 0 ? (
@@ -175,6 +210,16 @@ export default function RiskCenterPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   
+                  <div className="mb-6">
+                    <DrawdownGuardian 
+                      accountBalance={risk.currentBalance}
+                      highestEquity={(acc as any).highest_equity || risk.highestWatermark || risk.currentBalance}
+                      currentFloatingLoss={(acc as any).current_floating_pnl ?? (risk.currentDailyPnL < 0 ? risk.currentDailyPnL : 0)}
+                      dailyLossLimit={acc.daily_loss_limit_pct || 5}
+                      isTrailing={(acc as any).is_trailing ?? (acc.drawdown_type === 'trailing')}
+                    />
+                  </div>
+
                   {/* Daily & Overall Drawdown Grids */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     

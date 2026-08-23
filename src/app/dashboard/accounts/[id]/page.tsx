@@ -17,7 +17,17 @@ import { useTierTheme } from "@/hooks/useTierTheme";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-
+import { ChallengeTracker } from "@/components/risk/ChallengeTracker";
+import { StatsGrid } from "@/components/analytics/StatsGrid";
+import { PsychologyMatrix } from "@/components/insights/PsychologyMatrix";
+import { TiltAnalyzer } from "@/components/insights/TiltAnalyzer";
+import { RecoverySimulator } from "@/components/risk/RecoverySimulator";
+import { EdgeDecayChart } from "@/components/analytics/EdgeDecayChart";
+import { BehavioralChain } from "@/components/insights/BehavioralChain";
+import { CoachingAlerts } from "@/components/insights/CoachingAlerts";
+import { generateCoachingAlerts } from "@/lib/coachingEngine";
+import { PropFirmOverview } from "@/components/risk/PropFirmOverview";
+import { PsychologyDashboard } from "@/components/insights/PsychologyDashboard";
 type TabType = "Account Overview" | "Trading Overview" | "Trading History" | "Psychology" | "Calendar";
 
 export default function AccountDetailView() {
@@ -199,6 +209,8 @@ export default function AccountDetailView() {
   const avgWinningDay = winningDays.length > 0 ? winningDays.reduce((a,b) => a+b, 0) / winningDays.length : 0;
   const avgLosingDay = losingDays.length > 0 ? losingDays.reduce((a,b) => a+b, 0) / losingDays.length : 0;
 
+  const alerts = generateCoachingAlerts(trades);
+
   const TABS: TabType[] = ["Account Overview", "Trading Overview", "Trading History", "Psychology"];
 
   const StatRow = ({ label, value, isCurrency = false, colorClass = "text-primary" }: { label: string, value: string | number, isCurrency?: boolean, colorClass?: string }) => (
@@ -264,182 +276,18 @@ export default function AccountDetailView() {
 
       {activeTab === "Account Overview" && (
         <div className="space-y-6">
-          {account.prop_firm ? (
-            <Card className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <i className={`las la-shield-alt text-3xl text-[var(--plan-starter)]`}></i>
-                <div>
-                  <h3 className="text-xl font-bold text-primary">Challenge Tracker</h3>
-                  <p className="text-sm text-secondary">Tracking rules for {account.prop_firm}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-elevated p-5 rounded-xl border border-default">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-secondary">Daily Loss Limit</span>
-                    <span className="text-sm font-black text-primary">{account.daily_loss_limit_pct}%</span>
-                  </div>
-                  <div className="flex justify-between items-end mb-4">
-                    <div>
-                      <p className="text-xs text-muted mb-1">Current Today</p>
-                      <p className={`text-2xl font-black ${currentDailyPnL < 0 ? 'text-danger' : 'text-success'}`}>
-                        {account.currency === "INR" ? "₹" : "$"}{Math.abs(currentDailyPnL).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted mb-1">Limit ({dailyDrawdownType === 'equity' ? 'Equity' : 'Balance'})</p>
-                      <p className="text-lg font-bold text-primary">
-                        {account.currency === "INR" ? "₹" : "$"}{dailyLossLimitValue.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-subtle h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${(Math.abs(currentDailyPnL < 0 ? currentDailyPnL : 0) / dailyLossLimitValue) > 0.8 ? 'bg-danger' : 'bg-success'}`}
-                      style={{ width: `${Math.min((Math.abs(currentDailyPnL < 0 ? currentDailyPnL : 0) / dailyLossLimitValue) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="bg-elevated p-5 rounded-xl border border-default">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-secondary">Max Drawdown ({account.drawdown_type || 'static'})</span>
-                    <span className="text-sm font-black text-primary">{account.max_drawdown_pct}%</span>
-                  </div>
-                  <div className="flex justify-between items-end mb-4">
-                    <div>
-                      <p className="text-xs text-muted mb-1">Current Balance</p>
-                      <p className={`text-2xl font-black ${currentBalance < initialBalance ? 'text-danger' : 'text-success'}`}>
-                        {account.currency === "INR" ? "₹" : "$"}{currentBalance.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted mb-1">Breach Level</p>
-                      <p className="text-lg font-bold text-primary">
-                        {account.currency === "INR" ? "₹" : "$"}{maxDrawdownThreshold.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-full bg-subtle h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${(Math.abs(highestWatermark - currentBalance) / (highestWatermark - maxDrawdownThreshold)) > 0.8 ? 'bg-danger' : 'bg-success'}`}
-                      style={{ width: `${Math.min((Math.abs(highestWatermark - currentBalance) / (highestWatermark - maxDrawdownThreshold)) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ) : (
-            <Card className="p-10 text-center flex flex-col items-center justify-center">
-              <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center mb-4 border border-default">
-                <i className="las la-shield-alt text-4xl text-muted"></i>
-              </div>
-              <h3 className="text-xl font-bold text-primary mb-2">No Prop Firm Attached</h3>
-              <p className="text-secondary max-w-md mx-auto">
-                This is a standard account. If you want to track drawdown rules for a challenge, create a new account and select a Prop Firm.
-              </p>
-            </Card>
-          )}
+          <PropFirmOverview account={account} trades={trades} currency={account.currency as "USD" | "INR"} />
+          <RecoverySimulator account={account} trades={trades} currency={account.currency as "USD" | "INR"} />
+          <ChallengeTracker account={account} currency={account.currency as "USD" | "INR"} />
         </div>
       )}
 
       {activeTab === "Trading Overview" && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            <Card className="p-5">
-              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Net P&L</h3>
-              <p className={`text-3xl font-extrabold tracking-tight ${overallPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-                {overallPnL >= 0 ? '+' : ''}{account.currency === "INR" ? "₹" : "$"}{Math.abs(overallPnL).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-            </Card>
+          <CoachingAlerts alerts={alerts} />
+          <StatsGrid trades={trades} currency={account.currency as "USD" | "INR"} />
+          <EdgeDecayChart trades={trades} />
 
-            <Card className="p-5 relative overflow-hidden">
-              {!(tier === 'pro' || tier === 'elite') && (
-                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
-                  <i className="las la-lock text-2xl text-primary mb-1"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
-                </div>
-              )}
-              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Average Realized R:R</h3>
-              <p className="text-3xl font-extrabold text-primary tracking-tight">
-                {totalTrades === 0 ? "--" : avgRR.toFixed(2)}
-              </p>
-              <div className="w-full bg-subtle h-1.5 rounded-full mt-4">
-                <div className={`h-1.5 rounded-full ${totalTrades === 0 ? 'bg-muted w-0' : (avgRR >= 1 ? 'bg-success w-2/3' : 'bg-danger w-1/3')}`}></div>
-              </div>
-            </Card>
-            
-            <Card className="p-5 relative overflow-hidden">
-              {!(tier === 'pro' || tier === 'elite') && (
-                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
-                  <i className="las la-lock text-2xl text-primary mb-1"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
-                </div>
-              )}
-              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Win Rate</h3>
-              <p className="text-3xl font-extrabold text-primary tracking-tight">
-                {totalTrades > 0 ? ((winningTrades.length / totalTrades) * 100).toFixed(0) : "--"}%
-              </p>
-            </Card>
-
-            <Card className="p-5 relative overflow-hidden">
-              {!(tier === 'pro' || tier === 'elite') && (
-                <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-2">
-                  <i className="las la-lock text-2xl text-primary mb-1"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Pro Feature</span>
-                </div>
-              )}
-              <h3 className="text-xs text-secondary font-bold tracking-wide uppercase mb-3">Profit Factor</h3>
-              <p className="text-3xl font-extrabold text-primary tracking-tight">
-                {totalTrades === 0 ? "--" : profitFactor.toFixed(2)}
-              </p>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <Card className="p-6">
-              <h3 className="text-primary font-bold mb-4">P&L Statistics</h3>
-              <div className="space-y-1">
-                <StatRow label="Avg Daily P&L" value={avgDailyPnL} isCurrency colorClass={avgDailyPnL >= 0 ? "text-success" : "text-danger"} />
-                <StatRow label="Avg Trade P&L" value={avgTradePnL} isCurrency colorClass={avgTradePnL >= 0 ? "text-success" : "text-danger"} />
-                <StatRow label="Avg Winning Trade" value={avgWinningTrade} isCurrency colorClass="text-success" />
-                <StatRow label="Avg Losing Trade" value={avgLosingTrade} isCurrency colorClass="text-danger" />
-                <StatRow label="Avg Winning Day" value={avgWinningDay} isCurrency colorClass="text-success" />
-                <StatRow label="Avg Losing Day" value={avgLosingDay} isCurrency colorClass="text-danger" />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-primary font-bold mb-4">Trading Activity</h3>
-              <div className="space-y-1">
-                <StatRow label="Total Trades" value={totalTrades} />
-                <StatRow label="Winning Trades" value={winningTrades.length} colorClass="text-success" />
-                <StatRow label="Losing Trades" value={losingTrades.length} colorClass="text-danger" />
-                <StatRow label="Open Trades" value={0} />
-                <StatRow label="Trading Days" value={tradingDaysCount} />
-                <StatRow label="Avg Daily Volume" value={tradingDaysCount > 0 ? (totalVolume / tradingDaysCount).toFixed(2) : "0"} />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-primary font-bold mb-4">Streaks & Patterns</h3>
-              <div className="space-y-1">
-                <StatRow label="Max Win Streak" value={0} colorClass="text-success" />
-                <StatRow label="Max Loss Streak" value={0} colorClass="text-danger" />
-                <StatRow label="Max Winning Days" value={0} colorClass="text-success" />
-                <StatRow label="Max Losing Days" value={0} colorClass="text-danger" />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-primary font-bold mb-4">Costs & Fees</h3>
-              <div className="space-y-1">
-                <StatRow label="Total Commissions" value={-totalCommissions} isCurrency colorClass="text-danger" />
-                <StatRow label="Total Swap" value={0} isCurrency colorClass="text-danger" />
-              </div>
-            </Card>
-          </div>
 
           <Card className="p-6 relative overflow-hidden">
             {!(tier === 'pro' || tier === 'elite') && (
@@ -470,89 +318,10 @@ export default function AccountDetailView() {
 
       {activeTab === "Psychology" && (
         <div className="space-y-6">
-          <Card className="p-8 relative overflow-hidden">
-            {!(tier === 'pro' || tier === 'elite') && (
-              <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6">
-                <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
-                  <i className="las la-lock text-3xl text-primary"></i>
-                </div>
-                <h3 className="text-xl font-black text-primary mb-2">Psychology Analytics Locked</h3>
-                <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
-                  Upgrade to Pro or Elite to understand how your emotions and setups impact your P&L.
-                </p>
-                <Link href="/pricing">
-                  <Button variant="primary">Upgrade Now</Button>
-                </Link>
-              </div>
-            )}
-            
-            <div className={!(tier === 'pro' || tier === 'elite') ? 'opacity-30 pointer-events-none' : ''}>
-              <div className="flex items-center gap-3 mb-8">
-                <i className={`las la-brain text-3xl text-[var(--plan-pro)]`}></i>
-                <div>
-                  <h3 className="text-xl font-bold text-primary">Psychology & Setup Analytics</h3>
-                  <p className="text-sm text-secondary">Discover your most profitable emotions and setups</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <h4 className="font-bold text-primary uppercase tracking-wider text-sm border-b border-subtle pb-2">Net P&L by Emotion</h4>
-                  {(() => {
-                    const emotionPnl: Record<string, number> = {};
-                    trades.forEach(t => {
-                      if (t.emotion) {
-                        emotionPnl[t.emotion] = (emotionPnl[t.emotion] || 0) + (t.profit_loss - (t.commission || 0));
-                      }
-                    });
-                    const sortedEmotions = Object.entries(emotionPnl).sort((a, b) => b[1] - a[1]);
-                    
-                    if (sortedEmotions.length === 0) {
-                      return <p className="text-sm text-secondary">No emotional data logged yet. Add emotions to your trades!</p>
-                    }
-                    
-                    return sortedEmotions.map(([emotion, pnl]) => (
-                      <div key={emotion} className="flex items-center justify-between p-3 bg-elevated rounded-lg border border-default">
-                        <span className="font-bold text-primary">{emotion}</span>
-                        <span className={`font-black ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
-                          {pnl >= 0 ? '+' : ''}{account.currency === 'INR' ? '₹' : '$'}{Math.abs(pnl).toFixed(2)}
-                        </span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-bold text-primary uppercase tracking-wider text-sm border-b border-subtle pb-2">Net P&L by Setup Grade</h4>
-                  {(() => {
-                    const gradePnl: Record<string, number> = {};
-                    trades.forEach(t => {
-                      if (t.setup_grade) {
-                        gradePnl[t.setup_grade] = (gradePnl[t.setup_grade] || 0) + (t.profit_loss - (t.commission || 0));
-                      }
-                    });
-                    const sortedGrades = Object.entries(gradePnl).sort((a, b) => {
-                      const order: Record<string, number> = { "A+": 1, "A": 2, "B": 3, "C": 4 };
-                      return (order[a[0]] || 99) - (order[b[0]] || 99);
-                    });
-                    
-                    if (sortedGrades.length === 0) {
-                      return <p className="text-sm text-secondary">No setup grades logged yet. Grade your setups to see stats!</p>
-                    }
-                    
-                    return sortedGrades.map(([grade, pnl]) => (
-                      <div key={grade} className="flex items-center justify-between p-3 bg-elevated rounded-lg border border-default">
-                        <span className="font-bold text-[var(--plan-pro)] bg-[var(--plan-pro-bg)] px-2 py-0.5 rounded border border-[var(--plan-pro)]/20">{grade}</span>
-                        <span className={`font-black ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
-                          {pnl >= 0 ? '+' : ''}{account.currency === 'INR' ? '₹' : '$'}{Math.abs(pnl).toFixed(2)}
-                        </span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            </div>
-          </Card>
+          <PsychologyDashboard trades={trades} currency={account.currency as "USD" | "INR"} />
+          <PsychologyMatrix trades={trades} currency={account.currency as "USD" | "INR"} />
+          <TiltAnalyzer trades={trades} />
+          <BehavioralChain trades={trades} currency={account.currency as "USD" | "INR"} />
         </div>
       )}
 

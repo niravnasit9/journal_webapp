@@ -10,20 +10,28 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import toast from "react-hot-toast";
+import { DEMO_GOALS } from "@/lib/adminDemoData";
 
 export default function GoalsPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [goals, setGoals] = useState<GoalDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) fetchGoals();
-  }, [user]);
+  }, [user, role]);
 
   const fetchGoals = async () => {
     if (!user) return;
     try {
       setLoading(true);
+      
+      if (role === "admin") {
+        setGoals(DEMO_GOALS);
+        setLoading(false);
+        return;
+      }
+
       const q = query(collection(db, "goals"), where("owner_uid", "==", user.uid));
       const snap = await getDocs(q);
       const fetched = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as GoalDoc));
@@ -138,7 +146,7 @@ export default function GoalsPage() {
                   {goal.deadline && (
                     <div className="mt-4 pt-4 border-t border-subtle flex items-center gap-2 text-xs text-secondary font-medium">
                       <i className="las la-clock text-lg"></i>
-                      Deadline: {new Date(goal.deadline.toMillis()).toLocaleDateString()}
+                      Deadline: {goal.deadline?.toMillis ? new Date(goal.deadline.toMillis()).toLocaleDateString() : new Date(goal.deadline).toLocaleDateString()}
                     </div>
                   )}
                 </CardContent>

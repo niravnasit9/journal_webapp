@@ -15,9 +15,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
+import { DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 
 export default function UserAccountsPage() {
-  const { user, tier } = useAuth();
+  const { user, tier, role } = useAuth();
   const theme = useTierTheme();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,11 +32,16 @@ export default function UserAccountsPage() {
     if (user) {
       fetchAccounts();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchAccounts = async () => {
     if (!user) return;
     try {
+      if (role === "admin") {
+        setAccounts(DEMO_ACCOUNTS);
+        return;
+      }
+      
       const q = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
       const accs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));

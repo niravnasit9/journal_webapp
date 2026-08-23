@@ -10,21 +10,30 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 
 export default function UserDashboardCommandCenter() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [recentTrades, setRecentTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) fetchDashboardData();
-  }, [user]);
+  }, [user, role]);
 
   const fetchDashboardData = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        // Admin Preview Mode: Inject Demo Data
+        setAccounts(DEMO_ACCOUNTS);
+        setRecentTrades(DEMO_TRADES);
+        setLoading(false);
+        return; // Early return to prevent Firestore reads
+      }
       
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);

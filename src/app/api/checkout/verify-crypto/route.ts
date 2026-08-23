@@ -213,6 +213,13 @@ export async function POST(request: Request) {
 
     // All Checks Passed! Update the User's Subscription in Firestore
     const userRef = doc(db, "users", uid);
+    
+    // Fetch user details to save with the transaction (for Admin Panel visibility)
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    const userEmail = userData?.email || "Unknown Email";
+    const userName = userData?.name || "Unknown User";
+
     await updateDoc(userRef, {
       subscription_tier: tier,
       subscription_status: "active",
@@ -224,10 +231,13 @@ export async function POST(request: Request) {
     // Mark the TxID as used so it cannot be claimed again, and save all data for Admin Panel
     await setDoc(txRef, {
       ...txDetailsForAdmin,
-      used_by: uid,
+      uid: uid,
+      userEmail: userEmail,
+      userName: userName,
       tier: tier,
       cryptoId: cryptoId,
       expectedUsd: expectedUsd,
+      amountUsd: expectedUsd,
       processedAt: new Date().toISOString()
     });
 

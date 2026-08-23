@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
+import { formatTradeDate, getLocalJsDate } from "@/lib/dateUtils";
 
 interface Transaction {
   id: string; // The txid
@@ -27,6 +29,8 @@ interface Transaction {
   gasPrice?: string;
   status: string;
   isTestTransaction: boolean;
+  userEmail?: string;
+  userName?: string;
 }
 
 export default function TransactionsAdminPage() {
@@ -36,6 +40,9 @@ export default function TransactionsAdminPage() {
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Transaction>>({});
+  
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('all');
+  const [dateFilter, setDateFilter] = useState<DateRange>({ preset: 'all', start: null, end: null });
 
   useEffect(() => {
     fetchTransactions();
@@ -80,11 +87,22 @@ export default function TransactionsAdminPage() {
     }
   };
 
-  const filteredTx = transactions.filter(tx => 
-    tx.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    tx.uid.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tx.tier.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTx = transactions.filter(tx => {
+    const matchesSearch = tx.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      tx.uid.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tx.tier.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    if (!matchesSearch) return false;
+    
+    if (dateFilter.start && dateFilter.end) {
+      const d = getLocalJsDate(tx.processedAt);
+      if (d && (d < dateFilter.start || d > dateFilter.end)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -92,12 +110,7 @@ export default function TransactionsAdminPage() {
   };
 
   const formatDate = (dateString: string) => {
-    try {
-      const d = new Date(dateString);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
-      return "Invalid Date";
-    }
+    return formatTradeDate(dateString);
   };
 
   const truncate = (str: string, length = 12) => {
@@ -171,7 +184,14 @@ export default function TransactionsAdminPage() {
           </p>
         </div>
         
-        <div className="w-full md:w-80 flex items-center relative z-10">
+        <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3 relative z-10">
+          <DateRangePicker 
+            value={dateRangePreset}
+            onChange={(range) => {
+              setDateRangePreset(range.preset);
+              setDateFilter(range);
+            }}
+          />
           <Input 
             placeholder="Search TxID or User ID..." 
             value={searchTerm}
@@ -235,10 +255,12 @@ export default function TransactionsAdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-primary flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-elevated border border-default flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-elevated border border-default flex items-center justify-center shrink-0">
                           <i className="las la-user text-muted"></i>
                         </div>
-                        {truncate(tx.uid, 12)}
+                        <div className="flex flex-col">
+                          <span className="truncate max-w-[150px]">{tx.userEmail || tx.userName || "Unknown User"}</span>
+                        </div>
                       </div>
                       <div className="mt-2">
                         <Badge 
@@ -276,13 +298,13 @@ export default function TransactionsAdminPage() {
         </div>
       </Card>
 
-      {/* Transaction Detail Drawer */}
+      {/* Transaction Detail Modal */}
       {selectedTx && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-y-0 right-0 w-full max-w-xl bg-surface border-l border-subtle shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+            className="w-full max-w-2xl bg-surface border border-subtle rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden max-h-[90vh]"
           >
-            {/* Drawer Header */}
+            {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-subtle bg-base">
               <h2 className="text-lg font-bold text-primary flex items-center gap-3">
                 <div className="w-10 h-10 bg-info-bg text-info rounded-xl flex items-center justify-center border border-info/20">
@@ -298,20 +320,21 @@ export default function TransactionsAdminPage() {
               </button>
             </div>
 
-            {/* Drawer Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
               
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 mb-2 border border-slate-100 dark:border-slate-700/50">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-5 flex items-center gap-2">
                   <i className="las la-user text-info text-lg"></i> User Info
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">User ID</p>
-                    <p className="font-mono text-sm text-primary">{selectedTx.uid}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">User Details</p>
+                    <p className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{selectedTx.userEmail || selectedTx.userName || "Unknown User"}</p>
+                    <p className="font-mono text-xs text-slate-500 truncate mt-1">{selectedTx.uid}</p>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Plan Tier</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Plan Tier</p>
                     {isEditing ? (
                       <select 
                         value={editData.tier || 'free'}
@@ -330,13 +353,13 @@ export default function TransactionsAdminPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 mb-2 border border-slate-100 dark:border-slate-700/50">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-5 flex items-center gap-2">
                   <i className="las la-wallet text-info text-lg"></i> Payment Info
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Amount Verified</p>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount Verified</p>
                     {isEditing ? (
                       <input 
                         type="number"
@@ -346,21 +369,22 @@ export default function TransactionsAdminPage() {
                         placeholder="0.00"
                       />
                     ) : (
-                      <p className="text-xl font-medium text-success">${selectedTx.amountUsd} USD</p>
+                      <p className="text-lg font-medium text-success">${selectedTx.amountUsd} USD</p>
                     )}
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Crypto Received</p>
-                    <p className="text-sm font-bold text-primary">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Crypto Received</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.amountCrypto} {selectedTx.tokenSymbol}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Network / Token</p>
-                    <p className="text-sm font-bold text-primary">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
+                <div className="w-full h-px bg-slate-200 dark:bg-slate-700/50 my-4"></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Network / Token</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.network} &bull; {selectedTx.tokenSymbol !== 'N/A' ? selectedTx.tokenSymbol : selectedTx.cryptoId}</p>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Status</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Status</p>
                     {isEditing ? (
                       <select 
                         value={editData.status || 'SUCCESS'}
@@ -386,39 +410,44 @@ export default function TransactionsAdminPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 flex items-center gap-2">
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 mb-2 border border-slate-100 dark:border-slate-700/50">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-5 flex items-center gap-2">
                   <i className="las la-link text-info text-lg"></i> Blockchain Metadata
                 </h3>
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Transaction Hash</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Transaction Hash</p>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-sm text-primary break-all">{selectedTx.id}</p>
+                      <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.id}</p>
                       <button onClick={() => copyToClipboard(selectedTx.id)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-primary transition-colors shrink-0"><i className="las la-copy text-lg"></i></button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Block Timestamp</p>
-                      <p className="font-mono text-sm text-primary">{formatDate(selectedTx.timestamp)}</p>
+                  <div className="w-full h-px bg-slate-200 dark:bg-slate-700/50 my-4"></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Block Timestamp</p>
+                      <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{formatDate(selectedTx.timestamp)}</p>
                     </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">System Processed</p>
-                      <p className="font-mono text-sm text-primary">{formatDate(selectedTx.processedAt)}</p>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">System Processed</p>
+                      <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{formatDate(selectedTx.processedAt)}</p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">From Address</p>
-                    <p className="font-mono text-xs text-primary break-all">{selectedTx.fromAddress}</p>
+                  <div className="w-full h-px bg-slate-200 dark:bg-slate-700/50 my-4"></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">From Address</p>
+                      <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.fromAddress}</p>
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">To Address</p>
+                      <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.toAddress}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">To Address</p>
-                    <p className="font-mono text-xs text-primary break-all">{selectedTx.toAddress}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">Transaction Fee</p>
-                    <p className="font-mono text-sm text-primary">{selectedTx.transactionFee}</p>
+                  <div className="w-full h-px bg-slate-200 dark:bg-slate-700/50 my-4"></div>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Transaction Fee</p>
+                    <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedTx.transactionFee}</p>
                   </div>
                 </div>
               </div>
@@ -433,8 +462,8 @@ export default function TransactionsAdminPage() {
               )}
             </div>
             
-            {/* Drawer Footer */}
-            <div className="p-4 border-t border-subtle bg-surface/80 backdrop-blur-md sticky bottom-0 flex flex-col sm:flex-row gap-3">
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-subtle bg-surface/80 backdrop-blur-md flex flex-col sm:flex-row gap-3">
               <Button 
                 variant="ghost"
                 onClick={() => copyToClipboard(selectedTx.id)}

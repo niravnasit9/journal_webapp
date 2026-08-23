@@ -89,6 +89,8 @@ export const getPricingPlanList = (): PricingPlan[] => {
   return [PRICING_PLANS.free, PRICING_PLANS.starter, PRICING_PLANS.pro, PRICING_PLANS.elite];
 };
 
+export type Tier = 'free' | 'starter' | 'pro' | 'elite';
+
 export interface TierPermissions {
   maxStrategies: number;
   autoBrokerSync: boolean;
@@ -99,9 +101,15 @@ export interface TierPermissions {
   backtestingEngine: boolean;
   videoUploads: 'none' | 'standard' | 'unlimited';
   psychologistBooking: boolean;
+  mfeMaeAnalytics: boolean;
+  macroNewsOverlay: boolean;
+  propFirmGuardian: boolean;
+  aiTiltAnalysis: 'none' | 'basic' | 'full';
+  playbookAbTesting: boolean;
+  publicTrackRecord: boolean;
 }
 
-export const TIER_PERMISSIONS: Record<string, TierPermissions> = {
+export const TIER_PERMISSIONS: Record<Tier, TierPermissions> = {
   free: {
     maxStrategies: 1,
     autoBrokerSync: false,
@@ -112,6 +120,12 @@ export const TIER_PERMISSIONS: Record<string, TierPermissions> = {
     backtestingEngine: false,
     videoUploads: 'none',
     psychologistBooking: false,
+    mfeMaeAnalytics: false,
+    macroNewsOverlay: false,
+    propFirmGuardian: false,
+    aiTiltAnalysis: 'none',
+    playbookAbTesting: false,
+    publicTrackRecord: false,
   },
   starter: {
     maxStrategies: 3,
@@ -123,6 +137,12 @@ export const TIER_PERMISSIONS: Record<string, TierPermissions> = {
     backtestingEngine: false,
     videoUploads: 'none',
     psychologistBooking: false,
+    mfeMaeAnalytics: false,
+    macroNewsOverlay: true,
+    propFirmGuardian: false,
+    aiTiltAnalysis: 'none',
+    playbookAbTesting: false,
+    publicTrackRecord: false,
   },
   pro: {
     maxStrategies: Infinity,
@@ -134,6 +154,12 @@ export const TIER_PERMISSIONS: Record<string, TierPermissions> = {
     backtestingEngine: false,
     videoUploads: 'standard',
     psychologistBooking: false,
+    mfeMaeAnalytics: true,
+    macroNewsOverlay: true,
+    propFirmGuardian: true,
+    aiTiltAnalysis: 'basic',
+    playbookAbTesting: true,
+    publicTrackRecord: true,
   },
   elite: {
     maxStrategies: Infinity,
@@ -145,5 +171,11 @@ export const TIER_PERMISSIONS: Record<string, TierPermissions> = {
     backtestingEngine: true,
     videoUploads: 'unlimited',
     psychologistBooking: true,
-  }
+    mfeMaeAnalytics: true,
+    macroNewsOverlay: true,
+    propFirmGuardian: true,
+    aiTiltAnalysis: 'full',
+    playbookAbTesting: true,
+    publicTrackRecord: true,
+  },
 };

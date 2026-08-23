@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
 import toast from "react-hot-toast";
 
 interface TradeWithDetails extends TradeDoc {
@@ -112,6 +113,9 @@ export default function AdminTradesPage() {
               <tr>
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Account Type</th>
+                <th className="px-6 py-4">Open Date & Time</th>
+                <th className="px-6 py-4">Close Date & Time</th>
+                <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Setup / Emotion</th>
@@ -144,6 +148,15 @@ export default function AdminTradesPage() {
                         <Badge variant={trade.accountType.toLowerCase() === "real" ? "success" : "info"} size="sm" className="uppercase">
                           {trade.accountType}
                         </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-primary font-medium">{formatTradeDate(trade.open_time)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-primary font-medium">{formatTradeDate(trade.close_time)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-secondary font-medium">{getTradeDuration(trade.open_time, trade.close_time)}</div>
                       </td>
                       <td className="px-6 py-4 font-bold text-primary">
                         {trade.symbol}

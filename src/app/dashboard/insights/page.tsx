@@ -7,20 +7,29 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { DEMO_TRADES } from "@/lib/adminDemoData";
+import { TiltAnalyzer } from "@/components/insights/TiltAnalyzer";
 
 export default function InsightsPage() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) fetchTrades();
-  }, [user]);
+  }, [user, role]);
 
   const fetchTrades = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setTrades(DEMO_TRADES);
+        setLoading(false);
+        return;
+      }
+
       // Fetch user accounts
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
@@ -310,6 +319,11 @@ export default function InsightsPage() {
           </CardContent>
         </Card>
 
+      </div>
+
+      {/* Advanced AI Tilt Analysis */}
+      <div className="mt-8">
+        <TiltAnalyzer trades={trades} />
       </div>
     </div>
   );

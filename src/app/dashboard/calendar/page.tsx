@@ -7,9 +7,10 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTierTheme } from "@/hooks/useTierTheme";
+import { DEMO_TRADES } from "@/lib/adminDemoData";
 
 export default function GlobalCalendarPage() {
-  const { user, tier } = useAuth();
+  const { user, tier, role } = useAuth();
   const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,12 +20,19 @@ export default function GlobalCalendarPage() {
     if (user) {
       fetchGlobalTrades();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchGlobalTrades = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setTrades(DEMO_TRADES);
+        setLoading(false);
+        return;
+      }
+
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
       const accountIds = accSnap.docs.map(doc => doc.id);

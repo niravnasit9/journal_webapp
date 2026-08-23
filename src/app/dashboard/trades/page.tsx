@@ -12,9 +12,11 @@ import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
+import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
 
 export default function GlobalTradesPage() {
-  const { user, tier } = useAuth();
+  const { user, tier, role } = useAuth();
   const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
@@ -26,12 +28,20 @@ export default function GlobalTradesPage() {
     if (user) {
       fetchGlobalTrades();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchGlobalTrades = async () => {
     if (!user) return;
     try {
       setLoading(true);
+
+      if (role === "admin") {
+        setAccounts(DEMO_ACCOUNTS);
+        setTrades(DEMO_TRADES);
+        setLoading(false);
+        return;
+      }
+
       // Fetch all accounts for user
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
@@ -115,14 +125,16 @@ export default function GlobalTradesPage() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <Button 
-            variant="outline"
-            onClick={handleExportCSV}
-            className={!isProOrElite ? "opacity-70 cursor-not-allowed" : ""}
-            leftIcon={<i className={`las ${isProOrElite ? 'la-download' : 'la-lock'} text-lg`}></i>}
-          >
-            Export CSV
-          </Button>
+          <div title={!isProOrElite ? "Exporting is available on Pro/Elite tiers" : "Export your trade history"}>
+            <Button 
+              variant="outline"
+              onClick={handleExportCSV}
+              className={!isProOrElite ? "opacity-70 cursor-not-allowed pointer-events-none" : ""}
+              leftIcon={<i className={`las ${isProOrElite ? 'la-download' : 'la-lock'} text-lg`}></i>}
+            >
+              Export CSV
+            </Button>
+          </div>
           
           <div className="w-full md:w-64">
             <Input 
@@ -152,7 +164,9 @@ export default function GlobalTradesPage() {
             <thead className="bg-elevated text-xs uppercase text-secondary font-bold tracking-wider border-b border-subtle">
               <tr>
                 <th className="px-6 py-4">Account</th>
-                <th className="px-6 py-4">Open Time</th>
+                <th className="px-6 py-4">Open Date & Time</th>
+                <th className="px-6 py-4">Close Date & Time</th>
+                <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4 text-right">Lots</th>
@@ -182,8 +196,13 @@ export default function GlobalTradesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-primary font-medium">{new Date(trade.open_time).toLocaleDateString()}</div>
-                        <div className="text-xs text-secondary">{new Date(trade.open_time).toLocaleTimeString()}</div>
+                        <div className="text-primary font-medium">{formatTradeDate(trade.open_time)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-primary font-medium">{formatTradeDate(trade.close_time)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-secondary font-medium">{getTradeDuration(trade.open_time, trade.close_time)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-bold text-primary tracking-tight">{trade.symbol}</span>
