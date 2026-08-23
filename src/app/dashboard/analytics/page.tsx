@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { useAuth } from "@/lib/firebase/authContext";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
+import { useDemo } from "@/lib/demoContext";
+import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { InteractiveEquityCurve } from "@/components/analytics/InteractiveEquityCurve";
 import { AdvancedMetrics } from "@/components/analytics/AdvancedMetrics";
@@ -17,6 +19,7 @@ import { VolumeCorrelation } from "@/components/analytics/VolumeCorrelation";
 
 export default function AnalyticsOverview() {
   const { user } = useAuth();
+  const { isDemoMode } = useDemo();
   const router = useRouter();
 
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
@@ -33,6 +36,16 @@ export default function AnalyticsOverview() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        if (isDemoMode) {
+          setAccounts(DEMO_ACCOUNTS);
+          const demoTrades: TradeDoc[] = [];
+          for (const acc of DEMO_ACCOUNTS) {
+            demoTrades.push(...generateTradesForAccount(acc.id, 0, 30, 0.55, 1.0));
+          }
+          setAllTrades(demoTrades);
+          return;
+        }
+
         // 1. Fetch Accounts
         const accQ = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
         const accSnap = await getDocs(accQ);
@@ -56,7 +69,7 @@ export default function AnalyticsOverview() {
     };
 
     fetchData();
-  }, [user, router]);
+  }, [user, router, isDemoMode]);
 
   const activeTrades = useMemo(() => {
     if (selectedAccountId === "ALL") return allTrades;

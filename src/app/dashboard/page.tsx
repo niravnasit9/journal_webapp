@@ -10,29 +10,41 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
+import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
+import { useDemo } from "@/lib/demoContext";
 
 export default function UserDashboardCommandCenter() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [recentTrades, setRecentTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) fetchDashboardData();
-  }, [user, role]);
+    if (user || isDemoMode) fetchDashboardData();
+  }, [user, role, isDemoMode]);
 
   const fetchDashboardData = async () => {
-    if (!user) return;
     try {
       setLoading(true);
 
-      if (role === "admin") {
-        // Admin Preview Mode: Inject Demo Data
+      if (isDemoMode) {
         setAccounts(DEMO_ACCOUNTS);
-        setRecentTrades(DEMO_TRADES);
-        setLoading(false);
-        return; // Early return to prevent Firestore reads
+        const demoTrades: TradeDoc[] = [];
+        for (const acc of DEMO_ACCOUNTS) {
+          demoTrades.push(...generateTradesForAccount(acc.id, 0, 30, 0.55, 1.0));
+        }
+        demoTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
+        setRecentTrades(demoTrades);
+        return;
+      }
+      
+      if (!user) return;
+
+      if (role === "admin") {
+        setAccounts(DEMO_ACCOUNTS);
+        setRecentTrades([]);
+        return; 
       }
       
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));

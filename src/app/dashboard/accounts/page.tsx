@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { useTierTheme } from "@/hooks/useTierTheme";
+import { useDemo } from "@/lib/demoContext";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -19,6 +20,7 @@ import { DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 
 export default function UserAccountsPage() {
   const { user, tier, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const theme = useTierTheme();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,14 +31,18 @@ export default function UserAccountsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   
   useEffect(() => {
-    if (user) {
+    if (user || isDemoMode) {
       fetchAccounts();
     }
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchAccounts = async () => {
-    if (!user) return;
     try {
+      if (isDemoMode) {
+        setAccounts(DEMO_ACCOUNTS);
+        return;
+      }
+      if (!user) return;
       if (role === "admin") {
         setAccounts(DEMO_ACCOUNTS);
         return;

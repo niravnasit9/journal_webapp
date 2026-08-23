@@ -12,11 +12,13 @@ import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
+import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
+import { useDemo } from "@/lib/demoContext";
 import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
 
 export default function GlobalTradesPage() {
   const { user, tier, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
@@ -25,19 +27,32 @@ export default function GlobalTradesPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
 
   useEffect(() => {
-    if (user) {
+    if (user || isDemoMode) {
       fetchGlobalTrades();
     }
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchGlobalTrades = async () => {
-    if (!user) return;
     try {
       setLoading(true);
 
+      if (isDemoMode) {
+        setAccounts(DEMO_ACCOUNTS);
+        const demoTrades: TradeDoc[] = [];
+        for (const acc of DEMO_ACCOUNTS) {
+          demoTrades.push(...generateTradesForAccount(acc.id, 0, 30, 0.55, 1.0));
+        }
+        demoTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
+        setTrades(demoTrades);
+        setLoading(false);
+        return;
+      }
+
+      if (!user) return;
+
       if (role === "admin") {
         setAccounts(DEMO_ACCOUNTS);
-        setTrades(DEMO_TRADES);
+        setTrades([]);
         setLoading(false);
         return;
       }

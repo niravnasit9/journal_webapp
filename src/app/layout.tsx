@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/firebase/authContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { DemoProvider } from "@/lib/demoContext";
 import Script from "next/script";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         }}/>
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <DemoProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </DemoProvider>
         </ThemeProvider>
       </body>
     </html>

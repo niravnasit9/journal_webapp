@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase/config";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { useDemo } from "@/lib/demoContext";
+import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import { useAuth } from "@/lib/firebase/authContext";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -34,6 +36,7 @@ export default function AccountDetailView() {
   const { id } = useParams();
   const accountId = id as string;
   const { user, tier } = useAuth();
+  const { isDemoMode } = useDemo();
   const theme = useTierTheme();
   const router = useRouter();
 
@@ -54,6 +57,17 @@ export default function AccountDetailView() {
     if (!accountId) return;
     try {
       setLoading(true);
+      if (isDemoMode) {
+        const demoAcc = DEMO_ACCOUNTS.find(a => a.id === accountId);
+        if (demoAcc) {
+          setAccount(demoAcc);
+          const demoTrades = generateTradesForAccount(accountId, 0, 30, 0.55, 1.0);
+          demoTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
+          setTrades(demoTrades);
+          return;
+        }
+      }
+
       const accRef = doc(db, "accounts", accountId);
       const accSnap = await getDoc(accRef);
       if (accSnap.exists()) {
@@ -86,7 +100,7 @@ export default function AccountDetailView() {
 
   useEffect(() => {
     fetchData();
-  }, [accountId]);
+  }, [accountId, isDemoMode]);
 
   const handleDeleteTrade = (tradeId: string) => {
     setTradeToDelete(tradeId);
@@ -246,14 +260,16 @@ export default function AccountDetailView() {
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button 
-              variant="primary"
-              onClick={() => setIsAddModalOpen(true)}
-              leftIcon={<i className="las la-plus text-lg"></i>}
-              className="w-full md:w-auto"
-            >
-              Add Trade
-            </Button>
+            {!isDemoMode && (
+              <Button 
+                variant="primary"
+                onClick={() => setIsAddModalOpen(true)}
+                leftIcon={<i className="las la-plus text-lg"></i>}
+                className="w-full md:w-auto"
+              >
+                Add Trade
+              </Button>
+            )}
           </div>
         </div>
       </Card>
