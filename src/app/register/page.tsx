@@ -58,16 +58,12 @@ export default function RegisterPage() {
     }
   }, [user, authLoading, router]);
 
-  if (authLoading) {
+  if (authLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0f1c]">
         <LoadingSpinner className="w-10 h-10" />
       </div>
     );
-  }
-
-  if (user) {
-    return null; // redirecting via useEffect
   }
 
   const passwordStrength = password ? getPasswordStrength(password) : null;
