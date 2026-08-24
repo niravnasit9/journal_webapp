@@ -49,7 +49,7 @@ export default function AdminDashboardOverview() {
         // Transactions collection might not exist yet
       }
 
-      const activeSubscribers = usersSnap.docs.filter(d => {
+      const activeSubscribers = usersSnap.docs.filter((d: any) => {
         const tier = d.data().subscription_tier || d.data().tier || 'free';
         return tier !== 'free';
       }).length;
@@ -58,13 +58,13 @@ export default function AdminDashboardOverview() {
         totalUsers: usersSnap.docs.length,
         totalAccounts: accountsSnap.docs.length,
         totalTrades: tradesSnap.docs.length,
-        activeFirms: firmsSnap.docs.filter(d => d.data().is_active).length,
+        activeFirms: firmsSnap.docs.filter((d: any) => d.data().is_active).length,
         monthlyRevenue,
         activeSubscribers,
         successfulPayments
       });
 
-      const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const users = usersSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
       users.sort((a: any, b: any) => {
         const tA = a.created_at?.toMillis ? a.created_at.toMillis() : (a.created_at || 0);
         const tB = b.created_at?.toMillis ? b.created_at.toMillis() : (b.created_at || 0);
