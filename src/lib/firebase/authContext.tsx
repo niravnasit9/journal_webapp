@@ -58,7 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // No user — clear everything and stop loading
         setUser(null);
         setRole(null);
-        setTier(null);
+        setTier("free");
+        document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         setLoading(false);
       }
     });
