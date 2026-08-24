@@ -306,21 +306,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             <div className="pt-4 border-t border-subtle space-y-3">
-              <Button 
-                variant={isDemoMode ? "primary" : "secondary"}
-                onClick={toggleDemoMode}
-                className="w-full relative overflow-hidden group"
-                leftIcon={<i className={`las text-lg ${isDemoMode ? 'la-toggle-on text-white' : 'la-toggle-off'}`}></i>}
-              >
-                {isDemoMode ? (
-                  <span className="font-bold">Demo Mode Active</span>
-                ) : (
-                  <span>Enable Demo Mode</span>
-                )}
-                {isDemoMode && (
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                )}
-              </Button>
+              {role === "admin" && (
+                <Button 
+                  variant={isDemoMode ? "primary" : "secondary"}
+                  onClick={toggleDemoMode}
+                  className="w-full relative overflow-hidden group"
+                  leftIcon={<i className={`las text-lg ${isDemoMode ? 'la-toggle-on text-white' : 'la-toggle-off'}`}></i>}
+                >
+                  {isDemoMode ? (
+                    <span className="font-bold">Demo Mode Active</span>
+                  ) : (
+                    <span>Enable Demo Mode</span>
+                  )}
+                  {isDemoMode && (
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                  )}
+                </Button>
+              )}
               <ThemeToggle />
               <Button 
                 variant="danger" 
