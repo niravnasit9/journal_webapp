@@ -41,7 +41,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user && !loading) {
-      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
     }
   }, [user, authLoading, role, loading]);
 
@@ -103,7 +107,11 @@ export default function LoginPage() {
       // Set session cookie (httpOnly not available on client, but we keep it short-lived)
       document.cookie = `userRole=${role}; path=/; max-age=86400; SameSite=Strict`;
 
-      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
       setLoading(false);
