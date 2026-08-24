@@ -76,7 +76,19 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Fetch role to set cookie properly
+      const userDocRef = doc(db, "users", userCredential.user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      let userRole = "user";
+      if (userDocSnap.exists()) {
+        userRole = userDocSnap.data().role || "user";
+      }
+      
+      // Set cookie for middleware
+      document.cookie = `userRole=${userRole}; path=/; max-age=86400`;
+      
       setLoading(false); // Let useEffect handle the redirect
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));

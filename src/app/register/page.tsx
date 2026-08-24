@@ -114,6 +114,9 @@ export default function RegisterPage() {
       // Send email verification
       await sendEmailVerification(firebaseUser);
 
+      // Set cookie for middleware
+      document.cookie = `userRole=user; path=/; max-age=86400`;
+
       // Redirect to dashboard (verification email is sent in background)
       window.location.href = "/dashboard";
     } catch (err: any) {
