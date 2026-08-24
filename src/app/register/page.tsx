@@ -54,6 +54,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
+      document.cookie = `userRole=user; path=/; max-age=86400`;
       window.location.href = "/dashboard";
     }
   }, [user, authLoading, router]);

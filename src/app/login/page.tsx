@@ -41,6 +41,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user && !loading) {
+      // Ensure cookie is always present before redirecting (fixes loops if cookie expired but Firebase session is still active)
+      document.cookie = `userRole=${role || "user"}; path=/; max-age=86400`;
       window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
     }
   }, [user, authLoading, role, loading]);
