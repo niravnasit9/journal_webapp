@@ -54,7 +54,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   }, [user, authLoading, router]);
 
@@ -115,7 +115,7 @@ export default function RegisterPage() {
       await sendEmailVerification(firebaseUser);
 
       // Redirect to dashboard (verification email is sent in background)
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
     } finally {

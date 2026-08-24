@@ -18,16 +18,16 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push("/register");
+        window.location.href = "/register";
       } else if (user.emailVerified) {
-        router.push("/pricing");
+        window.location.href = "/pricing";
       }
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     await auth.signOut();
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   if (loading || !user || user.emailVerified) {

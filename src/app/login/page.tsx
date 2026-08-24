@@ -41,11 +41,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user && !loading) {
-      if (role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
+      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
     }
   }, [user, authLoading, role, loading]);
 
@@ -102,11 +98,7 @@ export default function LoginPage() {
 
 
 
-      if (role === "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
+      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
       setLoading(false);
