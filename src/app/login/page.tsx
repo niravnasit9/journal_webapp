@@ -76,29 +76,8 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-
-      const userDocRef = doc(db, "users", firebaseUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      let role = "user";
-      if (userDocSnap.exists()) {
-        role = userDocSnap.data().role;
-      } else {
-        const nameFallback = firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User";
-        await setDoc(userDocRef, {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          name: nameFallback,
-          role: "user",
-          created_at: new Date(),
-        });
-      }
-
-
-
-      window.location.href = role === "admin" ? "/admin/dashboard" : "/dashboard";
+      await signInWithEmailAndPassword(auth, email, password);
+      setLoading(false); // Let useEffect handle the redirect
     } catch (err: any) {
       setError(getFirebaseErrorMessage(err.code));
       setLoading(false);
