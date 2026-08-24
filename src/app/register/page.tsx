@@ -114,9 +114,6 @@ export default function RegisterPage() {
       // Send email verification
       await sendEmailVerification(firebaseUser);
 
-      // Set session cookie
-      document.cookie = `userRole=user; path=/; max-age=86400; SameSite=Strict`;
-
       // Redirect to dashboard (verification email is sent in background)
       router.push("/dashboard");
     } catch (err: any) {

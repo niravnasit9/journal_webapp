@@ -100,8 +100,7 @@ export default function LoginPage() {
         });
       }
 
-      // Set session cookie (httpOnly not available on client, but we keep it short-lived)
-      document.cookie = `userRole=${role}; path=/; max-age=86400; SameSite=Strict`;
+
 
       if (role === "admin") {
         router.push("/admin/dashboard");
