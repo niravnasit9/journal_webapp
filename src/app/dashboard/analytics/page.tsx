@@ -18,7 +18,7 @@ import { SessionHeatmap } from "@/components/analytics/SessionHeatmap";
 import { VolumeCorrelation } from "@/components/analytics/VolumeCorrelation";
 
 export default function AnalyticsOverview() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isDemoMode } = useDemo();
   const router = useRouter();
 
@@ -28,6 +28,7 @@ export default function AnalyticsOverview() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>("ALL");
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push("/login");
       return;
@@ -69,7 +70,7 @@ export default function AnalyticsOverview() {
     };
 
     fetchData();
-  }, [user, router, isDemoMode]);
+  }, [user, router, isDemoMode, authLoading]);
 
   const activeTrades = useMemo(() => {
     if (selectedAccountId === "ALL") return allTrades;

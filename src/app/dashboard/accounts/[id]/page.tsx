@@ -35,7 +35,7 @@ type TabType = "Account Overview" | "Trading Overview" | "Trading History" | "Ps
 export default function AccountDetailView() {
   const { id } = useParams();
   const accountId = id as string;
-  const { user, tier } = useAuth();
+  const { user, tier, loading: authLoading } = useAuth();
   const { isDemoMode } = useDemo();
   const theme = useTierTheme();
   const router = useRouter();
@@ -99,8 +99,9 @@ export default function AccountDetailView() {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     fetchData();
-  }, [accountId, isDemoMode]);
+  }, [accountId, isDemoMode, authLoading, user]);
 
   const handleDeleteTrade = (tradeId: string) => {
     setTradeToDelete(tradeId);
