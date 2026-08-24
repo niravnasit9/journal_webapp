@@ -54,9 +54,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!loading) {
       if (!user) {
         document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        router.push("/login");
+        window.location.href = "/login";
       } else if (!user.emailVerified && role !== "admin") {
-        router.push("/verify-email");
+        window.location.href = "/verify-email";
       }
     }
   }, [user, loading, router, role]);
@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = async () => {
     await auth.signOut();
     document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -30,7 +30,7 @@ export default function AnalyticsOverview() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.push("/login");
+      window.location.href = "/login";
       return;
     }
 
