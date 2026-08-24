@@ -48,15 +48,18 @@ export default function UserDashboardCommandCenter() {
       }
       
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
-      const accSnap = await getDocs(accQuery);
-      const accDocs = accSnap.docs.map(d => ({ id: d.id, ...d.data() } as AccountDoc));
+      
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 10000));
+      
+      const accSnap: any = await Promise.race([getDocs(accQuery), timeoutPromise]);
+      const accDocs = accSnap.docs.map((d: any) => ({ id: d.id, ...d.data() } as AccountDoc));
       setAccounts(accDocs);
 
       let allTrades: TradeDoc[] = [];
       for (const acc of accDocs) {
         const tQuery = query(collection(db, "trades"), where("account_id", "==", acc.id));
-        const tSnap = await getDocs(tQuery);
-        const tDocs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TradeDoc));
+        const tSnap: any = await Promise.race([getDocs(tQuery), timeoutPromise]);
+        const tDocs = tSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as TradeDoc));
         allTrades = [...allTrades, ...tDocs];
       }
       

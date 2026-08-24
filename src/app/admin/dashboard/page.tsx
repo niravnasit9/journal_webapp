@@ -30,10 +30,12 @@ export default function AdminDashboardOverview() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const usersSnap = await getDocs(collection(db, "users"));
-      const accountsSnap = await getDocs(collection(db, "accounts"));
-      const tradesSnap = await getDocs(collection(db, "trades"));
-      const firmsSnap = await getDocs(collection(db, "prop_firms"));
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 10000));
+      
+      const usersSnap: any = await Promise.race([getDocs(collection(db, "users")), timeoutPromise]);
+      const accountsSnap: any = await Promise.race([getDocs(collection(db, "accounts")), timeoutPromise]);
+      const tradesSnap: any = await Promise.race([getDocs(collection(db, "trades")), timeoutPromise]);
+      const firmsSnap: any = await Promise.race([getDocs(collection(db, "prop_firms")), timeoutPromise]);
       
       let monthlyRevenue = 0;
       let successfulPayments = 0;
