@@ -33,9 +33,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(firebaseUser);
 
         // 2. Fetch role and tier using a one-time fetch to avoid hanging listeners
-        getDoc(doc(db, "users", firebaseUser.uid))
-          .then((docSnap) => {
-            if (docSnap.exists()) {
+        const fetchDoc = getDoc(doc(db, "users", firebaseUser.uid));
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000));
+        
+        Promise.race([fetchDoc, timeout])
+          .then((docSnap: any) => {
+            if (docSnap.exists && docSnap.exists()) {
               const data = docSnap.data();
               setRole(data.role as "admin" | "user");
               setTier(data.subscription_tier || "free");
