@@ -80,9 +80,18 @@ export default function LoginPage() {
       
       // Fetch role to set cookie properly
       const userDocRef = doc(db, "users", userCredential.user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 8000));
+      let userDocSnap: any;
+      try {
+        userDocSnap = await Promise.race([getDoc(userDocRef), timeoutPromise]);
+      } catch (e) {
+        // Fallback if it times out
+        userDocSnap = null;
+      }
+      
       let userRole = "user";
-      if (userDocSnap.exists()) {
+      if (userDocSnap && userDocSnap.exists()) {
         userRole = userDocSnap.data().role || "user";
       }
       
