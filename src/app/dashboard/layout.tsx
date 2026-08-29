@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { auth, db } from "@/lib/firebase/config";
 import { updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { GlobalSettings } from "@/lib/firebase/schema";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter, usePathname } from "next/navigation";
@@ -40,6 +41,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null);
+
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const docRef = doc(db, "settings", "global");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setGlobalSettings(docSnap.data() as GlobalSettings);
+        }
+      } catch (e) {
+        console.error("Failed to load global settings", e);
+      }
+    };
+    fetchGlobalSettings();
+  }, []);
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -339,6 +356,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-base">
+        {globalSettings?.global_announcement && (
+          <div className="bg-blue-600/20 border-b border-blue-500/50 w-full px-4 py-2 flex items-center justify-center text-center backdrop-blur-md z-50">
+            <p className="text-blue-400 text-sm font-semibold flex items-center gap-2">
+              <i className="las la-bullhorn text-lg"></i>
+              {globalSettings.global_announcement}
+            </p>
+          </div>
+        )}
         {/* Desktop Custom Scrollbar Style override */}
         <style dangerouslySetInnerHTML={{__html: `
           .no-scrollbar::-webkit-scrollbar { display: none; }

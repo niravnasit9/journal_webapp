@@ -90,7 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       title: "BUSINESS",
       items: [
         { name: "Subscriptions", href: "/admin/subscriptions", icon: "las la-star" },
-        { name: "Transactions", href: "/admin/transactions", icon: "las la-file-invoice-dollar" }
+        { name: "Billing & Payments", href: "/admin/billing", icon: "las la-file-invoice-dollar", badge: "NEW", tag: "success" }
       ]
     },
     {

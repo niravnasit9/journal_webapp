@@ -206,3 +206,67 @@ export interface GoalDoc {
   updated_at: any;
 }
 
+export interface PropFirmPreset {
+  id: string;
+  name: string;
+  target_pct: number;
+  daily_loss_pct: number;
+  max_loss_pct: number;
+  consistency_rule_pct: number;
+}
+
+export interface GlobalSettings {
+  id?: string; // e.g., 'main'
+  ai_revenge_gap_mins: number;
+  ai_bad_session_threshold: number;
+  maintenance_mode: boolean;
+  global_announcement: string;
+  max_free_accounts: number;
+  
+  // NEW: Crypto Billing Configuration
+  crypto_price_starter: number;
+  crypto_price_pro: number;
+  crypto_price_elite: number;
+  crypto_wallet_address: string; // The wallet where users send funds
+  crypto_network: string; // e.g., "TRC20", "ERC20", "Solana"
+}
+
+export interface AutoDiscount {
+  id?: string;
+  name: string; 
+  discount_pct: number;
+  target_plans: ("STARTER" | "PRO" | "ELITE" | "ALL")[];
+  target_users: { uid: string; username: string }[] | "ALL";
+  is_active: boolean;
+  expires_at?: string | null; // ISO date string
+}
+
+export interface CouponCode {
+  id?: string;
+  code: string; 
+  discount_pct: number;
+  target_plans: ("STARTER" | "PRO" | "ELITE" | "ALL")[];
+  target_users: { uid: string; username: string }[] | "ALL";
+  is_active: boolean;
+}
+
+export interface PaymentMethod {
+  id?: string; // e.g., "USDT_TRC20"
+  name: string; // e.g., "Tether (USDT)", "Bitcoin"
+  network: string; // e.g., "TRC20", "ERC20", "Bitcoin"
+  symbol: string; // e.g., "USDT", "BTC"
+  depositAddress: string;
+  logo?: string; // URL to the crypto logo
+  isActive: boolean;
+}
+
+export interface Transaction {
+  id?: string;
+  uid: string;
+  txid: string;
+  amount: number;
+  tier: string;
+  cryptoId: string;
+  status: "pending" | "verified" | "failed";
+  timestamp: Date | any; // Firestore Timestamp
+}

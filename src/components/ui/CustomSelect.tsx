@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 export interface CustomSelectOption {
   value: string;
   label: string;
+  logo?: string;
 }
 
 interface CustomSelectProps {
@@ -39,7 +40,10 @@ export default function CustomSelect({ options, value, onChange, className = "",
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full min-h-[44px] bg-[#fafafa] dark:bg-[#0a0f1c] border border-gray-200 dark:border-slate-800 rounded-lg ${icon ? 'pl-9' : 'pl-4'} pr-8 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 hover:border-gray-300 dark:hover:border-slate-700 text-sm transition-all cursor-pointer flex justify-between items-center`}
       >
-        <span className="truncate">{selectedOption?.label}</span>
+        <span className="truncate flex items-center gap-2">
+          {selectedOption?.logo && <img src={selectedOption.logo} alt="" className="w-5 h-5 rounded-full object-contain" />}
+          {selectedOption?.label}
+        </span>
         <i className={`las la-angle-down text-[12px] absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
       </div>
 
@@ -52,12 +56,13 @@ export default function CustomSelect({ options, value, onChange, className = "",
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`px-4 py-3 min-h-[44px] flex items-center text-sm cursor-pointer transition-colors ${
+              className={`px-4 py-3 min-h-[44px] flex items-center gap-2 text-sm cursor-pointer transition-colors ${
                 value === option.value 
                   ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold' 
                   : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-[#1a1d24]'
               }`}
             >
+              {option.logo && <img src={option.logo} alt="" className="w-5 h-5 rounded-full object-contain" />}
               {option.label}
             </div>
           ))}

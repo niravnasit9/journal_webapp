@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { AccountDoc, TradeDoc } from '@/lib/firebase/schema';
+import { AccountDoc, TradeDoc, PropFirmPreset } from '@/lib/firebase/schema';
 
-export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[], currency: "USD" | "INR" }> = ({ account, trades, currency }) => {
+export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[], preset?: PropFirmPreset, currency: "USD" | "INR" }> = ({ account, trades, preset, currency }) => {
   const [timeLeft, setTimeLeft] = useState("");
 
   const formatMoney = (val: number) => {
@@ -25,11 +25,14 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
     );
   }
 
-  // 1. Target Progress (Hardcoded 8%)
+  // 1. Target Progress
   const initialBalance = account.initial_balance || 100000;
   const currentBalance = account.current_balance || initialBalance;
   const netGain = currentBalance - initialBalance;
-  const targetGoal = initialBalance * 0.08;
+  
+  // DYNAMIC TARGET LOGIC: Uses preset if it exists, otherwise falls back to 8%
+  const targetPct = preset?.target_pct ? (preset.target_pct / 100) : 0.08;
+  const targetGoal = initialBalance * targetPct;
   const progressPct = Math.max(0, Math.min(100, (netGain / targetGoal) * 100));
 
   // 2. Reset Clock (5:00 PM EST)

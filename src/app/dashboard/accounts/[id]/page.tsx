@@ -7,7 +7,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { useDemo } from "@/lib/demoContext";
 import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import { useAuth } from "@/lib/firebase/authContext";
-import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
+import { AccountDoc, TradeDoc, GlobalSettings, PropFirmPreset } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import Link from "next/link";
 import PnLChart from "@/components/PnLChart";
@@ -46,6 +46,40 @@ export default function AccountDetailView() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   
   const [activeTab, setActiveTab] = useState<TabType>("Account Overview");
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings | undefined>();
+  const [preset, setPreset] = useState<PropFirmPreset | undefined>();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const docRef = doc(db, "settings", "global");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setGlobalSettings(docSnap.data() as GlobalSettings);
+        }
+      } catch (e) {
+        console.error("Failed to load global settings", e);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    const fetchPreset = async () => {
+      if (account?.prop_firm) {
+        try {
+          const docRef = doc(db, "presets", account.prop_firm);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setPreset(docSnap.data() as PropFirmPreset);
+          }
+        } catch (e) {
+          console.error("Failed to load preset", e);
+        }
+      }
+    };
+    fetchPreset();
+  }, [account]);
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -223,7 +257,7 @@ export default function AccountDetailView() {
   const avgWinningDay = winningDays.length > 0 ? winningDays.reduce((a,b) => a+b, 0) / winningDays.length : 0;
   const avgLosingDay = losingDays.length > 0 ? losingDays.reduce((a,b) => a+b, 0) / losingDays.length : 0;
 
-  const alerts = generateCoachingAlerts(trades);
+  const alerts = generateCoachingAlerts(trades, globalSettings);
 
   const TABS: TabType[] = ["Account Overview", "Trading Overview", "Trading History", "Psychology"];
 
@@ -292,7 +326,7 @@ export default function AccountDetailView() {
 
       {activeTab === "Account Overview" && (
         <div className="space-y-6">
-          <PropFirmOverview account={account} trades={trades} currency={account.currency as "USD" | "INR"} />
+          <PropFirmOverview account={account} trades={trades} preset={preset} currency={account.currency as "USD" | "INR"} />
           <RecoverySimulator account={account} trades={trades} currency={account.currency as "USD" | "INR"} />
           <ChallengeTracker account={account} currency={account.currency as "USD" | "INR"} />
         </div>

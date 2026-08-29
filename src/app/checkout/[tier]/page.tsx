@@ -9,18 +9,9 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { QRCodeSVG } from 'qrcode.react';
 import { getPricingPlanList } from "@/lib/pricingConfig";
-
-const cryptoOptions = [
-  { id: "USDT_TRC20", name: "Tether (USDT)", network: "TRC20", symbol: "USDT", depositAddress: "TGpphHNdQseJrZ44qNZhTAtNn2GGUskGbJ" },
-  { id: "USDT_BEP20", name: "Tether (USDT)", network: "BEP20", symbol: "USDT", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "USDT_ERC20", name: "Tether (USDT)", network: "ERC20", symbol: "USDT", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "USDC_BEP20", name: "USD Coin (USDC)", network: "BEP20", symbol: "USDC", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "USDC_ERC20", name: "USD Coin (USDC)", network: "ERC20", symbol: "USDC", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "BTC", name: "Bitcoin", network: "Bitcoin", symbol: "BTC", depositAddress: "bc1qmajmjj820letfa6lxr0y8dp0g2ly54grkwkjmy" },
-  { id: "ETH", name: "Ethereum", network: "ERC20", symbol: "ETH", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "BNB", name: "Binance Coin", network: "BEP20", symbol: "BNB", depositAddress: "0x0ef925358abc00e64d296fd61c142638e737fa5e" },
-  { id: "TRX", name: "Tron", network: "TRC20", symbol: "TRX", depositAddress: "TGpphHNdQseJrZ44qNZhTAtNn2GGUskGbJ" }
-];
+import { db } from "@/lib/firebase/config";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { PaymentMethod, AutoDiscount, CouponCode, GlobalSettings } from "@/lib/firebase/schema";
 
 export default function CheckoutPage() {
   const { tier } = useParams();
@@ -33,15 +24,99 @@ export default function CheckoutPage() {
   const plan = pricingPlans.find(p => p.id === tier);
 
   const [billingCycle] = useState<"monthly" | "yearly">(initialBilling as "monthly" | "yearly");
-  const [selectedCryptoId, setSelectedCryptoId] = useState<string>("USDT_TRC20");
+  const [cryptoOptions, setCryptoOptions] = useState<PaymentMethod[]>([]);
+  const [selectedCryptoId, setSelectedCryptoId] = useState<string>("");
   const [cryptoInvoiceActive, setCryptoInvoiceActive] = useState(false);
+  const [liveCryptoPrice, setLiveCryptoPrice] = useState<number | null>(null);
+  const [fetchingPrice, setFetchingPrice] = useState(false);
   
   // UI States
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(true); // TEMP FORCED TRUE FOR UI REVIEW
-  const [txid, setTxid] = useState("0x123abc456def7890123456789abcdef1234567890"); // TEMP FORCED FOR UI REVIEW
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [txid, setTxid] = useState("");
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes for crypto payment
+
+  // Promo Code & Global Settings States
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null);
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [autoDiscount, setAutoDiscount] = useState<AutoDiscount | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponCode | null>(null);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const docRef = doc(db, "settings", "global");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setGlobalSettings(docSnap.data() as GlobalSettings);
+        }
+
+        const gatewaysSnap = await getDocs(collection(db, "payment_methods"));
+        const gateways = gatewaysSnap.docs.map(d => ({ id: d.id, ...d.data() } as PaymentMethod)).filter(g => g.isActive);
+        setCryptoOptions(gateways);
+        if (gateways.length > 0) {
+          setSelectedCryptoId(gateways[0].id!);
+        }
+        
+        if (user && plan) {
+          const autoSnap = await getDocs(collection(db, "auto_discounts"));
+          const autos = autoSnap.docs.map(d => ({ id: d.id, ...d.data() } as AutoDiscount)).filter(a => a.is_active);
+          
+          let bestAuto: AutoDiscount | null = null;
+          for (const a of autos) {
+            const planValid = a.target_plans.includes("ALL") || a.target_plans.includes(plan.id.toUpperCase() as any);
+            const userValid = a.target_users === "ALL" || (Array.isArray(a.target_users) && a.target_users.some(u => u.uid === user.uid));
+            const timeValid = !a.expires_at || new Date(a.expires_at).getTime() > Date.now();
+            
+            if (planValid && userValid && timeValid) {
+              if (!bestAuto || a.discount_pct > bestAuto.discount_pct) {
+                bestAuto = a;
+              }
+            }
+          }
+          setAutoDiscount(bestAuto);
+        }
+
+      } catch (e) {
+        console.error("Failed to load settings", e);
+      }
+    };
+    fetchSettings();
+  }, [user, plan]);
+
+  useEffect(() => {
+    const fetchLivePrice = async () => {
+      if (!selectedCryptoId) return;
+      const selected = cryptoOptions.find(c => c.id === selectedCryptoId);
+      if (!selected) return;
+
+      // Stablecoins are generally $1
+      if (selected.symbol === "USDT" || selected.symbol === "USDC") {
+        setLiveCryptoPrice(1);
+        return;
+      }
+
+      setFetchingPrice(true);
+      try {
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${selected.symbol}USDT`);
+        const data = await response.json();
+        if (data && data.price) {
+          setLiveCryptoPrice(Number(data.price));
+        } else {
+          setLiveCryptoPrice(null); // Fallback if API fails
+        }
+      } catch (e) {
+        console.error("Error fetching live price:", e);
+        setLiveCryptoPrice(null);
+      }
+      setFetchingPrice(false);
+    };
+
+    fetchLivePrice();
+  }, [selectedCryptoId, cryptoOptions]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -68,7 +143,107 @@ export default function CheckoutPage() {
     );
   }
 
-  const amount = billingCycle === "yearly" ? plan.priceYearly! : plan.priceMonthly!;
+  let baseAmount = billingCycle === "yearly" ? plan.priceYearly! : plan.priceMonthly!;
+  
+  if (globalSettings) {
+    if (plan.id === 'starter' && globalSettings.crypto_price_starter) {
+      baseAmount = billingCycle === 'yearly' ? globalSettings.crypto_price_starter * 12 : globalSettings.crypto_price_starter;
+    } else if (plan.id === 'pro' && globalSettings.crypto_price_pro) {
+      baseAmount = billingCycle === 'yearly' ? globalSettings.crypto_price_pro * 12 : globalSettings.crypto_price_pro;
+    } else if (plan.id === 'elite' && globalSettings.crypto_price_elite) {
+      baseAmount = billingCycle === 'yearly' ? globalSettings.crypto_price_elite * 12 : globalSettings.crypto_price_elite;
+    }
+  }
+
+  // Calculate Best Discount
+  let discountToApply = 0;
+  if (autoDiscount && autoDiscount.is_active) {
+    discountToApply = autoDiscount.discount_pct;
+  }
+  if (appliedCoupon && appliedCoupon.is_active && appliedCoupon.discount_pct > discountToApply) {
+    discountToApply = appliedCoupon.discount_pct;
+  }
+
+  const discountAmount = baseAmount * (discountToApply / 100);
+  const amount = Math.max(0, baseAmount - discountAmount);
+
+  // Live Crypto Math Calculation
+  let cryptoRequired = amount;
+  let isStablecoin = false;
+  let cryptoDecimals = 4;
+  
+  if (selectedCryptoId) {
+    const selected = cryptoOptions.find(c => c.id === selectedCryptoId);
+    if (selected) {
+      isStablecoin = selected.symbol === "USDT" || selected.symbol === "USDC";
+      // Stablecoins only need 2 decimals, volatile coins use 4
+      cryptoDecimals = isStablecoin ? 2 : 4;
+    }
+  }
+
+  // Buffer of 1.5% to account for volatility during transfer (only for volatile cryptos)
+  const bufferMultiplier = isStablecoin ? 1 : 1.015; 
+  if (liveCryptoPrice) {
+    cryptoRequired = (amount / liveCryptoPrice) * bufferMultiplier;
+  }
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim()) return;
+    setIsApplyingPromo(true);
+    setPromoError(null);
+    try {
+      const q = query(collection(db, "coupon_codes"), where("code", "==", promoCodeInput.trim().toUpperCase()));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        setPromoError("Invalid coupon code.");
+        setAppliedCoupon(null);
+        setIsApplyingPromo(false);
+        return;
+      }
+
+      const codeDoc = querySnapshot.docs[0].data() as CouponCode;
+      
+      if (!codeDoc.is_active) {
+        setPromoError("This coupon code is no longer active.");
+        setAppliedCoupon(null);
+        setIsApplyingPromo(false);
+        return;
+      }
+
+      const currentTierId = plan.id.toUpperCase();
+      if (!codeDoc.target_plans.includes("ALL") && !codeDoc.target_plans.includes(currentTierId as any)) {
+        setPromoError(`This code is not valid for the ${currentTierId} plan.`);
+        setAppliedCoupon(null);
+        setIsApplyingPromo(false);
+        return;
+      }
+
+      if (codeDoc.target_users !== "ALL") {
+        const isAllowed = codeDoc.target_users.some(u => u.uid === user.uid);
+        if (!isAllowed) {
+          setPromoError("This code is not assigned to your account.");
+          setAppliedCoupon(null);
+          setIsApplyingPromo(false);
+          return;
+        }
+      }
+
+      if (autoDiscount && autoDiscount.discount_pct >= codeDoc.discount_pct) {
+        setPromoError("An equal or better auto-discount is already applied!");
+        setAppliedCoupon(null);
+        setIsApplyingPromo(false);
+        return;
+      }
+
+      setAppliedCoupon(codeDoc);
+      toast.success(`Coupon applied! ${codeDoc.discount_pct}% OFF`);
+    } catch (e) {
+      console.error(e);
+      setPromoError("Error applying coupon code");
+    }
+    setIsApplyingPromo(false);
+  };
 
   const handleCheckout = async () => {
     if (!cryptoInvoiceActive) {
@@ -213,8 +388,20 @@ export default function CheckoutPage() {
                 <p className="text-slate-500 text-sm">Billed {billingCycle}</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold tracking-tight">${amount}</div>
-                <div className="text-sm text-slate-500">Total amount</div>
+                {appliedCoupon || autoDiscount ? (
+                  <>
+                    <div className="text-sm font-bold tracking-tight text-slate-400 line-through">${baseAmount.toFixed(2)}</div>
+                    <div className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">${amount.toFixed(2)}</div>
+                    <div className="text-xs font-bold text-emerald-500 mt-1 uppercase">
+                      {appliedCoupon ? `${appliedCoupon.discount_pct}% OFF COUPON APPLIED` : `${autoDiscount!.discount_pct}% OFF AUTO-DISCOUNT APPLIED`}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-3xl font-bold tracking-tight">${amount.toFixed(2)}</div>
+                    <div className="text-sm text-slate-500">Total amount</div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -235,9 +422,65 @@ export default function CheckoutPage() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm sticky top-24">
             <h2 className="font-bold text-lg mb-4">Payment Details</h2>
             
+            {/* PROMO CODE SECTION */}
+            <div className="mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Have a promo code?</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={promoCodeInput}
+                  onChange={e => setPromoCodeInput(e.target.value.toUpperCase())}
+                  placeholder="Enter code"
+                  disabled={!!appliedCoupon || isApplyingPromo}
+                  className="w-full h-10 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors outline-none font-mono disabled:opacity-50"
+                />
+                {!appliedCoupon ? (
+                  <button 
+                    onClick={handleApplyPromo}
+                    disabled={!promoCodeInput || isApplyingPromo}
+                    className="h-10 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-lg transition-colors disabled:opacity-50 shrink-0"
+                  >
+                    {isApplyingPromo ? "..." : "Apply"}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setAppliedCoupon(null);
+                      setPromoCodeInput("");
+                    }}
+                    className="h-10 px-4 bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 font-bold text-sm rounded-lg transition-colors shrink-0"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {promoError && <p className="text-xs text-rose-500 mt-2 font-medium">{promoError}</p>}
+            </div>
+
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-              We currently process payments securely via Cryptocurrency. Send <strong className="text-slate-900 dark:text-white">${amount}</strong> to the wallet address below and provide your Transaction Hash.
+              We currently process payments securely via Cryptocurrency. Send <strong className="text-slate-900 dark:text-white">${amount.toFixed(2)}</strong> to the wallet address below and provide your Transaction Hash.
             </p>
+            
+            {liveCryptoPrice && cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol && (
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-4 mb-6">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">Crypto Required</span>
+                  {fetchingPrice ? (
+                    <span className="text-xs text-indigo-500 animate-pulse">Live fetching...</span>
+                  ) : (
+                    <span className="text-xs text-indigo-500">
+                      {isStablecoin ? "Pegged 1:1" : "Includes 1.5% buffer"}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">
+                  {fetchingPrice ? "..." : `~ ${cryptoRequired.toFixed(cryptoDecimals)} ${cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol}`}
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  Exchange Rate: 1 {cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol} = ${liveCryptoPrice.toFixed(2)}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4 mb-6">
               <div>
@@ -245,8 +488,9 @@ export default function CheckoutPage() {
                 <div className={isProcessing || cryptoInvoiceActive ? "opacity-50 pointer-events-none" : ""}>
                   <CustomSelect
                     options={cryptoOptions.map(opt => ({
-                      value: opt.id,
-                      label: `${opt.name} (${opt.network})`
+                      value: opt.id!,
+                      label: `${opt.name} (${opt.network})`,
+                      logo: opt.logo
                     }))}
                     value={selectedCryptoId}
                     onChange={(val) => setSelectedCryptoId(val)}
@@ -263,9 +507,24 @@ export default function CheckoutPage() {
                     <div className="flex justify-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm mx-auto w-fit mb-4">
                       <QRCodeSVG 
                         value={(() => {
-                          const addr = cryptoOptions.find(c => c.id === selectedCryptoId)?.depositAddress || "";
-                          if (selectedCryptoId === "BTC") return `bitcoin:${addr}?amount=${amount}`;
-                          if (selectedCryptoId.includes("ERC20") || selectedCryptoId.includes("BEP20") || selectedCryptoId === "ETH" || selectedCryptoId === "BNB") return `ethereum:${addr}`;
+                          const selected = cryptoOptions.find(c => c.id === selectedCryptoId);
+                          const addr = selected?.depositAddress || "";
+                          const symbol = selected?.symbol.toUpperCase();
+                          const finalCrypto = cryptoRequired.toFixed(cryptoDecimals);
+                          
+                          if (symbol === "BTC") return `bitcoin:${addr}?amount=${finalCrypto}`;
+                          if (symbol === "ETH" || symbol === "BNB") {
+                            // Convert to Wei (10^18) for EIP-681 compatibility, avoiding scientific notation
+                            // Fallback to raw address if BigInt isn't available, but BigInt is standard in modern JS
+                            try {
+                              const weiValue = BigInt(Math.floor(parseFloat(finalCrypto) * 1e18)).toString();
+                              return `ethereum:${addr}?value=${weiValue}`;
+                            } catch (e) {
+                              return `ethereum:${addr}`;
+                            }
+                          }
+                          // For ERC20/BEP20/TRC20 tokens (USDT, USDC), just return the raw address 
+                          // to prevent wallets from mistakenly sending the native gas token (ETH/BNB)
                           return addr;
                         })()} 
                         bgColor="#ffffff" 

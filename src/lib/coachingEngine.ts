@@ -1,4 +1,4 @@
-import { TradeDoc } from "./firebase/schema";
+import { TradeDoc, GlobalSettings } from "./firebase/schema";
 
 export interface CoachingAlert {
   type: 'positive' | 'warning';
@@ -6,7 +6,7 @@ export interface CoachingAlert {
   message: string;
 }
 
-export function generateCoachingAlerts(trades: TradeDoc[]): CoachingAlert[] {
+export function generateCoachingAlerts(trades: TradeDoc[], settings?: GlobalSettings): CoachingAlert[] {
   const alerts: CoachingAlert[] = [];
   
   if (!trades || trades.length < 5) {
@@ -74,7 +74,8 @@ export function generateCoachingAlerts(trades: TradeDoc[]): CoachingAlert[] {
     const day = parseInt(dayStr);
     if (stats.total >= 3) {
       const wr = stats.wins / stats.total;
-      if (wr < 0.3 && wr < worstDayWinRate) {
+      const badSessionThreshold = settings?.ai_bad_session_threshold !== undefined ? settings.ai_bad_session_threshold / 100 : 0.3;
+      if (wr < badSessionThreshold && wr < worstDayWinRate) {
         worstDayWinRate = wr;
         worstDay = { day, wr: wr * 100, total: stats.total };
       }
@@ -98,10 +99,11 @@ export function generateCoachingAlerts(trades: TradeDoc[]): CoachingAlert[] {
     
     const pnl1 = current.profit_loss - (current.commission || 0);
     const pnl2 = next.profit_loss - (next.commission || 0);
-
+    const timeGapMins = (new Date(next.open_time).getTime() - new Date(current.close_time).getTime()) / 60000;
+    const revengeGapMins = settings?.ai_revenge_gap_mins !== undefined ? settings.ai_revenge_gap_mins : 15;
+    
     if (pnl1 < 0 && pnl2 < 0) {
-      const timeGapMins = (new Date(next.open_time).getTime() - new Date(current.close_time).getTime()) / (1000 * 60);
-      if (timeGapMins >= 0 && timeGapMins <= 15) {
+      if (timeGapMins >= 0 && timeGapMins <= revengeGapMins) {
         revengeCount++;
       }
     }
