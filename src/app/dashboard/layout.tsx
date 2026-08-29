@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { PlanRenewalBanner } from "@/components/subscription/PlanRenewalBanner";
+import { useSubscriptionExpiry } from "@/hooks/useSubscriptionExpiry";
 
 interface NavItem {
   name: string;
@@ -33,7 +35,7 @@ interface NavSection {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, role, tier, loading } = useAuth();
+  const { user, role, tier, loading, userDoc } = useAuth();
   const { isDemoMode, toggleDemoMode } = useDemo();
   const router = useRouter();
   const pathname = usePathname();
@@ -42,6 +44,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null);
+  
+  const { isExpired } = useSubscriptionExpiry(userDoc);
 
   useEffect(() => {
     const fetchGlobalSettings = async () => {
@@ -398,8 +402,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 xl:p-10 animate-fade-in-up">
-          {children}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 xl:p-10 animate-fade-in-up flex flex-col">
+          <PlanRenewalBanner />
+          {isExpired ? (
+            <div className="premium-card text-center py-20 my-auto shadow-2xl">
+              <i className="las la-lock text-6xl text-amber-500 mb-4 animate-bounce"></i>
+              <h2 className="heading-page mb-2">Your Plan Has Expired</h2>
+              <p className="text-neutral-400 mb-8 max-w-md mx-auto">Renew your plan to unlock your data and maintain full access to our premium analytics command center.</p>
+              <Link href="/pricing" className="btn-primary inline-flex">
+                Renew Plan
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>

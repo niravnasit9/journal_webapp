@@ -10,6 +10,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import CommandPalette from "@/components/admin/CommandPalette";
 
 interface NavItem {
   name: string;
@@ -77,7 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ]
     },
     {
-      title: "MANAGEMENT",
+      title: "PLATFORM DATA",
       items: [
         { name: "Users", href: "/admin/users", icon: "las la-users" },
         { name: "Accounts", href: "/admin/accounts", icon: "las la-wallet" },
@@ -87,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ]
     },
     {
-      title: "BUSINESS",
+      title: "FINANCIALS",
       items: [
         { name: "Subscriptions", href: "/admin/subscriptions", icon: "las la-star" },
         { name: "Billing & Payments", href: "/admin/billing", icon: "las la-file-invoice-dollar", badge: "NEW", tag: "success" }
@@ -98,15 +99,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { name: "Support", href: "/admin/support", icon: "las la-life-ring" },
         { name: "Notifications", href: "/admin/notifications", icon: "las la-bell" },
-        { name: "Audit Logs", href: "/admin/audit-logs", icon: "las la-history" }
-      ]
-    },
-    {
-      title: "SYSTEM",
-      items: [
+        { name: "Audit Logs", href: "/admin/audit-logs", icon: "las la-history" },
         { name: "System Health", href: "/admin/system-health", icon: "las la-heartbeat" },
         { name: "Global Settings", href: "/admin/settings", icon: "las la-cog" },
-        { name: "Exit to App", href: "/dashboard", icon: "las la-sign-out-alt" }
       ]
     }
   ];
@@ -123,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <aside 
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[260px] bg-surface border-r border-subtle transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[260px] bg-[#0a0a0a] border-r border-neutral-800 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -150,10 +145,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
 
-          <nav className="flex-1 px-3 space-y-6 mt-2">
+          <nav className="flex-1 space-y-2 mt-2">
             {navSections.map((section, idx) => (
               <div key={idx}>
-                <h3 className="px-3 mb-3 text-[10px] font-bold text-muted uppercase tracking-widest">
+                <h3 className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-6 mb-2 px-4">
                   {section.title}
                 </h3>
                 <div className="space-y-1">
@@ -164,14 +159,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         key={item.name}
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 text-sm ${
+                        className={`group flex items-center justify-between px-4 py-2 transition-all duration-200 text-sm ${
                           isActive 
-                            ? "bg-info-bg text-info font-bold border border-info/20 shadow-sm" 
-                            : "text-secondary font-medium hover:bg-elevated hover:text-primary border border-transparent"
+                            ? "bg-blue-600/10 text-blue-400 font-bold border-l-2 border-blue-500" 
+                            : "text-neutral-400 font-medium hover:bg-[#121212] hover:text-white border-l-2 border-transparent"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <i className={`${item.icon} text-lg ${isActive ? "text-info" : "text-muted group-hover:text-primary transition-colors"}`}></i>
+                          <i className={`${item.icon} text-lg ${isActive ? "text-blue-400" : "text-neutral-500 group-hover:text-white transition-colors"}`}></i>
                           <span className="tracking-wide">{item.name}</span>
                         </div>
                         {item.tag && (
@@ -244,6 +239,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
+      
+      <CommandPalette />
     </div>
   );
 }

@@ -42,7 +42,7 @@ export async function addManualTradeAction(accountId: string, data: {
       profit_loss: Number(data.profit_loss),
       commission: Number(data.commission),
       swap: 0,
-      strategy_tag: "",
+      strategy_id: "",
       notes: "Manual Entry",
       screenshot_url: "",
       mistake_tags: [],

@@ -208,3 +208,43 @@ a, button, input, select, textarea {
 .delay-300 { animation-delay: 150ms; }
 .delay-400 { animation-delay: 200ms; }
 .delay-500 { animation-delay: 250ms; }
+
+@layer components {
+  /* Containers */
+  .premium-card {
+    @apply bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl;
+  }
+  .premium-inner-box {
+    @apply bg-[#121212] border border-neutral-800 rounded-xl p-4;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-blue-500 font-bold px-4 py-2 rounded-lg transition-colors;
+  }
+  .btn-ghost {
+    @apply bg-transparent border border-neutral-700 text-white hover:bg-neutral-800 font-bold px-4 py-2 rounded-lg transition-colors;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-500 border border-red-500 font-bold px-4 py-2 rounded-lg transition-colors;
+  }
+
+  /* Forms */
+  .input-premium {
+    @apply bg-[#121212] border border-neutral-800 focus:outline-none focus:border-blue-500 text-white rounded-lg px-4 py-2 w-full transition-colors font-mono;
+  }
+  .label-premium {
+    @apply block text-sm font-bold text-neutral-400 mb-2 uppercase tracking-wider;
+  }
+  .helper-text {
+    @apply text-xs text-neutral-500 mt-1;
+  }
+
+  /* Typography */
+  .heading-page {
+    @apply text-3xl font-bold text-white mb-6 tracking-tight;
+  }
+  .heading-section {
+    @apply text-xl font-bold text-white mb-4;
+  }
+}

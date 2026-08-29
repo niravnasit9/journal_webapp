@@ -1,4 +1,5 @@
 export interface UserDoc {
+  id?: string;
   uid: string;
   email: string;
   name: string;
@@ -10,6 +11,10 @@ export interface UserDoc {
   photo_url?: string;
   subscription_tier?: "free" | "starter" | "pro" | "elite";
   subscription_status?: string;
+  plan_duration_days?: number;
+  plan_started_at?: string; // ISO 8601 timestamp
+  plan_expires_at?: string; // ISO 8601 timestamp
+  is_auto_renew?: boolean;
 }
 
 export interface AccountDoc {
@@ -71,7 +76,7 @@ export interface TradeDoc {
   // Psychological Analytics
   emotion?: "FOMO" | "Revenge" | "Confident" | "Bored" | "Tilted" | "Neutral";
   setup_grade?: "A+" | "A" | "B" | "C";
-  strategy_tag: string;
+  strategy_id?: string | null;
   notes: string;
   screenshot_url: string;
   entry_chart_url?: string;
@@ -187,6 +192,7 @@ export interface StrategyDoc {
   created_at: any;
   updated_at: any;
   is_public?: boolean;
+  is_active?: boolean;
   image_url?: string;
   owner_email?: string;
   owner_name?: string;

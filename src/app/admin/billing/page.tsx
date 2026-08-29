@@ -1,58 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { collection, getDocs, query, doc, addDoc, updateDoc, deleteDoc, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { collection, getDocs, doc, addDoc, deleteDoc, updateDoc, query, where, limit } from "firebase/firestore";
-import { PaymentMethod, AutoDiscount, CouponCode, Transaction } from "@/lib/firebase/schema";
-import { QRCodeSVG } from 'qrcode.react';
+import { PaymentMethod, Transaction, CouponCode, UserDoc } from "@/lib/firebase/schema";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import toast from "react-hot-toast";
 
 export default function AdminBillingPage() {
-  const [activeTab, setActiveTab] = useState<"gateways" | "promotions" | "ledger">("gateways");
-  
+  const [activeTab, setActiveTab] = useState<"gateways" | "ledger" | "promotions">("gateways");
+  const [loading, setLoading] = useState(true);
+
   // Data States
   const [gateways, setGateways] = useState<PaymentMethod[]>([]);
-  const [autoDiscounts, setAutoDiscounts] = useState<AutoDiscount[]>([]);
-  const [couponCodes, setCouponCodes] = useState<CouponCode[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
-  // Form States - Gateways
-  const [newGateway, setNewGateway] = useState<Partial<PaymentMethod>>({ name: "", network: "", symbol: "", depositAddress: "", isActive: true });
-  const [isGatewayModalOpen, setIsGatewayModalOpen] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [promotions, setPromotions] = useState<CouponCode[]>([]);
 
-  // Form States - Promos (Auto & Coupon)
-  const [newAutoDiscount, setNewAutoDiscount] = useState<AutoDiscount>({ name: "", discount_pct: 0, target_plans: [], target_users: "ALL", is_active: true });
-  const [newCouponCode, setNewCouponCode] = useState<CouponCode>({ code: "", discount_pct: 0, target_plans: [], target_users: "ALL", is_active: true });
-  const [isAutoDiscountModalOpen, setIsAutoDiscountModalOpen] = useState(false);
-  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
-
-  // User Search Autocomplete States
+  // Search logic for Promo Modal
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ uid: string; username: string }[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Modals
+  const [gatewayModal, setGatewayModal] = useState<{ isOpen: boolean; mode: "add" | "edit"; data: Partial<PaymentMethod> | null }>({ isOpen: false, mode: "add", data: null });
+  const [promoModal, setPromoModal] = useState<{ isOpen: boolean; mode: "add" | "edit"; data: Partial<CouponCode> | null }>({ isOpen: false, mode: "add", data: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [activeTab]);
 
-  const fetchData = async () => {
-    try {
-      const gSnap = await getDocs(collection(db, "payment_methods"));
-      setGateways(gSnap.docs.map(d => ({ id: d.id, ...d.data() } as PaymentMethod)));
-
-      const autoSnap = await getDocs(collection(db, "auto_discounts"));
-      setAutoDiscounts(autoSnap.docs.map(d => ({ id: d.id, ...d.data() } as AutoDiscount)));
-
-      const couponSnap = await getDocs(collection(db, "coupon_codes"));
-      setCouponCodes(couponSnap.docs.map(d => ({ id: d.id, ...d.data() } as CouponCode)));
-
-      const tSnap = await getDocs(collection(db, "transactions"));
-      setTransactions(tSnap.docs.map(d => ({ id: d.id, ...d.data() } as Transaction)));
-    } catch (e) {
-      console.error("Error fetching data:", e);
-    }
-  };
-
-  // User Search Logic
   useEffect(() => {
     const searchUsers = async () => {
       if (searchQuery.trim().length < 2) {
@@ -61,6 +38,7 @@ export default function AdminBillingPage() {
       }
       setIsSearching(true);
       try {
+        const { where, limit } = await import("firebase/firestore");
         const q = query(
           collection(db, "users"), 
           where("username", ">=", searchQuery),
@@ -79,492 +57,575 @@ export default function AdminBillingPage() {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  // Gateway Handlers
-  const handleAddGateway = async () => {
-    if (!newGateway.name || !newGateway.depositAddress) return;
+  const fetchData = async () => {
     try {
-      const docRef = await addDoc(collection(db, "payment_methods"), newGateway);
-      setGateways([...gateways, { id: docRef.id, ...newGateway } as PaymentMethod]);
-      setIsGatewayModalOpen(false);
-      setNewGateway({ name: "", network: "", symbol: "", depositAddress: "", isActive: true });
-    } catch (e) {
-      console.error(e);
+      setLoading(true);
+      if (activeTab === "gateways") {
+        const snap = await getDocs(query(collection(db, "payment_methods")));
+        setGateways(snap.docs.map(d => ({ ...d.data(), id: d.id } as PaymentMethod)));
+      } 
+      else if (activeTab === "ledger") {
+        const tSnap = await getDocs(query(collection(db, "transactions")));
+        const uSnap = await getDocs(query(collection(db, "users")));
+        
+        const users: Record<string, string> = {};
+        uSnap.docs.forEach(d => { users[d.id] = (d.data() as UserDoc).email; });
+        
+        const txs = tSnap.docs.map(d => {
+          const t = d.data();
+          return { ...t, id: d.id, userEmail: users[t.user_id || t.uid] || t.user_id || t.uid };
+        }) as any[];
+        txs.sort((a, b) => {
+          const dateA = a.created_at || a.timestamp;
+          const dateB = b.created_at || b.timestamp;
+          return new Date(dateB).getTime() - new Date(dateA).getTime();
+        });
+        setTransactions(txs);
+      }
+      else if (activeTab === "promotions") {
+        const snap = await getDocs(query(collection(db, "coupon_codes")));
+        setPromotions(snap.docs.map(d => ({ ...d.data(), id: d.id } as CouponCode)));
+      }
+    } catch (error) {
+      console.error("Failed to load billing data:", error);
+      toast.error("Failed to load data for " + activeTab);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleToggleGateway = async (id: string, currentStatus: boolean) => {
+  // Gateway Actions
+  const handleGatewaySubmit = async () => {
+    if (!gatewayModal.data?.name || !gatewayModal.data?.depositAddress) {
+      toast.error("Name and Address are required");
+      return;
+    }
+    setIsSubmitting(true);
     try {
-      await updateDoc(doc(db, "payment_methods", id), { isActive: !currentStatus });
-      setGateways(gateways.map(g => g.id === id ? { ...g, isActive: !currentStatus } : g));
-    } catch (e) {
-      console.error(e);
+      if (gatewayModal.mode === "add") {
+        await addDoc(collection(db, "payment_methods"), { ...gatewayModal.data, isActive: true });
+        toast.success("Gateway added");
+      } else if (gatewayModal.data.id) {
+        await updateDoc(doc(db, "payment_methods", gatewayModal.data.id), gatewayModal.data);
+        toast.success("Gateway updated");
+      }
+      setGatewayModal({ isOpen: false, mode: "add", data: null });
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Promo Handlers
-  const handleAddAutoDiscount = async () => {
-    if (!newAutoDiscount.name || newAutoDiscount.discount_pct <= 0) return;
+  const toggleGateway = async (gw: PaymentMethod) => {
     try {
-      const docRef = await addDoc(collection(db, "auto_discounts"), newAutoDiscount);
-      setAutoDiscounts([...autoDiscounts, { id: docRef.id, ...newAutoDiscount }]);
-      setIsAutoDiscountModalOpen(false);
-      setNewAutoDiscount({ name: "", discount_pct: 0, target_plans: [], target_users: "ALL", is_active: true });
-    } catch (e) {
-      console.error(e);
+      await updateDoc(doc(db, "payment_methods", gw.id!), { isActive: !gw.isActive });
+      fetchData();
+      toast.success(`Gateway ${!gw.isActive ? 'activated' : 'paused'}`);
+    } catch (error: any) {
+      toast.error("Failed to toggle gateway");
     }
   };
 
-  const handleDeleteAutoDiscount = async (id: string) => {
+  // Promo Actions
+  const handlePromoSubmit = async () => {
+    if (!promoModal.data?.code || !promoModal.data?.discount_pct) {
+      toast.error("Code and discount are required");
+      return;
+    }
+    setIsSubmitting(true);
     try {
-      await deleteDoc(doc(db, "auto_discounts", id));
-      setAutoDiscounts(autoDiscounts.filter(p => p.id !== id));
-    } catch (e) {
-      console.error(e);
+      const payload = {
+        code: promoModal.data.code.toUpperCase(),
+        discount_pct: Number(promoModal.data.discount_pct),
+        is_active: promoModal.data.is_active ?? true,
+        target_plans: promoModal.data.target_plans || ["ALL"],
+        target_users: promoModal.data.target_users || "ALL"
+      };
+
+      if (promoModal.mode === "add") {
+        await addDoc(collection(db, "coupon_codes"), payload);
+        toast.success("Promotion created");
+      } else if (promoModal.data.id) {
+        await updateDoc(doc(db, "coupon_codes", promoModal.data.id), payload);
+        toast.success("Promotion updated");
+      }
+      setPromoModal({ isOpen: false, mode: "add", data: null });
+      setSearchQuery("");
+      setSearchResults([]);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleAddCoupon = async () => {
-    if (!newCouponCode.code || newCouponCode.discount_pct <= 0) return;
-    try {
-      const docRef = await addDoc(collection(db, "coupon_codes"), newCouponCode);
-      setCouponCodes([...couponCodes, { id: docRef.id, ...newCouponCode }]);
-      setIsCouponModalOpen(false);
-      setNewCouponCode({ code: "", discount_pct: 0, target_plans: [], target_users: "ALL", is_active: true });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleDeleteCoupon = async (id: string) => {
+  const handleDeletePromo = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this promotion?")) return;
     try {
       await deleteDoc(doc(db, "coupon_codes", id));
-      setCouponCodes(couponCodes.filter(p => p.id !== id));
-    } catch (e) {
-      console.error(e);
+      toast.success("Promotion deleted");
+      fetchData();
+    } catch (error: any) {
+      toast.error("Failed to delete promotion");
     }
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 font-sans">
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Billing & Payments</h1>
-        <p className="text-neutral-400 mt-1">Manage gateways, promotions, and view the transaction ledger.</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-neutral-800">
-        <button 
-          onClick={() => setActiveTab("gateways")}
-          className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${activeTab === "gateways" ? "border-blue-500 text-white" : "border-transparent text-neutral-500 hover:text-neutral-300"}`}
-        >
-          <i className="las la-wallet mr-2"></i> Gateways
-        </button>
-        <button 
-          onClick={() => setActiveTab("promotions")}
-          className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${activeTab === "promotions" ? "border-blue-500 text-white" : "border-transparent text-neutral-500 hover:text-neutral-300"}`}
-        >
-          <i className="las la-tags mr-2"></i> Promotions
-        </button>
-        <button 
-          onClick={() => setActiveTab("ledger")}
-          className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${activeTab === "ledger" ? "border-blue-500 text-white" : "border-transparent text-neutral-500 hover:text-neutral-300"}`}
-        >
-          <i className="las la-list mr-2"></i> Ledger
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="mt-6">
+    <div className="space-y-6 animate-in fade-in font-sans">
+      
+      {/* Header & Tabs */}
+      <div className="mb-8">
+        <h1 className="heading-page text-white">Billing & Payments</h1>
+        <p className="text-sm text-neutral-400 mt-1 mb-6">
+          Manage crypto receiving wallets, verify transactions, and configure promotion engines.
+        </p>
         
-        {/* GATEWAYS TAB */}
-        {activeTab === "gateways" && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-white">Payment Gateways</h2>
-              <button onClick={() => setIsGatewayModalOpen(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
-                + Add Gateway
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {gateways.map(g => (
-                <div key={g.id} className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-5 shadow-xl flex flex-col relative">
-                  
-                  {/* Status Toggle */}
-                  <div className="absolute top-4 right-4">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
-                        checked={g.isActive} 
-                        onChange={() => handleToggleGateway(g.id!, g.isActive)} 
-                      />
-                      <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
+        <div className="flex border-b border-neutral-800 gap-6">
+          {[
+            { id: "gateways", label: "Crypto Gateways", icon: "la-wallet" },
+            { id: "ledger", label: "Transaction Ledger", icon: "la-file-invoice-dollar" },
+            { id: "promotions", label: "Promotions Engine", icon: "la-tag" }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`pb-3 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border-b-2 ${
+                activeTab === tab.id 
+                  ? "text-blue-400 border-blue-500" 
+                  : "text-neutral-500 border-transparent hover:text-neutral-300"
+              }`}
+            >
+              <i className={`las ${tab.icon} text-lg`}></i> {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                  <div className="flex items-center gap-3 mb-4">
-                    {g.logo ? (
-                      <img src={g.logo} alt={g.symbol} className="w-10 h-10 rounded-full object-contain bg-white/10 p-1" />
-                    ) : (
-                      <div className="w-10 h-10 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center font-bold">{g.symbol.substring(0, 4)}</div>
-                    )}
-                    <div>
-                      <h3 className="text-white font-bold">{g.name}</h3>
-                      <p className="text-xs text-neutral-400 uppercase tracking-widest">{g.network} Network</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#121212] border border-neutral-800 rounded-lg p-3 flex justify-between items-center mb-4">
-                    <span className="text-xs text-neutral-300 font-mono truncate mr-2">{g.depositAddress}</span>
-                    <button onClick={() => navigator.clipboard.writeText(g.depositAddress)} className="text-blue-500 hover:text-blue-400 shrink-0"><i className="las la-copy text-lg"></i></button>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-auto">
-                    <div className="relative group">
-                      <button className="text-sm text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer">
-                        <i className="las la-qrcode"></i> View QR
-                      </button>
-                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 bg-white p-2 rounded-xl shadow-xl border border-neutral-200 pointer-events-none">
-                        <QRCodeSVG value={g.depositAddress} size={150} />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="text-rose-500 hover:text-rose-400"><i className="las la-trash text-lg"></i></button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Add Gateway Modal */}
-            {isGatewayModalOpen && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-md p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Add Payment Gateway</h3>
-                  <div className="space-y-4">
-                    <input type="text" placeholder="Name (e.g. Tether USDT)" value={newGateway.name} onChange={e => setNewGateway({...newGateway, name: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    <input type="text" placeholder="Network (e.g. TRC20)" value={newGateway.network} onChange={e => setNewGateway({...newGateway, network: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    <input type="text" placeholder="Symbol (e.g. USDT)" value={newGateway.symbol} onChange={e => setNewGateway({...newGateway, symbol: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    <input type="text" placeholder="Logo URL (optional)" value={newGateway.logo || ""} onChange={e => setNewGateway({...newGateway, logo: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    <input type="text" placeholder="Wallet Address" value={newGateway.depositAddress} onChange={e => setNewGateway({...newGateway, depositAddress: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2 font-mono text-sm" />
-                    <div className="flex justify-end gap-3 pt-4">
-                      <button onClick={() => setIsGatewayModalOpen(false)} className="px-4 py-2 text-neutral-400 hover:text-white">Cancel</button>
-                      <button onClick={handleAddGateway} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">Save Gateway</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* PROMOTIONS TAB */}
-        {activeTab === "promotions" && (
-          <div className="space-y-8 animate-in fade-in duration-300">
-            
-            {/* Auto-Discounts Section */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="las la-bolt text-amber-500"></i> Auto-Discounts (Global Sales)</h2>
-                <button onClick={() => setIsAutoDiscountModalOpen(true)} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
-                  + Create Sale
+      {loading ? (
+        <div className="flex justify-center p-12">
+          <LoadingSpinner className="w-10 h-10 border-blue-500" />
+        </div>
+      ) : (
+        <>
+          {/* TAB 1: CRYPTO GATEWAYS */}
+          {activeTab === "gateways" && (
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => setGatewayModal({ isOpen: true, mode: "add", data: { name: "", symbol: "", network: "", depositAddress: "" } })}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <i className="las la-plus"></i> Add Gateway
                 </button>
               </div>
-              <div className="bg-[#121212] border border-neutral-800 rounded-xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-[#0a0a0a] border-b border-neutral-800">
-                    <tr>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Sale Name</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Discount</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Plans</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Status</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-800">
-                    {autoDiscounts.map(p => (
-                      <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-bold text-white">{p.name}</td>
-                        <td className="px-6 py-4"><span className="text-amber-400 font-bold">{p.discount_pct}% OFF</span></td>
-                        <td className="px-6 py-4 text-neutral-400 text-sm">{p.target_plans.join(', ')}</td>
-                        <td className="px-6 py-4">
-                          {p.is_active ? <span className="text-emerald-500 text-xs font-bold">ACTIVE</span> : <span className="text-neutral-500 text-xs font-bold">PAUSED</span>}
-                          {p.expires_at && (
-                            <div className="text-[10px] text-neutral-400 mt-1 uppercase">
-                              Expires: {new Date(p.expires_at).toLocaleDateString()}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleDeleteAutoDiscount(p.id!)} className="text-rose-500 hover:text-rose-400 p-2"><i className="las la-trash"></i></button>
-                        </td>
-                      </tr>
-                    ))}
-                    {autoDiscounts.length === 0 && (
-                      <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500">No active sales.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
-            {/* Manual Coupons Section */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2"><i className="las la-ticket-alt text-blue-500"></i> Manual Coupons</h2>
-                <button onClick={() => setIsCouponModalOpen(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
-                  + Create Coupon
-                </button>
-              </div>
-              <div className="bg-[#121212] border border-neutral-800 rounded-xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-[#0a0a0a] border-b border-neutral-800">
-                    <tr>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Code</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Discount</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Plans</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Target Users</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Status</th>
-                      <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-800">
-                    {couponCodes.map(p => (
-                      <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-mono font-bold text-white">{p.code}</td>
-                        <td className="px-6 py-4"><span className="text-emerald-400 font-bold">{p.discount_pct}% OFF</span></td>
-                        <td className="px-6 py-4 text-neutral-400 text-sm">{p.target_plans.join(', ')}</td>
-                        <td className="px-6 py-4">
-                          {p.target_users === "ALL" ? (
-                            <span className="text-neutral-400 text-sm">All Users</span>
-                          ) : (
-                            <div className="flex gap-1 flex-wrap">
-                              {p.target_users.map(u => (
-                                <span key={u.uid} className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">{u.username}</span>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {p.is_active ? <span className="text-emerald-500 text-xs font-bold">ACTIVE</span> : <span className="text-neutral-500 text-xs font-bold">PAUSED</span>}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleDeleteCoupon(p.id!)} className="text-rose-500 hover:text-rose-400 p-2"><i className="las la-trash"></i></button>
-                        </td>
-                      </tr>
-                    ))}
-                    {couponCodes.length === 0 && (
-                      <tr><td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No active coupons.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Auto-Discount Modal */}
-            {isAutoDiscountModalOpen && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-md p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Create Auto-Discount</h3>
-                  <div className="space-y-4">
-                    <input type="text" placeholder="Sale Name (e.g. Black Friday)" value={newAutoDiscount.name} onChange={e => setNewAutoDiscount({...newAutoDiscount, name: e.target.value})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    <input type="number" placeholder="Discount %" value={newAutoDiscount.discount_pct || ""} onChange={e => setNewAutoDiscount({...newAutoDiscount, discount_pct: Number(e.target.value)})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase mb-2 block">Expiration Date (Optional)</label>
-                      <input 
-                        type="datetime-local" 
-                        value={newAutoDiscount.expires_at || ""} 
-                        onChange={e => setNewAutoDiscount({...newAutoDiscount, expires_at: e.target.value || null})} 
-                        className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2 text-sm"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase mb-2 block">Target Plans</label>
-                      <div className="flex gap-4">
-                        {["ALL", "STARTER", "PRO", "ELITE"].map(plan => (
-                          <label key={plan} className="flex items-center gap-2 text-white text-sm cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={newAutoDiscount.target_plans.includes(plan as any)}
-                              onChange={(e) => {
-                                let plans = [...newAutoDiscount.target_plans];
-                                if (e.target.checked) plans.push(plan as any);
-                                else plans = plans.filter(p => p !== plan);
-                                setNewAutoDiscount({...newAutoDiscount, target_plans: plans});
-                              }}
-                              className="w-4 h-4 rounded border-neutral-600 bg-[#0a0a0a] text-blue-500 focus:ring-blue-500/20 focus:ring-offset-0"
-                            />
-                            {plan}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                      <button onClick={() => setIsAutoDiscountModalOpen(false)} className="px-4 py-2 text-neutral-400 hover:text-white">Cancel</button>
-                      <button onClick={handleAddAutoDiscount} className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-semibold">Save Sale</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Coupon Modal */}
-            {isCouponModalOpen && (
-              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-md p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Create Manual Coupon</h3>
-                  <div className="space-y-4">
-                    <input type="text" placeholder="Code (e.g. VIPFREE)" value={newCouponCode.code} onChange={e => setNewCouponCode({...newCouponCode, code: e.target.value.toUpperCase()})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2 font-mono uppercase" />
-                    <input type="number" placeholder="Discount %" value={newCouponCode.discount_pct || ""} onChange={e => setNewCouponCode({...newCouponCode, discount_pct: Number(e.target.value)})} className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-                    
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase mb-2 block">Target Plans</label>
-                      <div className="flex gap-4">
-                        {["ALL", "STARTER", "PRO", "ELITE"].map(plan => (
-                          <label key={plan} className="flex items-center gap-2 text-white text-sm cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={newCouponCode.target_plans.includes(plan as any)}
-                              onChange={(e) => {
-                                let plans = [...newCouponCode.target_plans];
-                                if (e.target.checked) plans.push(plan as any);
-                                else plans = plans.filter(p => p !== plan);
-                                setNewCouponCode({...newCouponCode, target_plans: plans});
-                              }}
-                              className="w-4 h-4 rounded border-neutral-600 bg-[#0a0a0a] text-blue-500 focus:ring-blue-500/20 focus:ring-offset-0"
-                            />
-                            {plan}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-semibold text-neutral-400 uppercase mb-2 block">Target Users</label>
-                      <select 
-                        value={newCouponCode.target_users === "ALL" ? "ALL" : "SPECIFIC"}
-                        onChange={e => setNewCouponCode({...newCouponCode, target_users: e.target.value === "ALL" ? "ALL" : []})}
-                        className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2 mb-2"
-                      >
-                        <option value="ALL">All Users</option>
-                        <option value="SPECIFIC">Specific Users</option>
-                      </select>
-
-                      {newCouponCode.target_users !== "ALL" && (
-                        <div className="relative">
-                          <input 
-                            type="text" 
-                            placeholder="Search user by username..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#0a0a0a] border border-neutral-800 text-white rounded-lg px-3 py-2" 
-                          />
-                          {isSearching && <i className="las la-spinner la-spin absolute right-3 top-2.5 text-neutral-500"></i>}
-                          
-                          {searchResults.length > 0 && (
-                            <div className="absolute top-full left-0 w-full mt-1 bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-xl overflow-hidden z-20">
-                              {searchResults.map(user => (
-                                <button
-                                  key={user.uid}
-                                  onClick={() => {
-                                    if (Array.isArray(newCouponCode.target_users)) {
-                                      const exists = newCouponCode.target_users.find(u => u.uid === user.uid);
-                                      if (!exists) {
-                                        setNewCouponCode({
-                                          ...newCouponCode,
-                                          target_users: [...newCouponCode.target_users, user]
-                                        });
-                                      }
-                                    }
-                                    setSearchQuery("");
-                                    setSearchResults([]);
-                                  }}
-                                  className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm"
-                                >
-                                  {user.username}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {Array.isArray(newCouponCode.target_users) && newCouponCode.target_users.map(u => (
-                              <span key={u.uid} className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                                {u.username}
-                                <i className="las la-times cursor-pointer hover:text-rose-400" onClick={() => {
-                                  if (Array.isArray(newCouponCode.target_users)) {
-                                    setNewCouponCode({...newCouponCode, target_users: newCouponCode.target_users.filter(x => x.uid !== u.uid)});
-                                  }
-                                }}></i>
-                              </span>
-                            ))}
+              {gateways.length === 0 ? (
+                <div className="premium-card p-12 text-center text-neutral-500 font-bold">No crypto gateways configured.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {gateways.map(gw => (
+                    <div key={gw.id} className="premium-card p-5 relative overflow-hidden group">
+                      <div className={`absolute top-0 left-0 w-full h-1 ${gw.isActive ? 'bg-emerald-500' : 'bg-neutral-600'}`}></div>
+                      
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#121212] border border-neutral-800 flex items-center justify-center text-xl text-neutral-400 overflow-hidden">
+                            {gw.logo ? (
+                              <img src={gw.logo} alt={gw.name} className="w-full h-full object-contain p-1" />
+                            ) : (
+                              <i className="lab la-bitcoin"></i>
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-white leading-tight">{gw.name}</h3>
+                            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{gw.symbol} • {gw.network}</span>
                           </div>
                         </div>
-                      )}
-                    </div>
+                        <button 
+                          onClick={() => toggleGateway(gw)}
+                          className={`w-10 h-6 rounded-full transition-colors relative ${gw.isActive ? 'bg-emerald-500' : 'bg-neutral-700'}`}
+                        >
+                          <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${gw.isActive ? 'left-5' : 'left-1'}`}></div>
+                        </button>
+                      </div>
 
-                    <div className="flex justify-end gap-3 pt-4">
-                      <button onClick={() => setIsCouponModalOpen(false)} className="px-4 py-2 text-neutral-400 hover:text-white">Cancel</button>
-                      <button onClick={handleAddCoupon} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">Save Coupon</button>
+                      <div className="premium-inner-box p-3 mb-4">
+                        <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Deposit Address</div>
+                        <div className="flex items-center gap-2 justify-between">
+                          <div className="font-mono text-xs text-neutral-300 break-all">{gw.depositAddress}</div>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(gw.depositAddress);
+                              toast.success("Address copied");
+                            }}
+                            className="btn-ghost w-7 h-7 flex-shrink-0 flex items-center justify-center hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors"
+                            title="Copy Address"
+                          >
+                            <i className="las la-copy text-lg"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => setGatewayModal({ isOpen: true, mode: "edit", data: gw })}
+                        className="btn-ghost w-full py-2 flex items-center justify-center gap-2 text-xs"
+                      >
+                        <i className="las la-pen"></i> Edit Wallet
+                      </button>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: TRANSACTION LEDGER */}
+          {activeTab === "ledger" && (
+            <div className="premium-card p-0 overflow-hidden">
+              <div className="bg-[#121212] border-b border-neutral-800 p-5">
+                <h2 className="text-sm font-bold text-white uppercase tracking-widest">Global Transactions</h2>
+              </div>
+              <div className="overflow-x-auto no-scrollbar">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">User</th>
+                      <th className="px-6 py-4">Plan Tier</th>
+                      <th className="px-6 py-4">Amount</th>
+                      <th className="px-6 py-4">TxHash / Network</th>
+                      <th className="px-6 py-4 text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-800">
+                    {transactions.length === 0 ? (
+                      <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">No transactions found.</td></tr>
+                    ) : (
+                      transactions.map(tx => {
+                        const txDate = tx.created_at?.toDate ? tx.created_at.toDate() : (tx.timestamp?.toDate ? tx.timestamp.toDate() : new Date(tx.created_at || tx.timestamp));
+                        const txId = tx.transaction_id || tx.txid || "";
+                        
+                        return (
+                          <tr key={tx.id} className="hover:bg-[#121212]/50 transition-colors">
+                            <td className="px-6 py-4 text-neutral-400">
+                              {txDate.toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4 font-bold text-white">{(tx.user_id || tx.uid)?.substring(0,10)}...</td>
+                            <td className="px-6 py-4">
+                              <span className="bg-neutral-800 text-neutral-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                                {tx.tier}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 font-mono text-emerald-400 font-bold">${tx.amount?.toFixed(2)}</td>
+                            <td className="px-6 py-4">
+                              <a href={`https://tronscan.org/#/transaction/${txId}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-400 font-mono text-xs flex items-center gap-1">
+                                {txId.substring(0,12)}...<i className="las la-external-link-alt"></i>
+                              </a>
+                              <div className="text-[10px] text-neutral-500 uppercase font-bold mt-1">{tx.cryptoId || tx.payment_method || "Crypto"}</div>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {(tx.status === "verified" || tx.status === "completed") && <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest flex items-center justify-end gap-1"><i className="las la-check-circle text-base"></i> Verified</span>}
+                              {tx.status === "pending" && <span className="text-amber-400 font-bold text-xs uppercase tracking-widest flex items-center justify-end gap-1"><i className="las la-clock text-base"></i> Pending</span>}
+                              {tx.status === "failed" && <span className="text-rose-400 font-bold text-xs uppercase tracking-widest flex items-center justify-end gap-1"><i className="las la-times-circle text-base"></i> Failed</span>}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: PROMOTIONS */}
+          {activeTab === "promotions" && (
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => setPromoModal({ isOpen: true, mode: "add", data: { code: "", discount_pct: 10, is_active: true } })}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <i className="las la-plus"></i> Generate Code
+                </button>
+              </div>
+
+              <div className="premium-card p-0 overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead>
+                      <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+                        <th className="px-6 py-4">Code</th>
+                        <th className="px-6 py-4">Discount</th>
+                        <th className="px-6 py-4">Target Plans</th>
+                        <th className="px-6 py-4">Target Users</th>
+                        <th className="px-6 py-4">Status</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-800">
+                      {promotions.length === 0 ? (
+                        <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">No active promotions.</td></tr>
+                      ) : (
+                        promotions.map(promo => (
+                          <tr key={promo.id} className="hover:bg-[#121212]/50 transition-colors">
+                            <td className="px-6 py-4 font-mono font-bold text-xl text-white tracking-widest">{promo.code}</td>
+                            <td className="px-6 py-4 font-bold text-emerald-400">{promo.discount_pct}% OFF</td>
+                            <td className="px-6 py-4 text-neutral-400 text-sm">{(promo.target_plans || []).join(', ')}</td>
+                            <td className="px-6 py-4">
+                              {promo.target_users === "ALL" ? (
+                                <span className="text-neutral-400 text-sm">All Users</span>
+                              ) : (
+                                <div className="flex gap-1 flex-wrap">
+                                  {Array.isArray(promo.target_users) && promo.target_users.map(u => (
+                                    <span key={u.uid} className="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] uppercase font-bold tracking-widest px-2 py-1 rounded-full">{u.username}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              {promo.is_active 
+                                ? <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Active</span>
+                                : <span className="bg-neutral-800 text-neutral-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Paused</span>
+                              }
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => setPromoModal({ isOpen: true, mode: "edit", data: promo })}
+                                  className="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center"
+                                  title="Edit Promotion"
+                                >
+                                  <i className="las la-pen text-xl"></i>
+                                </button>
+                                <button 
+                                  onClick={() => handleDeletePromo(promo.id!)}
+                                  className="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-400 hover:bg-rose-500/10"
+                                  title="Delete Promotion"
+                                >
+                                  <i className="las la-trash text-xl"></i>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </>
+      )}
 
-        {/* LEDGER TAB */}
-        {activeTab === "ledger" && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <h2 className="text-lg font-bold text-white">Transaction Ledger</h2>
-            <div className="bg-[#121212] border border-neutral-800 rounded-xl overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-[#0a0a0a] border-b border-neutral-800">
-                  <tr>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Date</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">User UID</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Tier</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Amount</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">TxID</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-widest">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800">
-                  {transactions.map(t => (
-                    <tr key={t.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 text-sm text-neutral-400">
-                        {t.timestamp?.toDate ? t.timestamp.toDate().toLocaleString() : new Date().toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono text-neutral-300">{t.uid?.substring(0,10)}...</td>
-                      <td className="px-6 py-4 text-sm font-bold text-white uppercase">{t.tier}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-emerald-400">${t.amount?.toFixed(2)}</td>
-                      <td className="px-6 py-4">
-                        <a href={`https://tronscan.org/#/transaction/${t.txid}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-400 font-mono text-xs flex items-center gap-1">
-                          {t.txid?.substring(0,12)}...<i className="las la-external-link-alt"></i>
-                        </a>
-                      </td>
-                      <td className="px-6 py-4">
-                        {t.status === "verified" && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase rounded-full border border-emerald-500/20">Verified</span>}
-                        {t.status === "pending" && <span className="px-2 py-1 bg-amber-500/10 text-amber-500 text-[10px] font-bold uppercase rounded-full border border-amber-500/20">Pending</span>}
-                        {t.status === "failed" && <span className="px-2 py-1 bg-rose-500/10 text-rose-500 text-[10px] font-bold uppercase rounded-full border border-rose-500/20">Failed</span>}
-                      </td>
-                    </tr>
-                  ))}
-                  {transactions.length === 0 && (
-                    <tr><td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No transactions recorded yet.</td></tr>
-                  )}
-                </tbody>
-              </table>
+      {/* Gateway Modal */}
+      {gatewayModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-neutral-800">
+            <h2 className="text-xl font-bold text-white mb-6">
+              {gatewayModal.mode === "add" ? "Add Crypto Gateway" : "Edit Gateway"}
+            </h2>
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Display Name</label>
+                <input 
+                  type="text" 
+                  value={gatewayModal.data?.name || ""}
+                  onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, name: e.target.value } })}
+                  className="input-premium w-full bg-[#121212] border-neutral-800"
+                  placeholder="e.g. Tether (USDT)"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Symbol</label>
+                  <input 
+                    type="text" 
+                    value={gatewayModal.data?.symbol || ""}
+                    onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, symbol: e.target.value.toUpperCase() } })}
+                    className="input-premium w-full bg-[#121212] border-neutral-800 uppercase"
+                    placeholder="USDT"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Network</label>
+                  <input 
+                    type="text" 
+                    value={gatewayModal.data?.network || ""}
+                    onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, network: e.target.value } })}
+                    className="input-premium w-full bg-[#121212] border-neutral-800"
+                    placeholder="TRC20"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Deposit Address (Wallet)</label>
+                <input 
+                  type="text" 
+                  value={gatewayModal.data?.depositAddress || ""}
+                  onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, depositAddress: e.target.value } })}
+                  className="input-premium w-full bg-[#121212] border-neutral-800 font-mono text-sm"
+                  placeholder="T..."
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Logo URL (Optional)</label>
+                <input 
+                  type="text" 
+                  value={gatewayModal.data?.logo || ""}
+                  onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, logo: e.target.value } })}
+                  className="input-premium w-full bg-[#121212] border-neutral-800 text-sm"
+                  placeholder="https://example.com/usdt.png"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+              <button onClick={() => setGatewayModal({ isOpen: false, mode: "add", data: null })} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
+              <button onClick={handleGatewaySubmit} className="btn-primary" disabled={isSubmitting}>Save Gateway</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
+      {/* Promo Modal */}
+      {promoModal.isOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-neutral-800">
+            <h2 className="text-xl font-bold text-white mb-6">
+              {promoModal.mode === "add" ? "Create Promotion Code" : "Edit Promotion"}
+            </h2>
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Discount Code</label>
+                <input 
+                  type="text" 
+                  value={promoModal.data?.code || ""}
+                  onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, code: e.target.value.toUpperCase() } })}
+                  className="input-premium w-full bg-[#121212] border-neutral-800 font-mono tracking-widest uppercase text-xl"
+                  placeholder="BLACKFRIDAY50"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Discount Percentage (%)</label>
+                <input 
+                  type="number" 
+                  value={promoModal.data?.discount_pct || 0}
+                  onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, discount_pct: Number(e.target.value) } })}
+                  className="input-premium w-full bg-[#121212] border-neutral-800"
+                  min="1" max="100"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Target Plans</label>
+                <div className="flex gap-4 flex-wrap">
+                  {["ALL", "STARTER", "PRO", "ELITE"].map(plan => (
+                    <label key={plan} className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={(promoModal.data?.target_plans || []).includes(plan as any)}
+                        onChange={(e) => {
+                          let plans = [...(promoModal.data?.target_plans || [])];
+                          if (e.target.checked) plans.push(plan as any);
+                          else plans = plans.filter(p => p !== plan);
+                          setPromoModal({...promoModal, data: { ...promoModal.data!, target_plans: plans }});
+                        }}
+                        className="w-4 h-4 rounded border-neutral-600 bg-[#0a0a0a] text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                      />
+                      {plan}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Target Users</label>
+                <select 
+                  value={promoModal.data?.target_users === "ALL" ? "ALL" : "SPECIFIC"}
+                  onChange={e => setPromoModal({...promoModal, data: { ...promoModal.data!, target_users: e.target.value === "ALL" ? "ALL" : [] }})}
+                  className="input-premium w-full bg-[#121212] border-neutral-800 font-bold text-neutral-400 mb-2"
+                >
+                  <option value="ALL">All Users</option>
+                  <option value="SPECIFIC">Specific Users</option>
+                </select>
+
+                {promoModal.data?.target_users !== "ALL" && (
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder="Search user by username..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="input-premium w-full bg-[#0a0a0a] border-neutral-800 text-sm" 
+                    />
+                    {isSearching && <i className="las la-spinner la-spin absolute right-3 top-2.5 text-neutral-500"></i>}
+                    
+                    {searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 w-full mt-1 bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-xl overflow-hidden z-20">
+                        {searchResults.map(user => (
+                          <button
+                            key={user.uid}
+                            onClick={() => {
+                              const targets = promoModal.data?.target_users;
+                              if (Array.isArray(targets)) {
+                                const exists = targets.find(u => u.uid === user.uid);
+                                if (!exists) {
+                                  setPromoModal({
+                                    ...promoModal,
+                                    data: { ...promoModal.data!, target_users: [...targets, user] }
+                                  });
+                                }
+                              }
+                              setSearchQuery("");
+                              setSearchResults([]);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm"
+                          >
+                            {user.username}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {Array.isArray(promoModal.data?.target_users) && promoModal.data!.target_users.map(u => (
+                        <span key={u.uid} className="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full flex items-center gap-1 font-bold">
+                          {u.username}
+                          <i className="las la-times cursor-pointer hover:text-rose-400 text-sm ml-1" onClick={() => {
+                            const targets = promoModal.data?.target_users;
+                            if (Array.isArray(targets)) {
+                              setPromoModal({...promoModal, data: { ...promoModal.data!, target_users: targets.filter((x: any) => x.uid !== u.uid) }});
+                            }
+                          }}></i>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-neutral-800">
+                <input 
+                  type="checkbox" 
+                  id="promoActive"
+                  checked={promoModal.data?.is_active ?? true}
+                  onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, is_active: e.target.checked } })}
+                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                />
+                <label htmlFor="promoActive" className="text-sm font-bold text-neutral-300">Code is Active</label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+              <button onClick={() => setPromoModal({ isOpen: false, mode: "add", data: null })} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
+              <button onClick={handlePromoSubmit} className="btn-primary" disabled={isSubmitting}>Save Code</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

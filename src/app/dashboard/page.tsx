@@ -1,112 +1,74 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
-import { db } from "@/lib/firebase/config";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { useDemo } from "@/lib/demoContext";
+import { useAccountData } from "@/hooks/useAccountData";
+import { useTradeData } from "@/hooks/useTradeData";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
-import { useDemo } from "@/lib/demoContext";
+import { PlanStatusCard } from "@/components/subscription/PlanStatusCard";
+import dynamic from 'next/dynamic';
+
+// Lazy loading heavy components (if any are extracted in the future, e.g., Charts)
+// const DynamicRecentTradesTable = dynamic(() => import('@/components/dashboard/RecentTradesTable'), { ssr: false });
 
 export default function UserDashboardCommandCenter() {
   const { user, role } = useAuth();
   const { isDemoMode } = useDemo();
-  const [accounts, setAccounts] = useState<AccountDoc[]>([]);
-  const [recentTrades, setRecentTrades] = useState<TradeDoc[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // 1. Consume Account Logic Layer
+  const { accounts, loading: accLoading } = useAccountData(user?.uid, isDemoMode, role);
+  
+  // 2. Consume Trade Logic Layer by passing mapped account IDs
+  const accountIds = useMemo(() => accounts.map((a: AccountDoc) => a.id), [accounts]);
+  const { trades: recentTrades, loading: tradeLoading } = useTradeData(accountIds);
 
-  useEffect(() => {
-    if (user || isDemoMode) fetchDashboardData();
-  }, [user, role, isDemoMode]);
+  const loading = accLoading || tradeLoading;
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
+  // Memoized Metrics Calculations to prevent re-renders
+  const metrics = useMemo(() => {
+    let totalInitialBalance = 0;
+    accounts.forEach((acc: AccountDoc) => {
+      totalInitialBalance += (acc.initial_balance || 0);
+    });
 
-      if (isDemoMode) {
-        setAccounts(DEMO_ACCOUNTS);
-        const demoTrades: TradeDoc[] = [];
-        for (const acc of DEMO_ACCOUNTS) {
-          demoTrades.push(...generateTradesForAccount(acc.id, 0, 30, 0.55, 1.0));
-        }
-        demoTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
-        setRecentTrades(demoTrades);
-        return;
+    const totalTradesCount = recentTrades.length;
+    let totalPnL = 0;
+    let winningTrades = 0;
+    let todaysPnL = 0;
+    
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    recentTrades.forEach((t: TradeDoc) => {
+      const net = t.profit_loss - (t.commission || 0);
+      totalPnL += net;
+      if (net > 0) winningTrades++;
+      
+      if (new Date(t.close_time).getTime() >= todayStart.getTime()) {
+        todaysPnL += net;
       }
-      
-      if (!user) return;
+    });
 
-      if (role === "admin") {
-        setAccounts(DEMO_ACCOUNTS);
-        setRecentTrades([]);
-        return; 
-      }
-      
-      const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
-      
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), 10000));
-      
-      const accSnap: any = await Promise.race([getDocs(accQuery), timeoutPromise]);
-      const accDocs = accSnap.docs.map((d: any) => ({ id: d.id, ...d.data() } as AccountDoc));
-      setAccounts(accDocs);
+    const totalBalance = totalInitialBalance + totalPnL;
+    const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
 
-      let allTrades: TradeDoc[] = [];
-      for (const acc of accDocs) {
-        const tQuery = query(collection(db, "trades"), where("account_id", "==", acc.id));
-        const tSnap: any = await Promise.race([getDocs(tQuery), timeoutPromise]);
-        const tDocs = tSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as TradeDoc));
-        allTrades = [...allTrades, ...tDocs];
-      }
-      
-      // Sort trades by close time descending
-      allTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
-      setRecentTrades(allTrades);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return { totalBalance, totalPnL, todaysPnL, winRate, totalTradesCount };
+  }, [accounts, recentTrades]);
 
   if (loading) {
     return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
   }
 
-  // Calculate Metrics
-  let totalBalance = 0;
-  let totalInitialBalance = 0;
-  accounts.forEach(acc => {
-    totalInitialBalance += (acc.initial_balance || 0);
-  });
-
-  const totalTradesCount = recentTrades.length;
-  let totalPnL = 0;
-  let winningTrades = 0;
-  let todaysPnL = 0;
-  
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  recentTrades.forEach(t => {
-    const net = t.profit_loss - (t.commission || 0);
-    totalPnL += net;
-    if (net > 0) winningTrades++;
-    
-    if (new Date(t.close_time).getTime() >= todayStart.getTime()) {
-      todaysPnL += net;
-    }
-  });
-
-  totalBalance = totalInitialBalance + totalPnL;
-  const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans animate-in fade-in">
+      <PlanStatusCard />
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
@@ -138,7 +100,7 @@ export default function UserDashboardCommandCenter() {
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Global Balance</h3>
           </div>
           <p className="text-3xl font-extrabold text-primary tracking-tight">
-            ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${metrics.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">Across {accounts.length} active accounts</div>
         </Card>
@@ -150,8 +112,8 @@ export default function UserDashboardCommandCenter() {
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight ${totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-            {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <p className={`text-3xl font-extrabold tracking-tight ${metrics.totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">All-time profit/loss</div>
         </Card>
@@ -163,8 +125,8 @@ export default function UserDashboardCommandCenter() {
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Today's P/L</h3>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight ${todaysPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-            {todaysPnL >= 0 ? '+' : ''}${todaysPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <p className={`text-3xl font-extrabold tracking-tight ${metrics.todaysPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {metrics.todaysPnL >= 0 ? '+' : ''}${metrics.todaysPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">Reset at midnight UTC</div>
         </Card>
@@ -177,9 +139,9 @@ export default function UserDashboardCommandCenter() {
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Win Rate</h3>
           </div>
           <p className="text-3xl font-extrabold text-primary tracking-tight">
-            {winRate.toFixed(1)}%
+            {metrics.winRate.toFixed(1)}%
           </p>
-          <div className="text-xs font-medium text-secondary mt-2">From {totalTradesCount} total trades</div>
+          <div className="text-xs font-medium text-secondary mt-2">From {metrics.totalTradesCount} total trades</div>
         </Card>
       </div>
 
@@ -213,7 +175,7 @@ export default function UserDashboardCommandCenter() {
                     </td>
                   </tr>
                 ) : (
-                  recentTrades.slice(0, 5).map(trade => (
+                  recentTrades.slice(0, 5).map((trade: TradeDoc) => (
                     <tr key={trade.id} className="hover:bg-elevated/50 transition-colors">
                       <td className="px-6 py-3 font-bold text-primary">{trade.symbol}</td>
                       <td className="px-6 py-3">

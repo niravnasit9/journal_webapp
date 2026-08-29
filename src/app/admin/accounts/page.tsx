@@ -4,14 +4,8 @@ import { useState, useEffect } from "react";
 import { collection, query, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { AccountDoc, UserDoc } from "@/lib/firebase/schema";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
-import { Card } from "@/components/ui/Card";
-import { Select } from "@/components/ui/Select";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 
 interface AccountWithUser extends AccountDoc {
   userEmail: string;
@@ -20,9 +14,9 @@ interface AccountWithUser extends AccountDoc {
 export default function AdminAccountsPage() {
   const [accounts, setAccounts] = useState<AccountWithUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState<string>("ALL");
-  const [uniqueTypes, setUniqueTypes] = useState<string[]>([]);
-  const router = useRouter();
+  
+  // Modal state
+  const [manageAccountId, setManageAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllAccounts();
@@ -31,72 +25,99 @@ export default function AdminAccountsPage() {
   const fetchAllAccounts = async () => {
     try {
       setLoading(true);
-      // 1. Fetch all users so we can map uid -> email
+      
       const usersSnap = await getDocs(query(collection(db, "users")));
       const userMap: Record<string, string> = {};
       usersSnap.docs.forEach(d => {
         userMap[d.id] = (d.data() as UserDoc).email;
       });
 
-      // 2. Fetch all accounts
       const accSnap = await getDocs(query(collection(db, "accounts")));
       const accList: AccountWithUser[] = [];
-      const types = new Set<string>();
 
       accSnap.docs.forEach(d => {
         const data = d.data() as AccountDoc;
         accList.push({
           ...data,
           id: d.id,
-          userEmail: userMap[data.owner_uid] || "Unknown User"
+          userEmail: userMap[data.owner_uid] || "Unknown User",
         });
-        types.add(data.account_type);
       });
 
-      setUniqueTypes(Array.from(types));
+      // Sort by newest created
+      accList.sort((a, b) => {
+        const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at).getTime();
+        const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at).getTime();
+        return (timeB || 0) - (timeA || 0);
+      });
+
       setAccounts(accList);
     } catch (error) {
-      console.error("Error fetching accounts", error);
-      toast.error("Failed to fetch accounts.");
+      console.error("Failed to fetch accounts", error);
+      toast.error("Failed to load global accounts");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredAccounts = filterType === "ALL" 
-    ? accounts 
-    : accounts.filter(a => a.account_type === filterType);
+  const getTypeBadge = (type: string) => {
+    const t = type.toUpperCase();
+    if (t.includes('REAL')) {
+      return <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">{type}</span>;
+    }
+    if (t.includes('FUNDED')) {
+      return <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">{type}</span>;
+    }
+    // Default to Challenge for evaluation/demo/challenge accounts
+    return <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">{type}</span>;
+  };
+
+  const totalAccounts = accounts.length;
+  const activeFunded = accounts.filter(a => a.account_type?.toUpperCase().includes('FUNDED')).length;
+  const activeChallenge = accounts.filter(a => !a.account_type?.toUpperCase().includes('FUNDED') && !a.account_type?.toUpperCase().includes('REAL')).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto font-sans">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-surface p-6 rounded-2xl border border-subtle">
-        <div>
-          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
-            <div className="w-10 h-10 bg-info-bg rounded-lg border border-info/20 flex items-center justify-center text-info">
-              <i className="las la-wallet text-2xl"></i>
-            </div>
-            Global Accounts List
-          </h1>
-          <p className="text-secondary text-sm font-medium mt-2">View all trading accounts created by users.</p>
+    <div className="space-y-6 animate-in fade-in font-sans">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="heading-page text-white">Global Accounts List</h1>
+        <p className="text-sm text-neutral-400 mt-1">
+          Monitor and manage all trading accounts connected across the platform.
+        </p>
+      </div>
+
+      {/* Top Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-full h-1 bg-neutral-700"></div>
+          <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Total Accounts (All Time)</div>
+          <div className="text-3xl font-bold text-white">{totalAccounts}</div>
         </div>
         
-        <div className="w-full sm:w-64 shrink-0">
-          <Select 
-            options={[
-              { value: "ALL", label: "All Account Types" },
-              ...uniqueTypes.map(type => ({ value: type, label: type }))
-            ]}
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          />
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+          <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Active Funded Accounts</div>
+          <div className="text-3xl font-bold text-white">{activeFunded}</div>
+        </div>
+        
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+          <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Active Challenge Accounts</div>
+          <div className="text-3xl font-bold text-white">{activeChallenge}</div>
         </div>
       </div>
 
-      <Card className="overflow-visible border-default p-0">
+      {/* Data Table */}
+      <div className="premium-card p-0 overflow-hidden">
+        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Platform Accounts</h2>
+        </div>
+        
         <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left text-sm text-secondary">
-            <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
-              <tr>
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
                 <th className="px-6 py-4">Account Label</th>
                 <th className="px-6 py-4">Owner (User)</th>
                 <th className="px-6 py-4">Type</th>
@@ -105,54 +126,46 @@ export default function AdminAccountsPage() {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-subtle bg-surface">
+            <tbody className="divide-y divide-neutral-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <LoadingSpinner />
+                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                    <LoadingSpinner className="w-8 h-8 mx-auto border-blue-500" />
                   </td>
                 </tr>
-              ) : filteredAccounts.length === 0 ? (
+              ) : accounts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
-                    No accounts match the criteria.
+                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                    No accounts found on the platform.
                   </td>
                 </tr>
               ) : (
-                filteredAccounts.map((acc) => (
-                  <tr key={acc.id} className="hover:bg-elevated transition-colors group cursor-pointer" onClick={() => router.push(`/admin/users/${acc.owner_uid}`)}>
-                    <td className="px-6 py-4 font-bold text-primary whitespace-nowrap">
-                      {acc.label}
-                    </td>
-                    <td className="px-6 py-4 text-secondary font-medium">
-                      <Link href={`/admin/users/${acc.owner_uid}`} className="hover:text-info transition-colors flex items-center gap-2">
-                         <i className="las la-user"></i>
-                         {acc.userEmail}
-                      </Link>
+                accounts.map(acc => (
+                  <tr key={acc.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-white">{acc.label}</div>
+                      <div className="text-xs text-neutral-500 font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant={acc.account_type.toLowerCase() === "real" ? "success" : "info"} size="sm" className="uppercase">
-                        {acc.account_type}
-                      </Badge>
+                      <div className="text-sm text-neutral-300">{acc.userEmail}</div>
                     </td>
-                    <td className="px-6 py-4 text-secondary">
-                      {acc.broker}
+                    <td className="px-6 py-4">
+                      {getTypeBadge(acc.account_type || "Challenge")}
                     </td>
-                    <td className="px-6 py-4 text-primary font-bold">
-                      {acc.currency || "USD"}
+                    <td className="px-6 py-4">
+                      <span className="text-neutral-300 font-medium">{acc.broker || "N/A"}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-neutral-400 font-bold">{acc.currency || "USD"}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button 
-                        variant="secondary"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/admin/users/${acc.owner_uid}`);
-                        }}
-                        leftIcon={<i className="las la-cog"></i>}
+                      <button 
+                        onClick={() => setManageAccountId(acc.id)}
+                        className="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center ml-auto"
+                        title="Manage Account"
                       >
-                        Manage
-                      </Button>
+                        <i className="las la-cog text-xl"></i>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -160,7 +173,30 @@ export default function AdminAccountsPage() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
+
+      {/* Manage Modal Skeleton */}
+      {manageAccountId && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative">
+            <button 
+              onClick={() => setManageAccountId(null)} 
+              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+            >
+              <i className="las la-times text-2xl"></i>
+            </button>
+            <h2 className="text-xl font-bold text-white tracking-tight mb-4">Manage Account</h2>
+            <div className="premium-inner-box p-4 text-center">
+              <i className="las la-tools text-4xl text-neutral-500 mb-2"></i>
+              <p className="text-sm text-neutral-400">Settings and management options for account:<br/><span className="font-mono text-white font-bold mt-1 inline-block">{manageAccountId}</span></p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button onClick={() => setManageAccountId(null)} className="btn-ghost w-full">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

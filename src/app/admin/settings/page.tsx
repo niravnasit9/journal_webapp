@@ -1,188 +1,226 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc } from "firebase/firestore";
-import { GlobalSettings, PropFirmPreset } from "@/lib/firebase/schema";
+import { GlobalSettings } from "@/lib/firebase/schema";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import toast from "react-hot-toast";
 
 export default function AdminSettingsPage() {
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [settings, setSettings] = useState<GlobalSettings>({
     ai_revenge_gap_mins: 15,
-    ai_bad_session_threshold: 30,
+    ai_bad_session_threshold: 3,
     maintenance_mode: false,
     global_announcement: "",
     max_free_accounts: 1,
-    crypto_price_starter: 12,
-    crypto_price_pro: 39,
-    crypto_price_elite: 89,
+    crypto_price_starter: 19.99,
+    crypto_price_pro: 49.99,
+    crypto_price_elite: 99.99,
     crypto_wallet_address: "",
-    crypto_network: "USDT (TRC20)",
+    crypto_network: "TRC20"
   });
-  const [presets, setPresets] = useState<PropFirmPreset[]>([]);
-  const [newPreset, setNewPreset] = useState({ name: "", target_pct: 8, daily_loss_pct: 5, max_loss_pct: 10, consistency_rule_pct: 50 });
-  
-  const [isSaving, setIsSaving] = useState(false);
+
+  // Additional mock settings for UI requested
+  const [newRegistrations, setNewRegistrations] = useState(true);
+  const [strictAiEnforcement, setStrictAiEnforcement] = useState(true);
+  const [defaultFreeTrialDays, setDefaultFreeTrialDays] = useState(14);
+  const [supportEmail, setSupportEmail] = useState("support@profitpulse.com");
 
   useEffect(() => {
-    const fetchData = async () => {
-      const docRef = doc(db, "settings", "global");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setSettings(prev => ({ ...prev, ...(docSnap.data() as GlobalSettings) }));
-      }
-
-      const presetSnap = await getDocs(collection(db, "presets"));
-      setPresets(presetSnap.docs.map(d => ({ id: d.id, ...d.data() } as PropFirmPreset)));
-    };
-    fetchData();
+    fetchSettings();
   }, []);
 
-  const handleSaveSettings = async () => {
-    setIsSaving(true);
+  const fetchSettings = async () => {
     try {
-      await setDoc(doc(db, "settings", "global"), settings, { merge: true });
-      alert("Global settings updated!");
+      setLoading(true);
+      const docSnap = await getDoc(doc(db, "settings", "main"));
+      if (docSnap.exists()) {
+        setSettings(docSnap.data() as GlobalSettings);
+      }
     } catch (error) {
       console.error(error);
-      alert("Failed to save.");
-    }
-    setIsSaving(false);
-  };
-
-  const handleAddPreset = async () => {
-    if (!newPreset.name) return;
-    try {
-      const docRef = await addDoc(collection(db, "presets"), newPreset);
-      setPresets([...presets, { id: docRef.id, ...newPreset }]);
-      setNewPreset({ name: "", target_pct: 8, daily_loss_pct: 5, max_loss_pct: 10, consistency_rule_pct: 50 });
-    } catch (error) {
-      console.error(error);
+      toast.error("Failed to load settings");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeletePreset = async (id: string) => {
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     try {
-      await deleteDoc(doc(db, "presets", id));
-      setPresets(presets.filter(p => p.id !== id));
+      await setDoc(doc(db, "settings", "main"), settings, { merge: true });
+      toast.success("Global settings updated");
     } catch (error) {
-      console.error(error);
+      toast.error("Failed to save settings");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-[60vh]"><LoadingSpinner className="w-10 h-10 border-blue-500" /></div>;
+  }
 
   return (
-    <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Command Center</h1>
-        <p className="text-neutral-400 mt-1">Manage global platform configurations and crypto billing.</p>
+    <div className="space-y-6 animate-in fade-in font-sans">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="heading-page text-white">Global Platform Settings</h1>
+        <p className="text-sm text-neutral-400 mt-1">Comprehensive configuration panel for platform-wide toggles.</p>
       </div>
 
-      {/* SECTION A: CRYPTO BILLING ENGINE (NEW) */}
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-          <i className="las la-wallet text-blue-500"></i> Crypto Billing & Pricing
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+      <form onSubmit={handleSave}>
+        <div className="premium-card p-0 shadow-2xl border border-neutral-800 mb-8">
+          
+          <div className="p-6 md:p-8 space-y-8">
+            
+            {/* Section: Access & Operations */}
             <div>
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Starter Tier Price (USDT/USDC)</label>
-              <div className="relative mt-1">
-                <span className="absolute left-3 top-2.5 text-neutral-500">$</span>
-                <input type="number" value={settings.crypto_price_starter} onChange={(e) => setSettings({ ...settings, crypto_price_starter: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 focus:border-blue-500 focus:ring-1 text-white rounded-lg pl-8 pr-3 py-2" />
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+                <i className="las la-shield-alt text-blue-500"></i> Access & Operations
+              </h2>
+              
+              <div className="space-y-6">
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Maintenance Mode</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Disables login and shows maintenance page to all non-admin users.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={settings.maintenance_mode} 
+                      onChange={e => setSettings({...settings, maintenance_mode: e.target.checked})} 
+                    />
+                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">New User Registrations</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Allow new users to sign up for the platform.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={newRegistrations} 
+                      onChange={e => setNewRegistrations(e.target.checked)} 
+                    />
+                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
+
               </div>
             </div>
+
+            {/* Section: AI & Trading Engine */}
             <div>
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Pro Tier Price (USDT/USDC)</label>
-              <div className="relative mt-1">
-                <span className="absolute left-3 top-2.5 text-neutral-500">$</span>
-                <input type="number" value={settings.crypto_price_pro} onChange={(e) => setSettings({ ...settings, crypto_price_pro: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 focus:border-blue-500 focus:ring-1 text-white rounded-lg pl-8 pr-3 py-2" />
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+                <i className="las la-brain text-purple-500"></i> AI & Trading Engine
+              </h2>
+              
+              <div className="space-y-6">
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Strict AI Enforcement</h3>
+                    <p className="text-xs text-neutral-500 mt-1">If enabled, AI rigidly flags trades that violate rules and decreases trust scores.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={strictAiEnforcement} 
+                      onChange={e => setStrictAiEnforcement(e.target.checked)} 
+                    />
+                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                  </label>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="md:w-1/2">
+                    <h3 className="text-sm font-bold text-white">AI Revenge Trading Gap (Mins)</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Minimum time gap between trades before AI flags it as revenge trading.</p>
+                  </div>
+                  <div className="md:w-1/3">
+                    <input 
+                      type="number" 
+                      value={settings.ai_revenge_gap_mins}
+                      onChange={e => setSettings({...settings, ai_revenge_gap_mins: Number(e.target.value)})}
+                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      min="1" max="120"
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
+
+            {/* Section: Account Defaults */}
             <div>
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Elite Tier Price (USDT/USDC)</label>
-              <div className="relative mt-1">
-                <span className="absolute left-3 top-2.5 text-neutral-500">$</span>
-                <input type="number" value={settings.crypto_price_elite} onChange={(e) => setSettings({ ...settings, crypto_price_elite: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 focus:border-blue-500 focus:ring-1 text-white rounded-lg pl-8 pr-3 py-2" />
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+                <i className="las la-user-cog text-emerald-500"></i> Account Defaults
+              </h2>
+              
+              <div className="space-y-6">
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="md:w-1/2">
+                    <h3 className="text-sm font-bold text-white">Default Free Trial (Days)</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Number of days a newly registered user gets on the Free tier before expiry.</p>
+                  </div>
+                  <div className="md:w-1/3">
+                    <input 
+                      type="number" 
+                      value={defaultFreeTrialDays}
+                      onChange={e => setDefaultFreeTrialDays(Number(e.target.value))}
+                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      min="0" max="365"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="md:w-1/2">
+                    <h3 className="text-sm font-bold text-white">Support Email</h3>
+                    <p className="text-xs text-neutral-500 mt-1">The global email address for customer support inquiries.</p>
+                  </div>
+                  <div className="md:w-1/3">
+                    <input 
+                      type="email" 
+                      value={supportEmail}
+                      onChange={e => setSupportEmail(e.target.value)}
+                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Receiving Wallet Address</label>
-              <input type="text" value={settings.crypto_wallet_address} onChange={(e) => setSettings({ ...settings, crypto_wallet_address: e.target.value })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1 font-mono text-sm" placeholder="0x..." />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Accepted Network</label>
-              <input type="text" value={settings.crypto_network} onChange={(e) => setSettings({ ...settings, crypto_network: e.target.value })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1" placeholder="e.g., USDT (TRC20)" />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* SECTION B: PROP FIRM PRESET MANAGER */}
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-          <i className="las la-building text-blue-500"></i> Prop Firm Presets
-        </h2>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-          <input type="text" placeholder="Preset Name (e.g. FTMO)" value={newPreset.name} onChange={e => setNewPreset({...newPreset, name: e.target.value})} className="bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 col-span-2 md:col-span-1" />
-          <input type="number" placeholder="Target %" value={newPreset.target_pct} onChange={e => setNewPreset({...newPreset, target_pct: Number(e.target.value)})} className="bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-          <input type="number" placeholder="Daily Loss %" value={newPreset.daily_loss_pct} onChange={e => setNewPreset({...newPreset, daily_loss_pct: Number(e.target.value)})} className="bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-          <input type="number" placeholder="Max Loss %" value={newPreset.max_loss_pct} onChange={e => setNewPreset({...newPreset, max_loss_pct: Number(e.target.value)})} className="bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2" />
-          <button onClick={handleAddPreset} className="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-4 py-2 font-semibold transition-colors">Add</button>
-        </div>
-
-        <div className="space-y-2">
-          {presets.map(p => (
-            <div key={p.id} className="flex justify-between items-center bg-[#121212] border border-neutral-800 p-3 rounded-lg">
-              <span className="text-white font-medium">{p.name}</span>
-              <div className="flex gap-4 text-sm text-neutral-400">
-                <span>Target: {p.target_pct}%</span>
-                <span>Daily Loss: {p.daily_loss_pct}%</span>
-                <span>Max Loss: {p.max_loss_pct}%</span>
-                <button onClick={() => handleDeletePreset(p.id!)} className="text-rose-500 hover:text-rose-400"><i className="las la-trash"></i></button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* SECTION C: SYSTEM LIMITS & AI */}
-        <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl space-y-6">
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-              <i className="las la-lock text-blue-500"></i> Platform Limits
-            </h2>
-            <label className="text-xs font-semibold text-neutral-400 uppercase">Max Free Accounts</label>
-            <input type="number" value={settings.max_free_accounts} onChange={(e) => setSettings({ ...settings, max_free_accounts: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1" />
-            <p className="text-[11px] text-neutral-500 mt-1">Number of accounts allowed before triggering the paywall.</p>
           </div>
 
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-              <i className="las la-brain text-blue-500"></i> AI Strictness
-            </h2>
-            <label className="text-xs font-semibold text-neutral-400 uppercase">Revenge Gap (Minutes)</label>
-            <input type="number" value={settings.ai_revenge_gap_mins} onChange={(e) => setSettings({ ...settings, ai_revenge_gap_mins: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1 mb-3" />
-            <label className="text-xs font-semibold text-neutral-400 uppercase">Bad Session Threshold (%)</label>
-            <input type="number" value={settings.ai_bad_session_threshold} onChange={(e) => setSettings({ ...settings, ai_bad_session_threshold: Number(e.target.value) })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1" />
+          <div className="p-6 border-t border-neutral-800 bg-[#121212] flex justify-end">
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="btn-primary py-3 px-8 text-sm flex items-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+            >
+              {isSubmitting ? <LoadingSpinner className="w-5 h-5 border-white" /> : <><i className="las la-save text-lg"></i> Save Changes</>}
+            </button>
           </div>
         </div>
+      </form>
 
-        {/* SECTION D: BROADCAST */}
-        <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-            <i className="las la-bullhorn text-blue-500"></i> Global Broadcast System
-          </h2>
-          <label className="text-xs font-semibold text-neutral-400 uppercase">Dashboard Banner</label>
-          <textarea value={settings.global_announcement} onChange={(e) => setSettings({ ...settings, global_announcement: e.target.value })} className="w-full bg-[#121212] border border-neutral-800 text-white rounded-lg px-3 py-2 mt-1 min-h-[150px]" />
-        </div>
-      </div>
-
-      <button onClick={handleSaveSettings} disabled={isSaving} className="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg flex items-center justify-center gap-2">
-        <i className="las la-save text-xl"></i> {isSaving ? "Syncing..." : "Save Global Settings"}
-      </button>
     </div>
   );
 }

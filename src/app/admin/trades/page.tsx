@@ -1,202 +1,504 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { TradeDoc, AccountDoc, UserDoc } from "@/lib/firebase/schema";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Select } from "@/components/ui/Select";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
 import toast from "react-hot-toast";
 
-interface TradeWithDetails extends TradeDoc {
+interface TradeWithUser extends TradeDoc {
   userEmail: string;
-  accountType: string;
-  accountLabel: string;
 }
 
 export default function AdminTradesPage() {
-  const [trades, setTrades] = useState<TradeWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterAccountType, setFilterAccountType] = useState<string>("ALL");
-  const [uniqueTypes, setUniqueTypes] = useState<string[]>([]);
+  const [trades, setTrades] = useState<TradeWithUser[]>([]);
+
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"view" | "edit" | "delete">("view");
+  const [currentTrade, setCurrentTrade] = useState<TradeWithUser | null>(null);
+
+  // Form States for Edit
+  const [formData, setFormData] = useState<Partial<TradeDoc>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchAllTrades();
+    fetchTrades();
   }, []);
 
-  const fetchAllTrades = async () => {
+  const fetchTrades = async () => {
     try {
       setLoading(true);
-      // 1. Fetch all users
-      const usersSnap = await getDocs(query(collection(db, "users")));
-      const userMap: Record<string, string> = {};
-      usersSnap.docs.forEach(d => {
-        userMap[d.id] = (d.data() as UserDoc).email;
+      const uSnap = await getDocs(query(collection(db, "users")));
+      const users: Record<string, string> = {};
+      uSnap.docs.forEach(d => { users[d.id] = (d.data() as UserDoc).email; });
+
+      const aSnap = await getDocs(query(collection(db, "accounts")));
+      const accounts: Record<string, string> = {};
+      aSnap.docs.forEach(d => { 
+        const acc = d.data() as AccountDoc;
+        accounts[d.id] = users[acc.owner_uid] || "Unknown User"; 
       });
 
-      // 2. Fetch all accounts
-      const accSnap = await getDocs(query(collection(db, "accounts")));
-      const accMap: Record<string, { label: string, type: string, owner: string }> = {};
-      const types = new Set<string>();
-      
-      accSnap.docs.forEach(d => {
-        const data = d.data() as AccountDoc;
-        accMap[d.id] = { label: data.label, type: data.account_type, owner: data.owner_uid };
-        types.add(data.account_type);
-      });
-
-      // 3. Fetch all trades
-      const tradesSnap = await getDocs(query(collection(db, "trades")));
-      const tradeList: TradeWithDetails[] = [];
-
-      tradesSnap.docs.forEach(d => {
-        const data = d.data() as TradeDoc;
-        const accInfo = accMap[data.account_id] || { label: "Unknown", type: "Unknown", owner: "Unknown" };
-        const userEmail = userMap[accInfo.owner] || "Unknown User";
-        
-        tradeList.push({
-          ...data,
+      const tSnap = await getDocs(query(collection(db, "trades")));
+      const dbTrades: TradeWithUser[] = [];
+      tSnap.docs.forEach(d => {
+        const t = d.data() as TradeDoc;
+        dbTrades.push({
+          ...t,
           id: d.id,
-          userEmail,
-          accountType: accInfo.type,
-          accountLabel: accInfo.label
+          userEmail: accounts[t.account_id] || "Unknown User"
         });
       });
 
-      // Sort by close_time descending
-      tradeList.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
-
-      setUniqueTypes(Array.from(types));
-      setTrades(tradeList);
+      dbTrades.sort((a, b) => new Date(b.open_time).getTime() - new Date(a.open_time).getTime());
+      setTrades(dbTrades);
     } catch (error) {
-      console.error("Error fetching trades", error);
-      toast.error("Failed to fetch global trades.");
+      console.error("Failed to load trades:", error);
+      toast.error("Failed to load global trades");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredTrades = filterAccountType === "ALL" 
-    ? trades 
-    : trades.filter(t => t.accountType === filterAccountType);
+  const openView = (trade: TradeWithUser) => {
+    setCurrentTrade(trade);
+    setModalMode("view");
+    setIsModalOpen(true);
+  };
+
+  const openEdit = () => {
+    if (currentTrade) {
+      setFormData({
+        symbol: currentTrade.symbol,
+        profit_loss: currentTrade.profit_loss,
+        direction: currentTrade.direction,
+        lot_size: currentTrade.lot_size,
+        open_price: currentTrade.open_price,
+        close_price: currentTrade.close_price,
+        pips: currentTrade.pips,
+        commission: currentTrade.commission,
+        swap: currentTrade.swap || 0,
+        emotion: currentTrade.emotion,
+        setup_grade: currentTrade.setup_grade,
+        execution_score: currentTrade.execution_score,
+        strategy_id: currentTrade.strategy_id
+      });
+      setModalMode("edit");
+    }
+  };
+
+  const openDelete = () => {
+    setModalMode("delete");
+  };
+
+  const handleEditSubmit = async () => {
+    if (!currentTrade) return;
+    setIsSubmitting(true);
+    try {
+      await updateDoc(doc(db, "trades", currentTrade.id), formData);
+      toast.success("Trade overridden successfully");
+      setIsModalOpen(false);
+      fetchTrades();
+    } catch (error: any) {
+      console.error("Update failed:", error);
+      toast.error("Failed to update trade: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSubmit = async () => {
+    if (!currentTrade) return;
+    setIsSubmitting(true);
+    try {
+      await deleteDoc(doc(db, "trades", currentTrade.id));
+      toast.success("Trade deleted from global ledger");
+      setIsModalOpen(false);
+      fetchTrades();
+    } catch (error: any) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete trade: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const totalVolume = trades.reduce((acc, t) => acc + (t.lot_size || 0), 0);
+  const globalNetPnl = trades.reduce((acc, t) => acc + (t.profit_loss || 0), 0);
+  const activeOpenTrades = trades.filter(t => !t.close_time).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto font-sans">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
-            <i className="las la-book-open text-3xl text-success"></i>
-            Global Trades List
-          </h1>
-          <p className="text-secondary text-sm font-medium mt-1">View all trades executed across the platform.</p>
+    <div className="space-y-6 animate-in fade-in font-sans">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="heading-page text-white">Global Trades Ledger</h1>
+        <p className="text-sm text-neutral-400 mt-1">
+          Audit and review all real-time and historical trade activity across the platform.
+        </p>
+      </div>
+
+      {/* Top Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-neutral-800">
+          <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+          <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Total Volume Traded</div>
+          <div className="text-3xl font-bold text-white">{totalVolume.toLocaleString(undefined, { maximumFractionDigits: 2 })} Lots</div>
         </div>
         
-        <div className="w-full sm:w-64 shrink-0">
-          <Select 
-            options={[
-              { value: "ALL", label: "All Account Types" },
-              ...uniqueTypes.map(type => ({ value: type, label: type }))
-            ]}
-            value={filterAccountType}
-            onChange={(e) => setFilterAccountType(e.target.value)}
-          />
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+          <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Global Net PnL</div>
+          <div className={`text-3xl font-bold ${globalNetPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {globalNetPnl >= 0 ? '+' : ''}${globalNetPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        </div>
+        
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+          <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+          <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Active Open Trades</div>
+          <div className="text-3xl font-bold text-white">{activeOpenTrades}</div>
         </div>
       </div>
 
-      <Card className="overflow-visible border-default">
+      {/* The Table */}
+      <div className="premium-card p-0 overflow-hidden">
+        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trade Activity</h2>
+        </div>
+        
         <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left text-sm text-secondary">
-            <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
-              <tr>
-                <th className="px-6 py-4">User</th>
-                <th className="px-6 py-4">Account Type</th>
-                <th className="px-6 py-4">Open Date & Time</th>
-                <th className="px-6 py-4">Close Date & Time</th>
-                <th className="px-6 py-4">Duration</th>
-                <th className="px-6 py-4">Symbol</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Setup / Emotion</th>
-                <th className="px-6 py-4 text-right">Net P&L</th>
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">User Email</th>
+                <th className="px-6 py-4">Asset / Pair</th>
+                <th className="px-6 py-4">Direction</th>
+                <th className="px-6 py-4">R:R</th>
+                <th className="px-6 py-4 text-right">Net PnL</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-subtle">
+            <tbody className="divide-y divide-neutral-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
-                    <LoadingSpinner />
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <LoadingSpinner className="w-8 h-8 mx-auto border-blue-500" />
                   </td>
                 </tr>
-              ) : filteredTrades.length === 0 ? (
+              ) : trades.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
-                    No trades match the criteria.
+                  <td colSpan={7} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                    No trades found on the platform.
                   </td>
                 </tr>
               ) : (
-                filteredTrades.map((trade) => {
-                  const netPnL = trade.profit_loss - trade.commission;
-                  return (
-                    <tr key={trade.id} className="hover:bg-elevated transition-colors">
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-primary">{trade.userEmail}</p>
-                        <p className="text-[10px] text-muted uppercase tracking-widest">{trade.accountLabel}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant={trade.accountType.toLowerCase() === "real" ? "success" : "info"} size="sm" className="uppercase">
-                          {trade.accountType}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-primary font-medium">{formatTradeDate(trade.open_time)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-primary font-medium">{formatTradeDate(trade.close_time)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-secondary font-medium">{getTradeDuration(trade.open_time, trade.close_time)}</div>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-primary">
-                        {trade.symbol}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1 items-start">
-                          <Badge variant={trade.direction === 'BUY' ? "info" : "warning"} size="sm" className="uppercase">
-                            {trade.direction}
-                          </Badge>
-                          <span className="text-xs font-medium text-secondary">{trade.lot_size} lots</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {trade.setup_grade && (
-                            <Badge variant="neutral" size="sm">
-                              {trade.setup_grade}
-                            </Badge>
-                          )}
-                          {trade.emotion && (
-                            <Badge variant="info" size="sm">
-                              {trade.emotion}
-                            </Badge>
-                          )}
-                          {!trade.setup_grade && !trade.emotion && (
-                            <span className="text-xs text-muted">-</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className={`px-6 py-4 text-right font-black ${netPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {netPnL >= 0 ? '+' : ''}${netPnL.toFixed(2)}
-                      </td>
-                    </tr>
-                  )
-                })
+                trades.map(trade => (
+                  <tr key={trade.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                    <td className="px-6 py-4">
+                      <span className="text-neutral-300 font-medium">{new Date(trade.open_time).toLocaleString()}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-neutral-400">{trade.userEmail}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-white">{trade.symbol}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {trade.direction === "BUY" ? (
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                          Long
+                        </span>
+                      ) : (
+                        <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                          Short
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-neutral-400 font-mono text-xs">{trade.risk_reward_ratio ? `1:${trade.risk_reward_ratio.toFixed(2)}` : 'N/A'}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className={`font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {trade.profit_loss >= 0 ? '+' : ''}${trade.profit_loss.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        onClick={() => openView(trade)}
+                        className="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center ml-auto"
+                        title="View Details"
+                      >
+                        <i className="las la-eye text-xl"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
+
+      {/* Details/Edit/Delete Modal */}
+      {isModalOpen && currentTrade && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-neutral-800">
+            <button 
+              onClick={() => setIsModalOpen(false)} 
+              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+            >
+              <i className="las la-times text-2xl"></i>
+            </button>
+            
+            {modalMode === "view" ? (
+              <>
+                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                  <i className="las la-chart-bar text-blue-500"></i> Trade Details
+                </h2>
+                
+                <div className="premium-inner-box p-5 mb-6 space-y-3 text-sm">
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Trade ID</span>
+                    <span className="text-white font-mono">{currentTrade.id}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">User</span>
+                    <span className="text-white">{currentTrade.userEmail}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Asset</span>
+                    <span className="text-white font-bold">{currentTrade.symbol}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Direction</span>
+                    <span className="text-white">{currentTrade.direction}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Open Price</span>
+                    <span className="text-white font-mono">{currentTrade.open_price}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Close Price</span>
+                    <span className="text-white font-mono">{currentTrade.close_price || "Open"}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Lots</span>
+                    <span className="text-white font-mono">{currentTrade.lot_size}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-neutral-800 pb-2">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Emotion</span>
+                    <span className="text-white">{currentTrade.emotion || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Net PnL</span>
+                    <span className={`font-bold ${currentTrade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      ${currentTrade.profit_loss.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between gap-3 pt-2">
+                  <button onClick={openDelete} className="btn-ghost flex items-center gap-2 hover:text-rose-400 hover:bg-rose-500/10">
+                    <i className="las la-trash"></i> Delete Trade
+                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={openEdit} className="btn-ghost flex items-center gap-2">
+                      <i className="las la-pen"></i> Override
+                    </button>
+                    <button onClick={() => setIsModalOpen(false)} className="btn-primary">
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : modalMode === "delete" ? (
+              <>
+                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                  <i className="las la-exclamation-triangle text-amber-500"></i> Delete Trade
+                </h2>
+                <div className="premium-inner-box p-4 text-center border-amber-500/20 bg-amber-500/5 mb-6">
+                  <p className="text-sm text-amber-500/80 mb-2 font-bold">
+                    WARNING: This will permanently delete this trade from the global ledger.
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    This action will alter the ledger math for {currentTrade.userEmail}'s personal dashboard.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button onClick={() => setModalMode("view")} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
+                  <button onClick={handleDeleteSubmit} className="px-4 py-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold text-sm rounded-xl hover:bg-rose-500/20 transition-all flex items-center gap-2" disabled={isSubmitting}>
+                    {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-trash"></i>} Confirm Delete
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                  <i className="las la-tools text-amber-500"></i> Admin Override
+                </h2>
+                
+                <div className="premium-inner-box p-4 border-amber-500/20 bg-amber-500/5 mb-6">
+                  <p className="text-xs text-amber-500/80 font-bold uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <i className="las la-exclamation-circle text-sm"></i> Extreme Caution
+                  </p>
+                  <p className="text-xs text-amber-500/60 leading-relaxed">
+                    Manual modifications to user trades will permanently alter their personal dashboard ledger math. This should only be used to correct system synchronization errors.
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Asset / Symbol</label>
+                      <input 
+                        type="text" 
+                        value={formData.symbol || ""}
+                        onChange={e => setFormData({...formData, symbol: e.target.value.toUpperCase()})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800 uppercase"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Direction</label>
+                      <select 
+                        value={formData.direction || "BUY"}
+                        onChange={e => setFormData({...formData, direction: e.target.value as "BUY" | "SELL"})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                      >
+                        <option value="BUY">BUY (Long)</option>
+                        <option value="SELL">SELL (Short)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Lot Size</label>
+                      <input 
+                        type="number" 
+                        value={formData.lot_size || 0}
+                        onChange={e => setFormData({...formData, lot_size: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Net PnL (USD)</label>
+                      <input 
+                        type="number" 
+                        value={formData.profit_loss || 0}
+                        onChange={e => setFormData({...formData, profit_loss: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Open Price</label>
+                      <input 
+                        type="number" 
+                        value={formData.open_price || 0}
+                        onChange={e => setFormData({...formData, open_price: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.00001"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Close Price</label>
+                      <input 
+                        type="number" 
+                        value={formData.close_price || 0}
+                        onChange={e => setFormData({...formData, close_price: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.00001"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Pips</label>
+                      <input 
+                        type="number" 
+                        value={formData.pips || 0}
+                        onChange={e => setFormData({...formData, pips: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Commission</label>
+                      <input 
+                        type="number" 
+                        value={formData.commission || 0}
+                        onChange={e => setFormData({...formData, commission: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Swap</label>
+                      <input 
+                        type="number" 
+                        value={formData.swap || 0}
+                        onChange={e => setFormData({...formData, swap: parseFloat(e.target.value)})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Emotion</label>
+                      <select 
+                        value={formData.emotion || "Neutral"}
+                        onChange={e => setFormData({...formData, emotion: e.target.value as any})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                      >
+                        <option value="Neutral">Neutral</option>
+                        <option value="FOMO">FOMO</option>
+                        <option value="Revenge">Revenge</option>
+                        <option value="Confident">Confident</option>
+                        <option value="Bored">Bored</option>
+                        <option value="Tilted">Tilted</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Execution</label>
+                      <select 
+                        value={formData.execution_score || "None"}
+                        onChange={e => setFormData({...formData, execution_score: e.target.value as any})}
+                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                      >
+                        <option value="None">None</option>
+                        <option value="Perfect">Perfect</option>
+                        <option value="Early Entry">Early Entry</option>
+                        <option value="Late Exit">Late Exit</option>
+                        <option value="FOMO">FOMO</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+                  <button onClick={() => setModalMode("view")} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
+                  <button onClick={handleEditSubmit} className="btn-primary flex items-center gap-2" disabled={isSubmitting}>
+                    {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-save"></i>} Commit Override
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

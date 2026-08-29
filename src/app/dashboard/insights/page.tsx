@@ -99,7 +99,7 @@ export default function InsightsPage() {
   const strategies: Record<string, number> = {};
   const sessions: Record<string, number> = {};
   const weekdays: Record<string, number> = {};
-  const setups: Record<string, number> = {}; // using strategy_tag + direction
+  const setups: Record<string, number> = {}; // using strategy_id + direction
   
   let totalWinPnL = 0;
   let totalWins = 0;
@@ -112,9 +112,9 @@ export default function InsightsPage() {
     
     instruments[t.symbol] = (instruments[t.symbol] || 0) + pnl;
     
-    if (t.strategy_tag) {
-      strategies[t.strategy_tag] = (strategies[t.strategy_tag] || 0) + pnl;
-      const setupKey = `${t.strategy_tag} (${t.direction})`;
+    if (t.strategy_id) {
+      strategies[t.strategy_id] = (strategies[t.strategy_id] || 0) + pnl;
+      const setupKey = `${t.strategy_id} (${t.direction})`;
       setups[setupKey] = (setups[setupKey] || 0) + pnl;
     }
     

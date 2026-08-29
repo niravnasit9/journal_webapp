@@ -240,7 +240,7 @@ export const generateTradesForAccount = (accountId: string, startDay: number, co
       magic_number: `00${Math.floor(Math.random() * 5)}`,
       emotion: emotions[Math.floor(Math.random() * emotions.length)],
       setup_grade: grades[Math.floor(Math.random() * grades.length)],
-      strategy_tag: !isLoss ? "Supply & Demand / SMC" : (pips < -40 ? "Revenge Trading (Mistake)" : "London Breakout"),
+      strategy_id: !isLoss ? "Supply & Demand / SMC" : (pips < -40 ? "Revenge Trading (Mistake)" : "London Breakout"),
       notes: !isLoss ? "Great setup. Followed the plan perfectly." : "Missed the entry and chased it. Stop loss hit.",
       screenshot_url: "",
       mistake_tags: !isLoss ? [] : ["Chasing Price", "Impatient"]
@@ -275,7 +275,7 @@ export const DEMO_TRADES: TradeDoc[] = [
     magic_number: "001",
     emotion: "Confident",
     setup_grade: "A+",
-    strategy_tag: "Supply & Demand / SMC",
+    strategy_id: "Supply & Demand / SMC",
     notes: "Perfect institutional order flow entry. Held overnight despite swap fees because the higher timeframe structure was undeniably bullish. This is an extremely long note specifically designed to test the layout wrapping capabilities of the user interface. It should wrap nicely to the next line without breaking the flexbox layout, causing any horizontal scrolling, or overlapping with other elements on the screen.",
     screenshot_url: "https://example.com/mock-trade.png",
     mistake_tags: []
@@ -297,7 +297,7 @@ export const DEMO_TRADES: TradeDoc[] = [
     magic_number: "999",
     emotion: "Revenge",
     setup_grade: "C",
-    strategy_tag: "Revenge Trading (Mistake)",
+    strategy_id: "Revenge Trading (Mistake)",
     notes: "I completely lost my mind here. Doubled my lot size after taking a loss trying to make it back instantly. Blew the entire evaluation challenge in 3 minutes.",
     screenshot_url: "",
     mistake_tags: ["Revenge Trading", "Over-leveraged", "Ignored Stop Loss"]

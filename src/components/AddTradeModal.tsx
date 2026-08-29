@@ -157,8 +157,8 @@ export default function AddTradeModal({
     }
   };
 
-  const inputClass = "w-full bg-[#121212] border border-neutral-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-neutral-100 rounded-lg px-3 py-2 text-sm transition-colors";
-  const labelClass = "block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1";
+  const inputClass = "input-premium text-sm";
+  const labelClass = "label-premium text-xs";
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -166,7 +166,7 @@ export default function AddTradeModal({
         className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" 
         onClick={onClose}
       />
-      <div className={`relative bg-[#0a0a0a] border border-neutral-800 rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden animate-in zoom-in-95 fade-in duration-300`}>
+      <div className={`relative premium-card p-0 shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden animate-in zoom-in-95 fade-in duration-300`}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-neutral-800">
@@ -189,7 +189,7 @@ export default function AddTradeModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Direction</label>
-              <div className="flex bg-[#121212] border border-neutral-800 rounded-lg p-1 overflow-hidden">
+              <div className="flex premium-inner-box p-1 overflow-hidden">
                 <button
                   type="button"
                   className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-colors ${formData.direction === 'BUY' ? 'bg-emerald-600 text-white' : 'text-neutral-400 hover:text-white'}`}
@@ -218,7 +218,7 @@ export default function AddTradeModal({
                   >
                     {SYMBOL_PRESETS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <button type="button" onClick={() => setSymbolMode("other")} className="px-3 bg-[#121212] border border-neutral-800 text-neutral-300 rounded-lg text-sm hover:bg-neutral-800">
+                  <button type="button" onClick={() => setSymbolMode("other")} className="btn-ghost px-3 py-2 text-sm">
                     Custom
                   </button>
                 </div>
@@ -231,7 +231,7 @@ export default function AddTradeModal({
                     onChange={(e) => setCustomSymbol(e.target.value.toUpperCase())}
                     placeholder="e.g. AAPL"
                   />
-                  <button type="button" onClick={() => setSymbolMode("preset")} className="px-3 bg-[#121212] border border-neutral-800 text-neutral-300 rounded-lg text-sm hover:bg-neutral-800">
+                  <button type="button" onClick={() => setSymbolMode("preset")} className="btn-ghost px-3 py-2 text-sm">
                     Presets
                   </button>
                 </div>
@@ -425,7 +425,7 @@ export default function AddTradeModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="btn-primary w-full py-2.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

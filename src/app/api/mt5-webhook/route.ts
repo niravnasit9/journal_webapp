@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           profit_loss: trade.profit,
           commission: trade.commission || 0,
           swap: trade.swap || 0,
-          strategy_tag: "",
+          strategy_id: "",
           notes: "Synced via EA",
           screenshot_url: "",
           mistake_tags: []

@@ -16,8 +16,15 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  
+  // Modal States
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, uid: string, email: string}>({isOpen: false, uid: "", email: ""});
+  const [manageAccessUser, setManageAccessUser] = useState<UserDoc | null>(null);
+  
+  // Manage Access Form States
+  const [selectedTier, setSelectedTier] = useState<string>("free");
+  const [selectedDuration, setSelectedDuration] = useState<string>("30");
+  const [customDays, setCustomDays] = useState<string>("");
 
   useEffect(() => {
     fetchUsers();
@@ -69,17 +76,67 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleUpdateTier = async (uid: string, newTier: string) => {
-    setOpenDropdownId(null);
+  const openManageAccess = (user: UserDoc) => {
+    setManageAccessUser(user);
+    setSelectedTier(user.subscription_tier || "free");
+    setSelectedDuration("30");
+    setCustomDays("");
+  };
+
+  const closeManageAccess = () => {
+    setManageAccessUser(null);
+  };
+
+  const executeTierUpdate = async () => {
+    if (!manageAccessUser) return;
+    const uid = manageAccessUser.uid;
     setUpdatingId(uid);
+    
     try {
       const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, {
-        subscription_tier: newTier === "free" ? null : newTier,
-        subscription_status: newTier === "free" ? null : "active"
-      });
-      toast.success("Subscription updated!");
-      setUsers(prev => prev.map(u => u.uid === uid ? { ...u, subscription_tier: newTier === "free" ? undefined : newTier as any } : u));
+      const updates: any = {
+        subscription_tier: selectedTier === "free" ? null : selectedTier,
+        subscription_status: selectedTier === "free" ? null : "active"
+      };
+
+      if (selectedTier !== "free") {
+        const now = new Date();
+        updates.plan_started_at = now.toISOString();
+        
+        if (selectedDuration === "lifetime") {
+          const lifetimeDate = new Date();
+          lifetimeDate.setFullYear(now.getFullYear() + 100);
+          updates.plan_expires_at = lifetimeDate.toISOString();
+          updates.plan_duration_days = 36500;
+        } else {
+          let days = parseInt(selectedDuration);
+          if (selectedDuration === "custom") {
+            days = parseInt(customDays);
+            if (isNaN(days) || days <= 0) {
+              toast.error("Please enter a valid number of days.");
+              setUpdatingId(null);
+              return;
+            }
+          }
+          updates.plan_duration_days = days;
+          const expiryDate = new Date();
+          expiryDate.setDate(now.getDate() + days);
+          updates.plan_expires_at = expiryDate.toISOString();
+        }
+      } else {
+        updates.plan_started_at = null;
+        updates.plan_expires_at = null;
+        updates.plan_duration_days = null;
+      }
+
+      await updateDoc(userRef, updates);
+      toast.success("Subscription updated successfully!");
+      setUsers(prev => prev.map(u => u.uid === uid ? { 
+        ...u, 
+        subscription_tier: selectedTier === "free" ? undefined : selectedTier as any,
+        ...updates
+      } : u));
+      closeManageAccess();
     } catch (error) {
       console.error("Failed to update tier", error);
       toast.error("Failed to update user tier");
@@ -88,13 +145,37 @@ export default function AdminUsersPage() {
     }
   };
 
-  const getPlanVariant = (tier: string | undefined | null) => {
+  const formatFirebaseDate = (dateVal: any) => {
+    if (!dateVal) return "Unknown";
+    if (dateVal.seconds) return new Date(dateVal.seconds * 1000).toLocaleDateString();
+    const parsed = new Date(dateVal);
+    return isNaN(parsed.getTime()) ? "Invalid Date" : parsed.toLocaleDateString();
+  };
+
+  const renderPlanBadge = (tier: string | undefined) => {
     switch (tier) {
-      case "elite": return "elite";
-      case "pro": return "pro";
-      case "starter": return "starter";
-      default: return "free";
+      case 'elite':
+        return <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Elite</span>;
+      case 'pro':
+        return <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Pro</span>;
+      case 'starter':
+        return <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Starter</span>;
+      default:
+        return <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Free</span>;
     }
+  };
+
+  const renderExpiry = (user: UserDoc) => {
+    if (!user.subscription_tier || user.subscription_tier === 'free') return <span className="text-neutral-600">-</span>;
+    if (!user.plan_expires_at) return <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest">Lifetime</span>;
+    
+    const expiresAt = new Date(user.plan_expires_at).getTime();
+    const now = new Date().getTime();
+    if (expiresAt > now + 10 * 365 * 24 * 60 * 60 * 1000) {
+      return <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest"><i className="las la-infinity text-sm"></i> Lifetime</span>;
+    }
+    
+    return <span className="text-neutral-300">{new Date(user.plan_expires_at).toLocaleDateString()}</span>;
   };
 
   return (
@@ -112,33 +193,34 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <Card className="overflow-visible border-default">
+      <Card className="overflow-visible border-default p-0">
         <div className="max-md:overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm text-secondary">
             <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
               <tr>
                 <th className="px-4 md:px-6 py-4">User</th>
-                <th className="px-4 md:px-6 py-4 hidden md:table-cell">Plan & Limits</th>
+                <th className="px-4 md:px-6 py-4 hidden md:table-cell">Plan Tier</th>
                 <th className="px-4 md:px-6 py-4 hidden sm:table-cell">Role</th>
                 <th className="px-4 md:px-6 py-4 hidden lg:table-cell">Created</th>
+                <th className="px-4 md:px-6 py-4 hidden lg:table-cell">Expiry</th>
                 <th className="px-4 md:px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-subtle">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center"><LoadingSpinner /></td>
+                  <td colSpan={6} className="px-6 py-12 text-center"><LoadingSpinner /></td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
                     No users found.
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.uid} className={`hover:bg-elevated transition-colors relative ${openDropdownId === u.uid ? 'z-50' : 'z-0'}`}>
-                    <td className="px-4 md:px-6 py-4 relative">
+                  <tr key={u.uid} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                    <td className="px-4 md:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-elevated flex items-center justify-center shrink-0 border border-default hidden sm:flex">
                           {u.photo_url ? (
@@ -148,81 +230,13 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-primary line-clamp-1">{u.name || "Unknown Trader"}</p>
-                          <p className="text-xs text-muted">{u.email}</p>
+                          <p className="font-bold text-white line-clamp-1">{u.name || "Unknown Trader"}</p>
+                          <p className="text-sm text-neutral-500">{u.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className={`px-4 md:px-6 py-4 hidden md:table-cell ${openDropdownId === u.uid ? 'relative z-50' : ''}`}>
-                      <div className="flex flex-col gap-2">
-                        <div className="relative group w-36">
-                          <button
-                            onClick={() => setOpenDropdownId(openDropdownId === u.uid ? null : u.uid)}
-                            disabled={updatingId === u.uid}
-                            className={`w-full text-left rounded-lg border px-3 py-2 pr-8 text-xs font-bold uppercase tracking-widest focus:outline-none focus:ring-1 disabled:opacity-50 transition-all cursor-pointer shadow-sm flex items-center justify-between
-                              ${u.subscription_tier === 'elite' ? 'bg-[var(--plan-elite-bg)] text-[var(--plan-elite)] border-[var(--plan-elite)]/30' : 
-                                u.subscription_tier === 'pro' ? 'bg-[var(--plan-pro-bg)] text-[var(--plan-pro)] border-[var(--plan-pro)]/30' :
-                                u.subscription_tier === 'starter' ? 'bg-[var(--plan-starter-bg)] text-[var(--plan-starter)] border-[var(--plan-starter)]/30' :
-                                'bg-elevated text-secondary border-default hover:bg-surface'
-                              }
-                            `}
-                          >
-                            <span>{u.subscription_tier || "free"}</span>
-                            <div className={`absolute inset-y-0 right-3 flex items-center pointer-events-none transition-transform ${openDropdownId === u.uid ? 'rotate-180' : ''} ${updatingId === u.uid ? 'opacity-0' : 'opacity-100'}`}>
-                              <i className="las la-angle-down text-sm"></i>
-                            </div>
-                            {updatingId === u.uid && (
-                              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <LoadingSpinner className="w-3 h-3 border-[2px]" />
-                              </div>
-                            )}
-                          </button>
-                          
-                          {openDropdownId === u.uid && (
-                            <>
-                              <div 
-                                className="fixed inset-0 z-40" 
-                                onClick={() => setOpenDropdownId(null)} 
-                              />
-                              <div className="absolute top-full left-0 mt-2 w-48 bg-surface border border-subtle rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="px-3 pb-2 mb-2 border-b border-subtle text-[10px] font-bold text-muted uppercase tracking-widest">
-                                  Select Plan
-                                </div>
-                                <button 
-                                  onClick={() => handleUpdateTier(u.uid, "free")}
-                                  className="w-full text-left px-4 py-2 text-xs font-bold text-secondary hover:bg-elevated transition-colors flex items-center gap-2"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-muted"></span> FREE
-                                </button>
-                                <button 
-                                  onClick={() => handleUpdateTier(u.uid, "starter")}
-                                  className="w-full text-left px-4 py-2 text-xs font-bold text-[var(--plan-starter)] hover:bg-[var(--plan-starter-bg)] transition-colors flex items-center gap-2"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-[var(--plan-starter)]"></span> STARTER
-                                </button>
-                                <button 
-                                  onClick={() => handleUpdateTier(u.uid, "pro")}
-                                  className="w-full text-left px-4 py-2 text-xs font-bold text-[var(--plan-pro)] hover:bg-[var(--plan-pro-bg)] transition-colors flex items-center gap-2"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-[var(--plan-pro)]"></span> PRO
-                                </button>
-                                <button 
-                                  onClick={() => handleUpdateTier(u.uid, "elite")}
-                                  className="w-full text-left px-4 py-2 text-xs font-bold text-[var(--plan-elite)] hover:bg-[var(--plan-elite-bg)] transition-colors flex items-center gap-2 group relative"
-                                >
-                                  <span className="w-2 h-2 rounded-full bg-[var(--plan-elite)] animate-pulse shrink-0"></span> 
-                                  ELITE
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-muted font-medium">
-                          {!u.subscription_tier || u.subscription_tier === "free" ? "Max 3 Strategies" : "Unlimited Strategies"}
-                          {u.subscription_tier === "pro" ? " • Backtesting" : ""}
-                          {u.subscription_tier === "elite" ? " • Backtesting • AI" : ""}
-                        </div>
-                      </div>
+                    <td className="px-4 md:px-6 py-4 hidden md:table-cell">
+                      {renderPlanBadge(u.subscription_tier)}
                     </td>
                     <td className="px-4 md:px-6 py-4 hidden sm:table-cell">
                       <Badge variant={u.role === 'admin' ? 'info' : 'neutral'} size="sm" className="uppercase">
@@ -230,19 +244,21 @@ export default function AdminUsersPage() {
                       </Badge>
                     </td>
                     <td className="px-4 md:px-6 py-4 hidden lg:table-cell">
-                      <span className="font-bold text-primary">
-                        {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                      <span className="text-neutral-300">
+                        {formatFirebaseDate(u.created_at)}
                       </span>
                     </td>
+                    <td className="px-4 md:px-6 py-4 hidden lg:table-cell">
+                      {renderExpiry(u)}
+                    </td>
                     <td className="px-4 md:px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Link 
-                          href={`/admin/users/${u.uid}`}
-                          className="w-8 h-8 rounded-lg text-muted hover:text-info hover:bg-info-bg flex items-center justify-center transition-colors"
-                          title="Manage User"
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => openManageAccess(u)}
+                          className="btn-ghost flex items-center gap-2 text-xs py-1.5 px-3"
                         >
-                          <i className="las la-pen text-lg"></i>
-                        </Link>
+                          <i className="las la-cog text-lg"></i> Manage Access
+                        </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); confirmDeleteUser(u.uid, u.email); }}
                           className="w-8 h-8 rounded-lg text-muted hover:text-danger hover:bg-danger-bg flex items-center justify-center transition-colors"
@@ -259,6 +275,102 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </Card>
+
+      {/* MANAGE ACCESS MODAL */}
+      {manageAccessUser && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">Manage Access</h2>
+                <p className="text-sm text-neutral-400 mt-1">For <span className="font-bold text-white">{manageAccessUser.name || manageAccessUser.email}</span></p>
+              </div>
+              <button onClick={closeManageAccess} className="text-neutral-500 hover:text-white transition-colors">
+                <i className="las la-times text-2xl"></i>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Step 1: Plan Selection */}
+              <div>
+                <label className="label-premium mb-3 block">1. Select Plan Tier</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: 'free', label: 'Free' },
+                    { id: 'starter', label: 'Starter' },
+                    { id: 'pro', label: 'Pro' },
+                    { id: 'elite', label: 'Elite' },
+                  ].map(plan => (
+                    <div 
+                      key={plan.id}
+                      onClick={() => setSelectedTier(plan.id)}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
+                        selectedTier === plan.id 
+                          ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
+                          : 'border-neutral-800 bg-[#121212] hover:bg-neutral-800/50'
+                      }`}
+                    >
+                      <span className={`text-sm font-bold uppercase tracking-widest ${selectedTier === plan.id ? 'text-blue-400' : 'text-neutral-400'}`}>
+                        {plan.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Duration Selection (Conditional) */}
+              {selectedTier !== "free" && (
+                <div className="animate-in fade-in slide-in-from-top-2">
+                  <label className="label-premium mb-3 block">2. Select Duration</label>
+                  <select 
+                    value={selectedDuration}
+                    onChange={(e) => setSelectedDuration(e.target.value)}
+                    className="input-premium w-full mb-3"
+                  >
+                    <option value="30">1 Month (30 Days)</option>
+                    <option value="90">3 Months (90 Days)</option>
+                    <option value="180">6 Months (180 Days)</option>
+                    <option value="365">1 Year (365 Days)</option>
+                    <option value="lifetime">Lifetime Access</option>
+                    <option value="custom">Custom Days...</option>
+                  </select>
+
+                  {selectedDuration === "custom" && (
+                    <div className="animate-in fade-in zoom-in-95">
+                      <input 
+                        type="number"
+                        placeholder="Enter number of days"
+                        value={customDays}
+                        onChange={(e) => setCustomDays(e.target.value)}
+                        className="input-premium w-full"
+                        min="1"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-neutral-800">
+              <button 
+                onClick={closeManageAccess}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={executeTierUpdate}
+                disabled={updatingId === manageAccessUser.uid}
+                className="btn-primary flex items-center gap-2"
+              >
+                {updatingId === manageAccessUser.uid ? <LoadingSpinner className="w-4 h-4 border-[2px]" /> : <i className="las la-check"></i>}
+                Confirm & Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         title="Delete User Data"

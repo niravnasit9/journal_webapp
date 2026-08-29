@@ -47,7 +47,7 @@ export async function syncAccountData(accountId: string) {
         profit_loss: 500.50,
         commission: -7,
         swap: 0,
-        strategy_tag: "Breakout",
+        strategy_id: "Breakout",
         notes: "Simulated Trade",
         screenshot_url: "",
         mistake_tags: []
@@ -126,7 +126,7 @@ export async function syncAccountData(accountId: string) {
           profit_loss: deal.profit,
           commission: deal.commission || 0,
           swap: deal.swap || 0,
-          strategy_tag: "",
+          strategy_id: "",
           notes: "Imported via MetaApi",
           screenshot_url: "",
           mistake_tags: []
@@ -178,7 +178,7 @@ export async function syncAccountData(accountId: string) {
         profit_loss: 3000.00,
         commission: -14,
         swap: -5,
-        strategy_tag: "Gold Scalp",
+        strategy_id: "Gold Scalp",
         notes: "Simulated due to MetaApi paywall",
         screenshot_url: "",
         mistake_tags: []

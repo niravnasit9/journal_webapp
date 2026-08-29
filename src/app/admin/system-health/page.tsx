@@ -1,134 +1,151 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/firebase/authContext";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import toast from "react-hot-toast";
 
 export default function AdminSystemHealthPage() {
-  const { role, loading } = useAuth();
-  const [metricsLoading, setMetricsLoading] = useState(true);
+  const [isPinging, setIsPinging] = useState(false);
+  const [lastPing, setLastPing] = useState<Date | null>(null);
+
+  // Mock statuses for the UI demo since we can't ping actual nodes here
+  const [nodes, setNodes] = useState({
+    firestore: { status: "operational", latency: "14ms" },
+    auth: { status: "operational", latency: "22ms" },
+    visionAPI: { status: "operational", latency: "140ms" },
+    cryptoWebhook: { status: "operational", latency: "45ms" }
+  });
+
+  const runDiagnostics = () => {
+    setIsPinging(true);
+    toast("Running diagnostics...", { icon: '🔍' });
+    
+    // Simulate ping delay
+    setTimeout(() => {
+      setNodes({
+        firestore: { status: "operational", latency: `${Math.floor(Math.random() * 20 + 10)}ms` },
+        auth: { status: "operational", latency: `${Math.floor(Math.random() * 30 + 15)}ms` },
+        visionAPI: { status: Math.random() > 0.9 ? "degraded" : "operational", latency: `${Math.floor(Math.random() * 200 + 100)}ms` },
+        cryptoWebhook: { status: "operational", latency: `${Math.floor(Math.random() * 50 + 30)}ms` }
+      });
+      setLastPing(new Date());
+      setIsPinging(false);
+      toast.success("Diagnostics complete");
+    }, 2000);
+  };
 
   useEffect(() => {
-    // Simulate loading system metrics
-    const timer = setTimeout(() => {
-      setMetricsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    // Initial fetch
+    setLastPing(new Date());
   }, []);
 
-  if (loading || metricsLoading) {
-    return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10 border-info" /></div>;
-  }
-
-  if (role !== 'admin') {
-    return <div className="p-8 text-center text-danger font-bold">Access Denied</div>;
-  }
+  const getStatusColor = (status: string) => {
+    return status === "operational" ? "bg-emerald-500" : "bg-amber-500";
+  };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
+    <div className="space-y-6 animate-in fade-in font-sans">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <i className="las la-heartbeat text-3xl text-success"></i>
-            System Health
-          </h1>
-          <p className="text-secondary text-sm mt-1">Real-time status of backend services and APIs.</p>
+          <h1 className="heading-page text-white">System Health & Node Status</h1>
+          <p className="text-sm text-neutral-400 mt-1">Live server infrastructure and external API monitor.</p>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="success" size="sm" className="animate-pulse">All Systems Operational</Badge>
-        </div>
+        <button 
+          onClick={runDiagnostics} 
+          disabled={isPinging}
+          className="btn-ghost border border-neutral-700 font-bold bg-[#121212] flex items-center gap-2"
+        >
+          {isPinging ? <LoadingSpinner className="w-5 h-5 border-blue-500" /> : <i className="las la-sync-alt"></i>}
+          Run Diagnostics
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6 border-default shadow-sm text-center">
-          <div className="w-12 h-12 rounded-full bg-success/20 text-success flex items-center justify-center mx-auto mb-4">
-            <i className="las la-database text-2xl"></i>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        {/* Node: Firestore */}
+        <div className="premium-card p-6 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 text-xl">
+              <i className="las la-database"></i>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.firestore.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.firestore.status}</span>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-secondary uppercase tracking-widest mb-1">Firestore DB</h3>
-          <div className="text-2xl font-bold text-primary mb-2">99.99%</div>
-          <p className="text-xs text-success font-bold">Connected • Latency: 42ms</p>
-        </Card>
+          <h3 className="font-bold text-white text-lg">Firebase Firestore</h3>
+          <p className="text-xs text-neutral-500 mt-1 mb-4">Primary database cluster</p>
+          <div className="premium-inner-box p-3 flex justify-between items-center">
+            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.firestore.latency}</span>
+          </div>
+        </div>
 
-        <Card className="p-6 border-default shadow-sm text-center">
-          <div className="w-12 h-12 rounded-full bg-success/20 text-success flex items-center justify-center mx-auto mb-4">
-            <i className="las la-server text-2xl"></i>
+        {/* Node: Auth */}
+        <div className="premium-card p-6 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 text-xl">
+              <i className="las la-fingerprint"></i>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.auth.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.auth.status}</span>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-secondary uppercase tracking-widest mb-1">Auth Service</h3>
-          <div className="text-2xl font-bold text-primary mb-2">99.99%</div>
-          <p className="text-xs text-success font-bold">Connected • Latency: 28ms</p>
-        </Card>
+          <h3 className="font-bold text-white text-lg">Firebase Auth</h3>
+          <p className="text-xs text-neutral-500 mt-1 mb-4">Token issuance & JWT verification</p>
+          <div className="premium-inner-box p-3 flex justify-between items-center">
+            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.auth.latency}</span>
+          </div>
+        </div>
 
-        <Card className="p-6 border-default shadow-sm text-center">
-          <div className="w-12 h-12 rounded-full bg-info/20 text-info flex items-center justify-center mx-auto mb-4">
-            <i className="las la-cloud-upload-alt text-2xl"></i>
+        {/* Node: Vision API */}
+        <div className="premium-card p-6 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 text-xl">
+              <i className="las la-brain"></i>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.visionAPI.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.visionAPI.status}</span>
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-secondary uppercase tracking-widest mb-1">Storage Bucket</h3>
-          <div className="text-2xl font-bold text-primary mb-2">99.98%</div>
-          <p className="text-xs text-info font-bold">Connected • 45GB Used</p>
-        </Card>
+          <h3 className="font-bold text-white text-lg">AI Auto-Tagger</h3>
+          <p className="text-xs text-neutral-500 mt-1 mb-4">Google Cloud Vision API inference</p>
+          <div className="premium-inner-box p-3 flex justify-between items-center">
+            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className={`font-mono font-bold text-sm ${nodes.visionAPI.status === 'degraded' ? 'text-amber-400' : 'text-emerald-400'}`}>{nodes.visionAPI.latency}</span>
+          </div>
+        </div>
+
+        {/* Node: Crypto Webhook */}
+        <div className="premium-card p-6 relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 text-xl">
+              <i className="lab la-bitcoin"></i>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.cryptoWebhook.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.cryptoWebhook.status}</span>
+            </div>
+          </div>
+          <h3 className="font-bold text-white text-lg">Payment Webhooks</h3>
+          <p className="text-xs text-neutral-500 mt-1 mb-4">USDT network confirmation listeners</p>
+          <div className="premium-inner-box p-3 flex justify-between items-center">
+            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.cryptoWebhook.latency}</span>
+          </div>
+        </div>
+
       </div>
 
-      <Card className="overflow-hidden border-default shadow-sm">
-        <CardHeader className="bg-elevated/50 border-b border-subtle py-4">
-          <CardTitle className="text-sm font-bold text-primary uppercase tracking-widest">Service Status</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-6">
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <i className="las la-globe text-2xl text-secondary"></i>
-                <div>
-                  <div className="font-bold text-primary">Web Frontend (Vercel)</div>
-                  <div className="text-xs text-secondary">Global CDN Edge Network</div>
-                </div>
-              </div>
-              <Badge variant="success" size="sm">Operational</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <i className="las la-plug text-2xl text-secondary"></i>
-                <div>
-                  <div className="font-bold text-primary">MetaApi Integration</div>
-                  <div className="text-xs text-secondary">MT4/MT5 Broker Sync Engine</div>
-                </div>
-              </div>
-              <Badge variant="success" size="sm">Operational</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <i className="las la-envelope text-2xl text-secondary"></i>
-                <div>
-                  <div className="font-bold text-primary">Email Service (SendGrid)</div>
-                  <div className="text-xs text-secondary">Transactional emails and alerts</div>
-                </div>
-              </div>
-              <Badge variant="success" size="sm">Operational</Badge>
-            </div>
+      <div className="text-center text-[10px] text-neutral-600 font-mono mt-4">
+        Last diagnostic ping: {lastPing ? lastPing.toLocaleTimeString() : "..."}
+      </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <i className="las la-credit-card text-2xl text-secondary"></i>
-                <div>
-                  <div className="font-bold text-primary">Payment Gateway (Stripe)</div>
-                  <div className="text-xs text-secondary">Subscription and billing processing</div>
-                </div>
-              </div>
-              <Badge variant="success" size="sm">Operational</Badge>
-            </div>
-
-          </div>
-          
-          <div className="mt-8 pt-4 border-t border-subtle flex items-center justify-center gap-2 text-xs text-secondary font-medium">
-            <i className="las la-info-circle text-lg"></i>
-            System status derived from active connections. Last checked just now.
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

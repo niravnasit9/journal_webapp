@@ -4,12 +4,14 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "./config";
+import { UserDoc } from "@/lib/firebase/schema";
 
 interface AuthContextType {
   user: User | null;
   role: "admin" | "user" | null;
   tier: string | null;
   loading: boolean;
+  userDoc: UserDoc | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   tier: null,
   loading: true,
+  userDoc: null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -24,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<"admin" | "user" | null>(null);
   const [tier, setTier] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userDoc, setUserDoc] = useState<UserDoc | null>(null);
 
   useEffect(() => {
 
@@ -42,9 +46,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const data = docSnap.data();
               setRole(data.role as "admin" | "user");
               setTier(data.subscription_tier || "free");
+              setUserDoc(data as UserDoc);
             } else {
               setRole("user");
               setTier("free");
+              setUserDoc(null);
             }
             setLoading(false);
           })
@@ -70,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, role, tier, loading }}>
+    <AuthContext.Provider value={{ user, role, tier, loading, userDoc }}>
       {children}
     </AuthContext.Provider>
   );

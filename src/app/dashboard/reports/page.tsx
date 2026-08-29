@@ -98,7 +98,7 @@ export default function ReportsPage() {
       const rows = filteredTrades.map(t => [
         t.id, t.account_id, t.symbol, t.direction, t.lot_size,
         t.open_price, t.close_price, new Date(t.open_time).toISOString(), new Date(t.close_time).toISOString(),
-        t.pips, t.profit_loss, t.commission || 0, t.strategy_tag || "N/A"
+        t.pips, t.profit_loss, t.commission || 0, t.strategy_id || "N/A"
       ]);
       
       const csvContent = [
