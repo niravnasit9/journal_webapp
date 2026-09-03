@@ -16,9 +16,13 @@ interface Transaction {
   status: "success" | "pending" | "failed";
   created_at: string;
 }
+import Link from "next/link";
+import { useDemo } from "@/lib/demoContext";
 import { DEMO_TRANSACTIONS } from "@/lib/adminDemoData";
+
 export default function TransactionsPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const theme = useTierTheme();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +36,7 @@ export default function TransactionsPage() {
     if (user) {
       fetchTransactions();
     }
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchTransactions = async () => {
     try {

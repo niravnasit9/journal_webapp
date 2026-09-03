@@ -76,10 +76,18 @@ export default function AnalyticsOverview() {
     fetchData();
   }, [user, router, isDemoMode]);
 
+  const workspaceTrades = useMemo(() => {
+    return allTrades.filter(t => {
+      const acc = accounts.find(a => a.id === t.account_id);
+      if (!acc) return false;
+      return (isDomestic && acc.market_type === "DOMESTIC") || (!isDomestic && acc.market_type !== "DOMESTIC");
+    });
+  }, [allTrades, accounts, isDomestic]);
+
   const activeTrades = useMemo(() => {
-    if (selectedAccountId === "ALL") return allTrades;
-    return allTrades.filter(t => t.account_id === selectedAccountId);
-  }, [allTrades, selectedAccountId]);
+    if (selectedAccountId === "ALL") return workspaceTrades;
+    return workspaceTrades.filter(t => t.account_id === selectedAccountId);
+  }, [workspaceTrades, selectedAccountId]);
 
   const workspaceAccounts = useMemo(() => {
     return accounts.filter(a => 

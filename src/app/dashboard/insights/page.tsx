@@ -12,9 +12,11 @@ import { TiltAnalyzer } from "@/components/insights/TiltAnalyzer";
 import { useUiStore } from "@/store/useUiStore";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
 import { AccountDoc } from "@/lib/firebase/schema";
+import { useDemo } from "@/lib/demoContext";
 
 export default function InsightsPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +26,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     if (user) fetchTrades();
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchTrades = async () => {
     if (!user) return;

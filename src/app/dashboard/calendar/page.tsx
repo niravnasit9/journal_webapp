@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/firebase/authContext";
-import { db } from "@/lib/firebase/config";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { TradeDoc } from "@/lib/firebase/schema";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTierTheme } from "@/hooks/useTierTheme";
-import { DEMO_TRADES, DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 import { useUiStore } from "@/store/useUiStore";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
-import { AccountDoc } from "@/lib/firebase/schema";
-import { useRef, memo } from "react";
+import React, { useState, useEffect } from "react";
+
 
 const CustomEconomicNews = () => {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  const [dateFilter, setDateFilter] = useState("Today");
+  const [showFilters, setShowFilters] = useState(false);
+  const [timeMode, setTimeMode] = useState<"absolute"|"remaining">("remaining");
+  const [impacts, setImpacts] = useState<string[]>(["High", "Medium", "Low", "Non-Economic"]);
+
   const { activeWorkspace } = useUiStore();
 
   useEffect(() => {
@@ -43,11 +41,77 @@ const CustomEconomicNews = () => {
   }, [activeWorkspace]);
 
   const getImpactIcon = (impact: string) => {
-    const imp = impact?.toLowerCase() || "";
-    if (imp === "high") return <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" title="High Impact" />;
-    if (imp === "medium") return <div className="w-3 h-3 rounded-full bg-yellow-500" title="Medium Impact" />;
-    return <div className="w-3 h-3 rounded-full bg-emerald-500" title="Low Impact" />;
+    const imp = String(impact || "").toLowerCase().trim();
+    if (imp.includes("high") || imp === "3") return <span className="text-red-500 text-lg tracking-widest">★★★</span>;
+    if (imp.includes("medium") || imp === "2") return <span className="text-yellow-500 text-lg tracking-widest">★★<span className="text-gray-300 dark:text-gray-600">★</span></span>;
+    if (imp.includes("low") || imp === "1") return <span className="text-emerald-500 text-lg tracking-widest">★<span className="text-gray-300 dark:text-gray-600">★★</span></span>;
+    return <span className="text-gray-300 dark:text-gray-600 text-lg tracking-widest">-</span>;
   };
+
+  const getCountryFlag = (country: string) => {
+    const map: Record<string, string> = {
+      'USD': '🇺🇸', 'EUR': '🇪🇺', 'GBP': '🇬🇧', 'JPY': '🇯🇵', 
+      'AUD': '🇦🇺', 'CAD': '🇨🇦', 'CHF': '🇨🇭', 'NZD': '🇳🇿', 
+      'CNY': '🇨🇳', 'INR': '🇮🇳', 'IN': '🇮🇳'
+    };
+    return map[country] || '🌐';
+  };
+
+  const formatTime = (dateString: string) => {
+    const d = new Date(dateString);
+    const now = new Date();
+    
+    if (timeMode === "remaining" && d > now && d.toDateString() === now.toDateString()) {
+      const diffMins = Math.floor((d.getTime() - now.getTime()) / 60000);
+      if (diffMins < 60) return `${diffMins}m`;
+      const hrs = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      return `${hrs}h ${mins}m`;
+    }
+    
+    // If it's today, return HH:mm
+    if (d.toDateString() === now.toDateString()) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+    // Else return Short Month + Date
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
+  const filteredNews = news.filter((n) => {
+    if (!impacts.includes(n.impact)) return false;
+
+    const d = new Date(n.date);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    const eventDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+    switch (dateFilter) {
+      case "Yesterday": return eventDate.getTime() === yesterday.getTime();
+      case "Today": return eventDate.getTime() === today.getTime();
+      case "Tomorrow": return eventDate.getTime() === tomorrow.getTime();
+      case "This Week": return eventDate >= startOfWeek && eventDate <= endOfWeek;
+      case "Next Week": 
+        const startNextWeek = new Date(endOfWeek); startNextWeek.setDate(endOfWeek.getDate() + 1);
+        const endNextWeek = new Date(startNextWeek); endNextWeek.setDate(startNextWeek.getDate() + 6);
+        return eventDate >= startNextWeek && eventDate <= endNextWeek;
+      default: return true;
+    }
+  });
+
+  // Calculate where the current time line should be inserted (only for views containing today)
+  let markerIndex = -1;
+  if (dateFilter === "Today" || dateFilter === "This Week") {
+    const now = new Date();
+    markerIndex = filteredNews.findIndex((n) => new Date(n.date) > now);
+    if (markerIndex === -1 && filteredNews.length > 0 && new Date(filteredNews[filteredNews.length-1].date) < now) {
+      markerIndex = filteredNews.length; // all events are in the past
+    }
+  }
 
   if (loading) {
     return <div className="w-full h-[300px] rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] flex items-center justify-center mt-6">
@@ -59,287 +123,182 @@ const CustomEconomicNews = () => {
     return <div className="w-full rounded-2xl border border-red-500/20 bg-red-500/5 mt-6 p-6 text-center">
       <p className="text-red-400 font-bold mb-2">Could not load economic calendar</p>
       <p className="text-sm text-neutral-400">{error}</p>
-      <p className="text-xs text-neutral-500 mt-4">Make sure the FMP API Key is set in Admin Settings.</p>
+      <p className="text-xs text-neutral-500 mt-4">Please try refreshing the page in a few minutes if rate limits apply.</p>
     </div>;
   }
 
-  if (news.length === 0) {
-    return <div className="w-full rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] mt-6 p-12 text-center">
-      <p className="text-neutral-400">No upcoming news events found for this market.</p>
-    </div>;
-  }
 
   return (
-    <div className="w-full rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] mt-6 overflow-hidden">
-      <div className="overflow-x-auto no-scrollbar">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead>
-            <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-neutral-500 dark:text-neutral-400 text-xs font-bold uppercase tracking-widest border-b border-gray-200 dark:border-white/5">
-              <th className="px-6 py-4">Time</th>
-              <th className="px-6 py-4">Country / Cur</th>
-              <th className="px-6 py-4">Event</th>
-              <th className="px-6 py-4">Impact</th>
-              <th className="px-6 py-4 text-right">Actual</th>
-              <th className="px-6 py-4 text-right">Estimate</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-white/5">
-            {news.map((n, i) => (
-              <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
-                <td className="px-6 py-4 font-mono text-xs">
-                  {new Date(n.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </td>
-                <td className="px-6 py-4 font-bold flex items-center gap-2">
-                  <span className="text-xs bg-neutral-200 dark:bg-neutral-800 px-2 py-1 rounded">{n.country}</span>
-                  <span>{n.currency}</span>
-                </td>
-                <td className="px-6 py-4 font-medium max-w-[200px] truncate" title={n.event}>{n.event}</td>
-                <td className="px-6 py-4">{getImpactIcon(n.impact)}</td>
-                <td className="px-6 py-4 text-right font-mono">{n.actual || "-"}</td>
-                <td className="px-6 py-4 text-right font-mono text-neutral-400">{n.estimate || "-"}</td>
+    <div className="w-full mt-6 space-y-4">
+      {/* Top Header Controls */}
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div className="flex flex-wrap gap-2">
+            {["Yesterday", "Today", "Tomorrow", "This Week", "Next Week"].map(filter => (
+              <button 
+                key={filter}
+                onClick={() => setDateFilter(filter)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  dateFilter === filter 
+                    ? "bg-blue-50 dark:bg-blue-500/10 border border-blue-500 text-blue-600 dark:text-blue-400" 
+                    : "bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+            <button className="px-4 py-1.5 rounded-full bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors opacity-50 cursor-not-allowed">
+              <i className="las la-calendar"></i> Custom dates
+            </button>
+          </div>
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-4 py-1.5 rounded-md border border-gray-200 dark:border-white/10 text-blue-600 dark:text-blue-400 text-sm font-bold flex items-center gap-1 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors relative"
+          >
+            Show Filters <i className={`las la-angle-down transition-transform ${showFilters ? 'rotate-180' : ''}`}></i>
+          </button>
+        </div>
+        
+        {/* Filters Dropdown Panel */}
+        {showFilters && (
+          <div className="w-full bg-white dark:bg-[#111318] border border-gray-200 dark:border-white/10 rounded-lg p-4 flex flex-wrap gap-6 shadow-lg animate-in fade-in slide-in-from-top-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">Category <i className="las la-info-circle text-gray-400"></i></label>
+              <select disabled className="px-3 py-2 rounded-md border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black text-sm text-gray-500 w-[200px] cursor-not-allowed">
+                <option>All Categories</option>
+              </select>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Importance</label>
+              <div className="flex items-center gap-4 bg-gray-50 dark:bg-black px-4 py-2 rounded-md border border-gray-200 dark:border-white/10">
+                {["High", "Medium", "Low"].map(imp => (
+                  <label key={imp} className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300 text-blue-500 focus:ring-blue-500" 
+                      checked={impacts.includes(imp)}
+                      onChange={(e) => {
+                        if (e.target.checked) setImpacts([...impacts, imp]);
+                        else setImpacts(impacts.filter(i => i !== imp));
+                      }}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">{imp}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+
+      </div>
+
+      {/* Table Section */}
+      <div className="w-full rounded-2xl bg-white dark:bg-[#111318] overflow-hidden">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="text-gray-900 dark:text-white font-bold text-[13px] border-b border-gray-200 dark:border-white/5">
+                <th className="px-4 py-4 w-24">Time</th>
+                <th className="px-4 py-4 w-24">Cur.</th>
+                <th className="px-4 py-4">Event</th>
+                <th className="px-4 py-4 w-32">Imp.</th>
+                <th className="px-4 py-4 w-28">Actual</th>
+                <th className="px-4 py-4 w-28">Forecast</th>
+                <th className="px-4 py-4 w-28">Previous</th>
               </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+            {filteredNews.length === 0 ? (
+              <tr>
+                <td colSpan={7}>
+                  <div className="w-full mt-2 p-16 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
+                      <i className="las la-globe-asia text-3xl text-blue-500"></i>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white mb-2">No Events Found</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                      {activeWorkspace === "DOMESTIC" 
+                        ? "There are currently no major macroeconomic events scheduled for the Indian market this week." 
+                        : "There are no major global macroeconomic events that match your filters."}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredNews.map((n, i) => (
+              <React.Fragment key={i}>
+                {i === markerIndex && (
+                  <tr>
+                    <td colSpan={7} className="p-0 relative">
+                      <div className="absolute top-1/2 left-0 w-full h-[1px] bg-blue-500 -translate-y-1/2 z-0"></div>
+                      <div className="relative z-10 w-max px-2 py-0.5 ml-4 text-[10px] font-bold text-blue-500 bg-white dark:bg-[#111318] border border-blue-500 rounded">
+                        {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                <tr className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+                  <td className="px-4 py-3 font-medium text-gray-600 dark:text-gray-400 w-24">
+                    {formatTime(n.date)}
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200 w-24 flex items-center gap-2">
+                    <span className="text-lg">{getCountryFlag(n.country)}</span>
+                    <span>{n.currency}</span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 max-w-[300px] truncate" title={n.event}>
+                    {n.event}
+                  </td>
+                  <td className="px-4 py-3 w-32">
+                    {getImpactIcon(n.impact)}
+                  </td>
+                  <td className="px-4 py-3 font-bold text-gray-900 dark:text-white w-28">
+                    {n.actual || ""}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 w-28">
+                    {n.estimate || ""}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 w-28">
+                    {n.previous || ""}
+                  </td>
+                </tr>
+              </React.Fragment>
             ))}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );
 };
 
 export default function CalendarPage() {
-  const { user, tier, role } = useAuth();
-  const theme = useTierTheme();
-  const [trades, setTrades] = useState<TradeDoc[]>([]);
-  const [accounts, setAccounts] = useState<AccountDoc[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  
   const { activeWorkspace } = useUiStore();
   const isDomestic = activeWorkspace === "DOMESTIC";
-  const currencySymbol = isDomestic ? "₹" : "$";
 
-  useEffect(() => {
-    if (user) {
-      fetchGlobalTrades();
-    }
-  }, [user, role]);
-
-  const fetchGlobalTrades = async () => {
-    if (!user) return;
-    try {
-      setLoading(true);
-
-      if (role === "admin") {
-        setTrades(DEMO_TRADES);
-        setAccounts(DEMO_ACCOUNTS);
-        setLoading(false);
-        return;
-      }
-
-      const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
-      const accSnap = await getDocs(accQuery);
-      const accList = accSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
-      setAccounts(accList);
-      const accountIds = accList.map(a => a.id);
-
-      if (accountIds.length === 0) {
-        setTrades([]);
-        setLoading(false);
-        return;
-      }
-
-      let allTrades: TradeDoc[] = [];
-      for (const accId of accountIds) {
-        const tQuery = query(collection(db, "trades"), where("account_id", "==", accId));
-        const tSnap = await getDocs(tQuery);
-        const tDocs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TradeDoc));
-        allTrades = [...allTrades, ...tDocs];
-      }
-      setTrades(allTrades);
-    } catch (error) {
-      console.error("Error fetching global trades:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Calendar Logic
-  const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-
-  const daysInMonth = getDaysInMonth(currentDate);
-  const firstDay = getFirstDayOfMonth(currentDate);
-  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-  const maxMonthsBack = tier === 'elite' || tier === 'pro' ? Infinity : tier === 'starter' ? 3 : 1;
-  const today = new Date();
-  const monthsDiff = (today.getFullYear() - currentDate.getFullYear()) * 12 + (today.getMonth() - currentDate.getMonth());
-  const canGoBack = monthsDiff < maxMonthsBack;
-
-  const prevMonth = () => {
-    if (canGoBack) {
-      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-    } else {
-      import("react-hot-toast").then(mod => mod.toast.error(`Your ${tier || 'Free'} plan only supports ${maxMonthsBack} month(s) of historical data.`));
-    }
-  };
-  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-
-  // Calculate daily PnL & Stats
-  const dailyData: { [day: number]: { pnl: number, trades: number, wins: number } } = {};
-  let monthlyTotalPnL = 0;
-  let monthlyTotalTrades = 0;
-  let monthlyWins = 0;
-
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const filteredTrades = trades.filter(t => {
-    const account = accounts.find(a => a.id === t.account_id);
-    if (!account) return false;
-    const isAccDomestic = account.market_type === "DOMESTIC";
-    if (isDomestic && !isAccDomestic) return false;
-    if (!isDomestic && isAccDomestic) return false;
-    
-    const tradeDate = new Date(t.close_time);
-    return tradeDate.getFullYear() === year && tradeDate.getMonth() === month;
-  });
-
-  filteredTrades.forEach(trade => {
-    const d = new Date(trade.close_time);
-    const day = d.getDate();
-    const net = trade.profit_loss - trade.commission;
-    
-    if (!dailyData[day]) dailyData[day] = { pnl: 0, trades: 0, wins: 0 };
-    
-    dailyData[day].pnl += net;
-    dailyData[day].trades += 1;
-    monthlyTotalTrades += 1;
-    monthlyTotalPnL += net;
-    
-    if (net > 0) {
-      dailyData[day].wins += 1;
-      monthlyWins += 1;
-    }
-  });
-
-  const monthlyWinRate = monthlyTotalTrades > 0 ? (monthlyWins / monthlyTotalTrades) * 100 : 0;
-
-return (
+  return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto font-sans">
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <CalendarIcon className="w-8 h-8 text-warning" />
-            Heatmap & News
+            <i className="las la-globe text-3xl text-blue-500"></i>
+            {isDomestic ? 'Indian' : 'Global'} Economic Calendar
           </h1>
-          <p className="text-secondary text-sm mt-1">Review your trading performance calendar and upcoming macroeconomic events.</p>
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <p className="text-secondary text-sm">Live macroeconomic data, filtered by impact and currency.</p>
+            <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded text-xs font-bold border border-emerald-500/20 flex items-center gap-1">
+              <i className="las la-unlock"></i> Free for everyone
+            </span>
+          </div>
         </div>
         <div className="w-full md:w-auto">
           <MarketSwitcher />
         </div>
       </div>
-
-      <div className={`rounded-[24px] border p-8 shadow-2xl transition-all ${theme.card}`}>
-        
-        {/* Header & Monthly Stats */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-gray-200 dark:border-white/5 pb-8">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={prevMonth} 
-              className={`p-2.5 rounded-xl transition-colors shadow-sm ${!canGoBack ? 'opacity-50 bg-gray-100 dark:bg-white/5 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-[#1f2229] hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-white/5'}`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white w-48 text-center">{monthName}</h2>
-            <button onClick={nextMonth} className="p-2.5 bg-white dark:bg-[#1f2229] hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-white/5 rounded-xl text-gray-700 dark:text-slate-300 transition-colors shadow-sm">
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Monthly P/L</p>
-              <p className={`text-xl font-black ${monthlyTotalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {monthlyTotalPnL >= 0 ? '+' : ''}{currencySymbol}{Math.abs(monthlyTotalPnL).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div className="w-px h-10 bg-[#e5e7eb] dark:bg-slate-800"></div>
-            <div className="text-right">
-              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Win Rate</p>
-              <p className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{monthlyWinRate.toFixed(1)}%</p>
-            </div>
-            <div className="w-px h-10 bg-[#e5e7eb] dark:bg-slate-800"></div>
-            <div className="text-right">
-              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Trades</p>
-              <p className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">{monthlyTotalTrades}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-3 md:gap-5">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">{day}</div>
-          ))}
-          
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-28 bg-gray-50/50 dark:bg-white/[0.02] rounded-[16px] border border-gray-100 dark:border-white/5"></div>
-          ))}
-
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const data = dailyData[day];
-            const pnl = data?.pnl;
-            
-            let bgClass = "bg-gray-50/50 dark:bg-white/[0.02] border-gray-100 dark:border-white/5";
-            let textClass = "text-gray-400 dark:text-slate-600";
-
-            if (pnl !== undefined) {
-              if (pnl > 0) {
-                bgClass = "bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.05)] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]";
-                textClass = "text-emerald-400";
-              } else if (pnl < 0) {
-                bgClass = "bg-rose-950/20 border-rose-500/40 hover:border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.05)] hover:shadow-[0_0_20px_rgba(244,63,94,0.1)]";
-                textClass = "text-rose-400";
-              }
-            }
-
-            return (
-              <div key={day} className={`h-28 rounded-[16px] border p-3 flex flex-col justify-between transition-all group ${bgClass}`}>
-                <div className="flex justify-between items-start">
-                  <span className={`text-sm font-bold ${pnl !== undefined ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{day}</span>
-                  {data && (
-                    <span className="text-[10px] font-bold text-gray-500 dark:text-slate-400 bg-[#fafafa] dark:bg-[#0a0f1c]/50 px-2 py-0.5 rounded-full">
-                      {data.trades} {data.trades === 1 ? 'Trade' : 'Trades'}
-                    </span>
-                  )}
-                </div>
-                
-                {pnl !== undefined && (
-                  <div className="flex flex-col items-end">
-                    <span className={`text-base md:text-lg font-black tracking-tight ${textClass}`}>
-                      {pnl > 0 ? '+' : ''}{currencySymbol}{Math.abs(pnl).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
       
-      {/* Economic Calendar Section */}
       {/* Custom Economic News API Component */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2 mb-2">
-          <i className="las la-globe text-2xl text-blue-500"></i>
-          {isDomestic ? 'Indian' : 'Global'} Economic Events
-        </h2>
-        <p className="text-secondary text-sm mb-4">Live macroeconomic data (Upcoming Only)</p>
-        <CustomEconomicNews />
-      </div>
+      <CustomEconomicNews />
     </div>
   );
 }

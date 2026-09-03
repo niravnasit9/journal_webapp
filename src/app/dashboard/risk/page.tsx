@@ -18,9 +18,11 @@ import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/Dat
 import { getLocalJsDate } from "@/lib/dateUtils";
 import { useUiStore } from "@/store/useUiStore";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import { useDemo } from "@/lib/demoContext";
 
 export default function RiskCenterPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [trades, setTrades] = useState<Record<string, TradeDoc[]>>({});
   const [propFirms, setPropFirms] = useState<Record<string, PropFirmDoc>>({});
@@ -37,7 +39,7 @@ export default function RiskCenterPage() {
     if (user) {
       fetchRiskData();
     }
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchRiskData = async () => {
     if (!user) return;
@@ -92,9 +94,7 @@ export default function RiskCenterPage() {
     }
   };
 
-  if (loading) {
-    return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
-  }
+
 
   // Calculate Risk per Account
   const getAccountRisk = (acc: AccountDoc) => {
@@ -138,6 +138,10 @@ export default function RiskCenterPage() {
   const displayAccounts = selectedAccountId === "ALL" 
     ? workspaceAccounts 
     : workspaceAccounts.filter(a => a.id === selectedAccountId);
+
+  if (loading) {
+    return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in font-sans">
@@ -248,9 +252,9 @@ export default function RiskCenterPage() {
                       
                       <div className="w-full h-3 bg-elevated rounded-full overflow-hidden border border-subtle relative mb-2">
                         <div 
-                          className={`absolute top-0 left-0 h-full transition-all ${risk.isDailyBlown ? 'bg-danger' : risk.dailyDrawdownUsedPct > 80 ? 'bg-warning' : 'bg-primary'}`}
-                          style={{ width: `${risk.dailyDrawdownUsedPct}%` }}
-                        />
+                          className={`h-full absolute left-0 top-0 transition-all ${risk.isDailyBlown ? 'bg-danger' : 'bg-warning'}`}
+                          style={{ width: `${Math.min(100, isNaN(risk.dailyDrawdownUsedPct) ? 0 : risk.dailyDrawdownUsedPct)}%` }}
+                        ></div>
                       </div>
                       
                       <div className="flex justify-between text-xs font-medium mt-3">
@@ -274,9 +278,9 @@ export default function RiskCenterPage() {
                       
                       <div className="w-full h-3 bg-elevated rounded-full overflow-hidden border border-subtle relative mb-2">
                         <div 
-                          className={`absolute top-0 left-0 h-full transition-all ${risk.isOverallBlown ? 'bg-danger' : risk.overallDrawdownUsedPct > 80 ? 'bg-warning' : 'bg-primary'}`}
-                          style={{ width: `${risk.overallDrawdownUsedPct}%` }}
-                        />
+                          className={`h-full absolute left-0 top-0 transition-all ${risk.isOverallBlown ? 'bg-danger' : 'bg-primary'}`}
+                          style={{ width: `${Math.min(100, isNaN(risk.overallDrawdownUsedPct) ? 0 : risk.overallDrawdownUsedPct)}%` }}
+                        ></div>
                       </div>
                       
                       <div className="flex justify-between text-xs font-medium mt-3">

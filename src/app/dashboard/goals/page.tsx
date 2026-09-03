@@ -11,15 +11,18 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import toast from "react-hot-toast";
 import { DEMO_GOALS } from "@/lib/adminDemoData";
+import { formatDistanceToNow } from "date-fns";
+import { useDemo } from "@/lib/demoContext";
 
 export default function GoalsPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [goals, setGoals] = useState<GoalDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) fetchGoals();
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchGoals = async () => {
     if (!user) return;

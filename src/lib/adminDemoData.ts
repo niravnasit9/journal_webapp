@@ -49,6 +49,22 @@ export const DEMO_ACCOUNTS: any[] = [
     is_trailing: true,
     status: 'active',
     drawdown_type: "trailing"
+  },
+  {
+    id: 'acc-dom-1',
+    owner_uid: 'admin_preview_user',
+    label: 'Zerodha Capital',
+    account_type: 'personal',
+    market_type: "DOMESTIC",
+    currency: "INR",
+    initial_balance: 500000,
+    current_balance: 525000,
+    highest_equity: 530000,
+    daily_loss_limit_pct: 2, 
+    current_floating_pnl: 0, 
+    is_trailing: false,
+    status: 'active',
+    drawdown_type: "static"
   }
 ];
 
@@ -125,9 +141,11 @@ export const DEMO_GOALS: GoalDoc[] = [
 // Helper to generate 25-30 trades per account
 export const generateTradesForAccount = (accountId: string, startDay: number, count: number, winRate: number, baseLot: number): TradeDoc[] => {
   const trades: TradeDoc[] = [];
-  const symbols = ["EURUSD", "GBPUSD", "XAUUSD", "US30", "NAS100"];
   const emotions: any[] = ["Confident", "Neutral", "FOMO", "Revenge", "Bored", "Tilted"];
   const grades: any[] = ["A+", "A", "B", "C"];
+
+  const isDomestic = accountId.includes("dom");
+  const symbols = isDomestic ? ["NIFTY50", "BANKNIFTY", "RELIANCE", "HDFCBANK", "INFY"] : ["EURUSD", "GBPUSD", "XAUUSD", "US30", "NAS100"];
   
   for (let i = 0; i < count; i++) {
     const isWin = Math.random() < winRate;

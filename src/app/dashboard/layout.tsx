@@ -162,7 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       items: [
         { name: "All Trades", href: "/dashboard/trades", icon: "las la-book-open" },
         { name: "Strategies", href: "/dashboard/strategies", icon: "las la-chess-knight" },
-        { name: "Calendar", href: "/dashboard/calendar", icon: "las la-calendar" },
+        { name: "Economic Calendar", href: "/dashboard/calendar", icon: "las la-calendar" },
       ]
     },
     {

@@ -14,9 +14,11 @@ import toast from "react-hot-toast";
 import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 import { useUiStore } from "@/store/useUiStore";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import { useDemo } from "@/lib/demoContext";
 
 export default function ReportsPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ export default function ReportsPage() {
   
   useEffect(() => {
     if (user) fetchData();
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchData = async () => {
     if (!user) return;

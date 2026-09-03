@@ -17,10 +17,14 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { DEMO_ACCOUNTS } from "@/lib/adminDemoData";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 
 export default function UserAccountsPage() {
   const { user, tier, role } = useAuth();
   const { isDemoMode } = useDemo();
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
   const theme = useTierTheme();
   const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,16 +42,12 @@ export default function UserAccountsPage() {
 
   const fetchAccounts = async () => {
     try {
-      if (isDemoMode) {
-        setAccounts(DEMO_ACCOUNTS);
-        return;
-      }
-      if (!user) return;
       if (role === "admin") {
         setAccounts(DEMO_ACCOUNTS);
         return;
       }
-      
+      if (!user) return;
+
       const q = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
       const accs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
@@ -61,8 +61,15 @@ export default function UserAccountsPage() {
   const hasReachedLimit = accounts.length >= maxAccounts;
 
   const filteredAccounts = accounts.filter(acc => {
+    // 1. Workspace filter
+    const isDom = acc.market_type === "DOMESTIC";
+    if (isDomestic && !isDom) return false;
+    if (!isDomestic && isDom) return false;
+    
+    // 2. Search filter
     if (searchQuery && !acc.label.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (statusFilter === "active") return true; // simplified logic
+    
+    if (statusFilter === "active") return true; 
     return true;
   });
 
@@ -81,6 +88,7 @@ export default function UserAccountsPage() {
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
+          <MarketSwitcher />
           <div className="w-32">
             <Select 
               options={[

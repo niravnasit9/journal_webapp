@@ -41,7 +41,7 @@ export default function TradesPage() {
     try {
       setLoading(true);
 
-      if (isDemoMode) {
+      if (role === "admin") {
         setAccounts(DEMO_ACCOUNTS);
         const demoTrades: TradeDoc[] = [];
         for (const acc of DEMO_ACCOUNTS) {
@@ -55,12 +55,6 @@ export default function TradesPage() {
 
       if (!user) return;
 
-      if (role === "admin") {
-        setAccounts(DEMO_ACCOUNTS);
-        setTrades([]);
-        setLoading(false);
-        return;
-      }
 
       // Fetch all accounts for user
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/firebase/authContext";
 import { useTierTheme } from "@/hooks/useTierTheme";
 import { useTierAccess } from "@/hooks/useTierAccess";
@@ -10,9 +11,12 @@ import { StrategyDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 import { DEMO_STRATEGIES } from "@/lib/adminDemoData";
+import { useDemo } from "@/lib/demoContext";
 
 export default function StrategiesPage() {
   const { user, role } = useAuth();
+  const { isDemoMode } = useDemo();
+  const router = useRouter();
   const theme = useTierTheme();
   const { maxStrategies, hasReachedLimit } = useTierAccess();
   
@@ -40,7 +44,7 @@ export default function StrategiesPage() {
     if (user) {
       fetchStrategies();
     }
-  }, [user, role]);
+  }, [user, role, isDemoMode]);
 
   const fetchStrategies = async () => {
     if (!user) return;
