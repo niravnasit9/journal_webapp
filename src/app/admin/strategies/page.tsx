@@ -185,7 +185,7 @@ export default function AdminStrategiesPage() {
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="heading-page text-white">Global Strategy Directory</h1>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-secondary mt-1">
             Track and evaluate the performance of system and user strategies globally.
           </p>
         </div>
@@ -196,9 +196,9 @@ export default function AdminStrategiesPage() {
 
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-neutral-800">
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-neutral-600"></div>
-          <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Total Strategies</div>
+          <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Strategies</div>
           <div className="text-3xl font-bold text-white">{totalStrategies}</div>
         </div>
         
@@ -217,14 +217,14 @@ export default function AdminStrategiesPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Strategy Leaderboard</h2>
         </div>
         
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">Strategy Name</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Total Trades</th>
@@ -241,16 +241,16 @@ export default function AdminStrategiesPage() {
                 </tr>
               ) : strategies.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                  <td colSpan={5} className="px-6 py-12 text-center text-muted font-bold">
                     No strategies found in database.
                   </td>
                 </tr>
               ) : (
                 strategies.map(strat => (
-                  <tr key={strat.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                  <tr key={strat.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <div className="font-bold text-white">{strat.name}</div>
-                      <div className="text-[10px] text-neutral-500 font-mono mt-0.5">{strat.id}</div>
+                      <div className="text-[10px] text-muted font-mono mt-0.5">{strat.id}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border ${strat.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
@@ -300,10 +300,10 @@ export default function AdminStrategiesPage() {
       {/* CRUD Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-neutral-800">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
@@ -317,7 +317,7 @@ export default function AdminStrategiesPage() {
                   <p className="text-sm text-amber-500/80 mb-2">
                     Are you sure you want to delete <strong>{currentStrat?.name}</strong>?
                   </p>
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-secondary">
                     This will safely unlink {currentStrat?.totalTrades} trades from this strategy and set them to "Uncategorized". The trades will NOT be deleted.
                   </p>
                 </div>
@@ -336,37 +336,37 @@ export default function AdminStrategiesPage() {
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Strategy Name</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Strategy Name</label>
                       <input 
                         type="text" 
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="e.g. ICT Silver Bullet"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Owner UID</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Owner UID</label>
                       <input 
                         type="text" 
                         value={formData.owner_uid}
                         onChange={e => setFormData({...formData, owner_uid: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Description</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Description</label>
                     <textarea 
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-neutral-800 h-24 resize-none"
+                      className="input-premium w-full bg-[#121212] border-default h-24 resize-none"
                       placeholder="Strategy details..."
                     />
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block">Strategy Rules</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block">Strategy Rules</label>
                       <button 
                         onClick={() => setFormData({...formData, rules: [...formData.rules, ""]})}
                         className="text-[10px] font-bold text-blue-500 hover:text-blue-400 uppercase tracking-widest flex items-center gap-1"
@@ -385,7 +385,7 @@ export default function AdminStrategiesPage() {
                               newRules[idx] = e.target.value;
                               setFormData({...formData, rules: newRules});
                             }}
-                            className="input-premium w-full bg-[#121212] border-neutral-800"
+                            className="input-premium w-full bg-[#121212] border-default"
                             placeholder={`Rule ${idx + 1}`}
                           />
                           <button 
@@ -401,7 +401,7 @@ export default function AdminStrategiesPage() {
                         </div>
                       ))}
                       {formData.rules.length === 0 && (
-                        <div className="text-xs text-neutral-500 text-center py-2 italic border border-dashed border-neutral-800 rounded-lg">
+                        <div className="text-xs text-muted text-center py-2 italic border border-dashed border-default rounded-lg">
                           No rules added yet.
                         </div>
                       )}
@@ -409,31 +409,31 @@ export default function AdminStrategiesPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Owner Name</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Owner Name</label>
                       <input 
                         type="text" 
                         value={formData.owner_name}
                         onChange={e => setFormData({...formData, owner_name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Owner Email</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Owner Email</label>
                       <input 
                         type="text" 
                         value={formData.owner_email}
                         onChange={e => setFormData({...formData, owner_email: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Image URL</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Image URL</label>
                     <input 
                       type="text" 
                       value={formData.image_url}
                       onChange={e => setFormData({...formData, image_url: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-neutral-800"
+                      className="input-premium w-full bg-[#121212] border-default"
                     />
                   </div>
                   <div className="flex items-center gap-6 pt-2">
@@ -443,7 +443,7 @@ export default function AdminStrategiesPage() {
                         id="isActive"
                         checked={formData.is_active}
                         onChange={e => setFormData({...formData, is_active: e.target.checked})}
-                        className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                        className="w-4 h-4 rounded border-strong bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
                       />
                       <label htmlFor="isActive" className="text-sm font-bold text-neutral-300">Active</label>
                     </div>
@@ -453,13 +453,13 @@ export default function AdminStrategiesPage() {
                         id="isPublic"
                         checked={formData.is_public}
                         onChange={e => setFormData({...formData, is_public: e.target.checked})}
-                        className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                        className="w-4 h-4 rounded border-strong bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
                       />
                       <label htmlFor="isPublic" className="text-sm font-bold text-neutral-300">Public</label>
                     </div>
                   </div>
                 </div>
-                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-neutral-800">
+                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-default">
                   <button onClick={() => setIsModalOpen(false)} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
                   <button onClick={handleSubmit} className="btn-primary flex items-center gap-2" disabled={isSubmitting}>
                     {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-save"></i>} Save Strategy

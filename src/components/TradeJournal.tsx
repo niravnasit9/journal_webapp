@@ -125,40 +125,40 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
     }).format(val);
   };
 
-  const filterSelectClass = "bg-[#121212] border border-neutral-800 text-neutral-300 text-xs rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none";
+  const filterSelectClass = "bg-[#121212] border border-default text-neutral-300 text-xs rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none";
 
   return (
     <>
-      <Card className="flex flex-col font-sans overflow-hidden bg-[#0a0a0a] border-neutral-800">
+      <Card className="flex flex-col font-sans overflow-hidden bg-[#0a0a0a] border-default">
         
         {/* Quick Stats Ribbon */}
-        <div className="bg-[#121212] border-b border-neutral-800 p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-[#121212] border-b border-default p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Filtered P&L</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Filtered P&L</span>
             <span className={`text-lg font-black ${quickStats.totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {quickStats.totalPnl >= 0 ? '+' : ''}{formatMoney(quickStats.totalPnl)}
             </span>
           </div>
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Total Trades</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Total Trades</span>
             <span className="text-lg font-bold text-white">{quickStats.totalTrades}</span>
           </div>
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Total Volume</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Total Volume</span>
             <span className="text-lg font-bold text-white">{quickStats.totalVolume.toFixed(2)}</span>
           </div>
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">L / S Ratio</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">L / S Ratio</span>
             <span className="text-lg font-bold text-white">{quickStats.longs} : {quickStats.shorts}</span>
           </div>
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Commissions</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Commissions</span>
             <span className="text-lg font-bold text-white">{formatMoney(quickStats.totalCommission)}</span>
           </div>
         </div>
 
         {/* Table Header / Filters */}
-        <div className="p-4 md:p-6 border-b border-neutral-800 flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center bg-[#0a0a0a]">
+        <div className="p-4 md:p-6 border-b border-default flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center bg-[#0a0a0a]">
           <div className="flex justify-between items-center w-full xl:w-auto">
             <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
               <i className="las la-history text-blue-500"></i> Trade History
@@ -179,7 +179,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
           <div className="hidden xl:flex flex-row gap-3 w-auto items-center flex-wrap">
             
             {/* Multi-Filters */}
-            <div className="flex items-center gap-2 bg-[#121212] p-1.5 rounded-xl border border-neutral-800">
+            <div className="flex items-center gap-2 bg-[#121212] p-1.5 rounded-xl border border-default">
               <select className={filterSelectClass} value={filterDirection} onChange={e => setFilterDirection(e.target.value as any)}>
                 <option value="ALL">All Dirs</option>
                 <option value="BUY">LONG</option>
@@ -247,7 +247,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                   leftIcon={<i className="las la-calendar text-lg"></i>}
                 />
               </div>
-              <span className="text-neutral-500 text-sm font-medium">to</span>
+              <span className="text-muted text-sm font-medium">to</span>
               <div className="w-36">
                 <Input 
                   type="date"
@@ -264,7 +264,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-[#121212] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#121212] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">Open Time</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
@@ -277,9 +277,9 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
             <tbody className="text-sm bg-[#0a0a0a]">
               {filteredTrades.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-neutral-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted">
                     <div className="flex flex-col items-center justify-center">
-                      <i className="las la-filter text-4xl mb-3 opacity-50 text-neutral-600"></i>
+                      <i className="las la-filter text-4xl mb-3 opacity-50 text-secondary"></i>
                       <p>No trades match your criteria.</p>
                     </div>
                   </td>
@@ -288,10 +288,10 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                 filteredTrades.map((trade) => (
                   <tr 
                     key={trade.id} 
-                    className="border-b border-neutral-800/50 hover:bg-[#121212] transition-colors group cursor-pointer"
+                    className="border-b border-default/50 hover:bg-[#121212] transition-colors group cursor-pointer"
                     onClick={() => setSelectedTrade(trade)}
                   >
-                    <td className="px-6 py-4 text-neutral-400 font-medium">
+                    <td className="px-6 py-4 text-secondary font-medium">
                       {new Date(trade.open_time).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 font-bold text-white">
@@ -305,8 +305,8 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                         {trade.direction}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 font-medium">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-neutral-500 font-mono">{trade.open_price}</td>
+                    <td className="px-6 py-4 text-secondary font-medium">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-muted font-mono">{trade.open_price}</td>
                     <td className={`px-6 py-4 text-right font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {trade.profit_loss >= 0 ? '+' : ''}{formatMoney(trade.profit_loss - (trade.commission || 0))}
                     </td>
@@ -315,7 +315,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                         {onEditTrade && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); onEditTrade(trade); }}
-                            className="text-neutral-500 hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-blue-500/10 mx-1"
+                            className="text-muted hover:text-blue-400 transition-colors p-2 rounded-lg hover:bg-blue-500/10 mx-1"
                             title="Edit Trade"
                           >
                             <i className="las la-pen text-[16px]"></i>
@@ -324,7 +324,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                         {onDeleteTrade && (
                           <button 
                             onClick={(e) => { e.stopPropagation(); onDeleteTrade(trade.id); }}
-                            className="text-neutral-500 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-rose-500/10 mx-1"
+                            className="text-muted hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-rose-500/10 mx-1"
                             title="Delete Trade"
                           >
                             <i className="las la-trash-alt text-[16px]"></i>
@@ -346,14 +346,14 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
               className="absolute inset-0"
               onClick={() => setIsFilterSheetOpen(false)}
             />
-            <div className={`relative w-full border-t border-neutral-800 rounded-t-3xl shadow-2xl p-6 pb-10 bg-[#0a0a0a] animate-in slide-in-from-bottom-full duration-300 transition-all`}>
+            <div className={`relative w-full border-t border-default rounded-t-3xl shadow-2xl p-6 pb-10 bg-[#0a0a0a] animate-in slide-in-from-bottom-full duration-300 transition-all`}>
               <div className="w-12 h-1.5 bg-neutral-800 rounded-full mx-auto mb-6"></div>
               
               <h3 className="text-xl font-bold text-white mb-6">Filter Trades</h3>
               
               <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">Search Symbol</label>
+                  <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Search Symbol</label>
                   <Input 
                     placeholder="Search symbol..."
                     value={search}
@@ -363,7 +363,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">Date Range</label>
+                  <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Date Range</label>
                   <div className="flex flex-col gap-3 w-full">
                     <Input 
                       type="date" 
@@ -371,7 +371,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                       onChange={(e) => setStartDate(e.target.value)}
                       leftIcon={<i className="las la-calendar text-lg"></i>}
                     />
-                    <div className="text-center text-neutral-500 font-medium text-sm">to</div>
+                    <div className="text-center text-muted font-medium text-sm">to</div>
                     <Input 
                       type="date"
                       value={endDate}

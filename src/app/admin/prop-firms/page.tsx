@@ -185,7 +185,7 @@ export default function AdminPropFirmsPage() {
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="heading-page text-white">Prop Firm Analytics</h1>
-          <p className="text-sm text-neutral-400 mt-1">
+          <p className="text-sm text-secondary mt-1">
             Monitor performance metrics and pass rates across all connected proprietary trading firms.
           </p>
         </div>
@@ -221,13 +221,13 @@ export default function AdminPropFirmsPage() {
           <LoadingSpinner className="w-10 h-10 border-blue-500" />
         </div>
       ) : firms.length === 0 ? (
-        <div className="premium-card p-12 text-center text-neutral-500 font-bold">
+        <div className="premium-card p-12 text-center text-muted font-bold">
           No prop firms found in database.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {firms.map((firm) => (
-            <div key={firm.id} className="premium-card p-6 shadow-xl flex flex-col hover:border-neutral-700 transition-colors">
+            <div key={firm.id} className="premium-card p-6 shadow-xl flex flex-col hover:border-strong transition-colors">
               
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -240,16 +240,16 @@ export default function AdminPropFirmsPage() {
 
               <div className="premium-inner-box p-4 mb-6 flex-1">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">Challenges</span>
+                  <div className="flex justify-between items-center border-b border-default pb-2">
+                    <span className="text-xs text-muted font-bold uppercase tracking-widest">Challenges</span>
                     <span className="text-sm font-bold text-white">{firm.challenges.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">Funded</span>
+                  <div className="flex justify-between items-center border-b border-default pb-2">
+                    <span className="text-xs text-muted font-bold uppercase tracking-widest">Funded</span>
                     <span className="text-sm font-bold text-amber-400">{firm.funded.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest">Pass Rate</span>
+                    <span className="text-xs text-muted font-bold uppercase tracking-widest">Pass Rate</span>
                     <span className="text-sm font-bold text-blue-400">{firm.passRate}%</span>
                   </div>
                 </div>
@@ -278,10 +278,10 @@ export default function AdminPropFirmsPage() {
       {/* CRUD Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-neutral-800">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
@@ -295,7 +295,7 @@ export default function AdminPropFirmsPage() {
                   <p className="text-sm text-amber-500/80 mb-2">
                     Are you sure you want to delete <strong>{currentFirm?.name}</strong>?
                   </p>
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-secondary">
                     This will remove the firm from the database. Note: Existing user accounts tied to this firm will lose their firm analytics association.
                   </p>
                 </div>
@@ -314,75 +314,75 @@ export default function AdminPropFirmsPage() {
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Firm Name</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Firm Name</label>
                       <input 
                         type="text" 
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="e.g. FTMO"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Slug</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Slug</label>
                       <input 
                         type="text" 
                         value={formData.slug}
                         onChange={e => setFormData({...formData, slug: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="e.g. ftmo"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Website URL</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Website URL</label>
                       <input 
                         type="text" 
                         value={formData.website_url}
                         onChange={e => setFormData({...formData, website_url: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="https://"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Logo URL</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Logo URL</label>
                       <input 
                         type="text" 
                         value={formData.logo_url}
                         onChange={e => setFormData({...formData, logo_url: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="https://"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Country</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Country</label>
                       <input 
                         type="text" 
                         value={formData.country}
                         onChange={e => setFormData({...formData, country: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         placeholder="e.g. CZ"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Display Order</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Display Order</label>
                       <input 
                         type="number" 
                         value={formData.display_order}
                         onChange={e => setFormData({...formData, display_order: Number(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Description</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Description</label>
                     <textarea 
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-neutral-800 h-20 resize-none"
+                      className="input-premium w-full bg-[#121212] border-default h-20 resize-none"
                       placeholder="Firm details..."
                     />
                   </div>
@@ -393,7 +393,7 @@ export default function AdminPropFirmsPage() {
                         id="isActiveFirm"
                         checked={formData.is_active}
                         onChange={e => setFormData({...formData, is_active: e.target.checked})}
-                        className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                        className="w-4 h-4 rounded border-strong bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
                       />
                       <label htmlFor="isActiveFirm" className="text-sm font-bold text-neutral-300">Active</label>
                     </div>
@@ -403,13 +403,13 @@ export default function AdminPropFirmsPage() {
                         id="isPopularFirm"
                         checked={formData.is_popular}
                         onChange={e => setFormData({...formData, is_popular: e.target.checked})}
-                        className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                        className="w-4 h-4 rounded border-strong bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
                       />
                       <label htmlFor="isPopularFirm" className="text-sm font-bold text-neutral-300">Popular</label>
                     </div>
                   </div>
                 </div>
-                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-neutral-800">
+                <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-default">
                   <button onClick={() => setIsModalOpen(false)} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
                   <button onClick={handleSubmit} className="btn-primary flex items-center gap-2" disabled={isSubmitting}>
                     {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-save"></i>} Save Firm

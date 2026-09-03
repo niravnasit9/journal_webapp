@@ -147,7 +147,7 @@ export default function RegisterPage() {
 
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Create Account</h2>
-          <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">Start tracking your trades with ProfitPulse</p>
+          <p className="text-muted dark:text-slate-400 text-sm font-medium">Start tracking your trades with ProfitPulse</p>
         </div>
 
         {error && (
@@ -160,15 +160,15 @@ export default function RegisterPage() {
         <form onSubmit={handleRegister} className="space-y-5" noValidate>
           {/* Full Name */}
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Full Name</label>
+            <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Full Name</label>
             <div className="relative group">
-              <i className="las la-user absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+              <i className="las la-user absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
               <input
                 id="register-name"
                 type="text"
                 value={name}
                 onChange={(e) => { setName(e.target.value); setFieldErrors(p => ({ ...p, name: "" })); }}
-                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600 ${fieldErrors.name ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
+                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600 ${fieldErrors.name ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
                 placeholder="John Doe"
                 autoComplete="name"
               />
@@ -178,15 +178,15 @@ export default function RegisterPage() {
 
           {/* Email */}
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
+            <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
             <div className="relative group">
-              <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+              <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
               <input
                 id="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: "" })); }}
-                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600 ${fieldErrors.email ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
+                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600 ${fieldErrors.email ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
                 placeholder="you@example.com"
                 autoComplete="email"
               />
@@ -196,22 +196,22 @@ export default function RegisterPage() {
 
           {/* Password */}
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Password</label>
+            <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Password</label>
             <div className="relative group">
-              <i className="las la-lock absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+              <i className="las la-lock absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
               <input
                 id="register-password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: "" })); }}
-                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600 ${fieldErrors.password ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
+                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600 ${fieldErrors.password ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
                 placeholder="Min 8 characters"
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-indigo-500 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary dark:text-slate-500 hover:text-indigo-500 transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 <i className={`las ${showPassword ? "la-eye-slash" : "la-eye"} text-xl`}></i>
@@ -238,22 +238,22 @@ export default function RegisterPage() {
 
           {/* Confirm Password */}
           <div className="space-y-1.5">
-            <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Confirm Password</label>
+            <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Confirm Password</label>
             <div className="relative group">
-              <i className="las la-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+              <i className="las la-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
               <input
                 id="register-confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors(p => ({ ...p, confirmPassword: "" })); }}
-                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600 ${fieldErrors.confirmPassword ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
+                className={`w-full bg-gray-50 dark:bg-[#16181d] border rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:ring-4 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600 ${fieldErrors.confirmPassword ? "border-rose-400 focus:border-rose-400 focus:ring-rose-500/10" : "border-gray-200 dark:border-slate-700/50 focus:border-indigo-500 focus:ring-indigo-500/10"}`}
                 placeholder="Re-enter password"
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-indigo-500 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary dark:text-slate-500 hover:text-indigo-500 transition-colors"
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 <i className={`las ${showConfirmPassword ? "la-eye-slash" : "la-eye"} text-xl`}></i>
@@ -276,7 +276,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm font-semibold text-gray-500 dark:text-slate-400">
+        <div className="mt-8 text-center text-sm font-semibold text-muted dark:text-slate-400">
           Already have an account?{" "}
           <Link href="/login" className="text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
             Sign in

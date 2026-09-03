@@ -37,15 +37,15 @@ export default function TradingPsychology({ trades }: TradingPsychologyProps) {
         <div key={t.id} className="premium-card p-6 relative overflow-hidden">
           <div className={`absolute top-0 left-0 w-1 h-full ${(isDomestic ? (t.net_pnl || 0) : t.profit_loss) >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-neutral-800 ml-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-default ml-2">
             <div>
               <h3 className="font-bold text-white text-lg tracking-tight">{getHeader(t)}</h3>
-              <p className="text-xs text-neutral-500 font-mono mt-1 flex items-center gap-2">
+              <p className="text-xs text-muted font-mono mt-1 flex items-center gap-2">
                 <i className="las la-clock"></i> {formatDate(t.open_time)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] uppercase font-bold tracking-widest text-neutral-500">Realized PnL</p>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-muted">Realized PnL</p>
               <p className={`text-xl font-bold font-mono ${(isDomestic ? (t.net_pnl || 0) : t.profit_loss) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {(isDomestic ? (t.net_pnl || 0) : t.profit_loss) >= 0 ? '+' : ''}{isDomestic ? '₹' : '$'}{Math.abs(isDomestic ? (t.net_pnl || 0) : t.profit_loss).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
@@ -55,7 +55,7 @@ export default function TradingPsychology({ trades }: TradingPsychologyProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-2">
             <div className="col-span-2 space-y-4">
               <div>
-                <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Trade Notes</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-widest mb-2">Trade Notes</p>
                 <div className="premium-inner-box p-4 text-sm text-neutral-300 min-h-[100px] leading-relaxed">
                   {t.notes || "No notes recorded for this trade."}
                 </div>
@@ -64,12 +64,12 @@ export default function TradingPsychology({ trades }: TradingPsychologyProps) {
             
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Psychology Flags</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-widest mb-2">Psychology Flags</p>
                 <div className="flex flex-wrap gap-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
                     t.emotion === 'Confident' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                     t.emotion === 'FOMO' || t.emotion === 'Revenge' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                    'bg-neutral-800 text-neutral-400 border-neutral-700'
+                    'bg-neutral-800 text-secondary border-strong'
                   }`}>
                     {t.emotion || "Neutral"}
                   </span>
@@ -86,9 +86,9 @@ export default function TradingPsychology({ trades }: TradingPsychologyProps) {
       ))}
       
       {trades.length === 0 && (
-        <div className="premium-card p-12 text-center border-dashed border-2 border-neutral-800">
-          <i className="las la-book-open text-4xl text-neutral-600 mb-3"></i>
-          <p className="text-neutral-500 font-bold">No journal entries found.</p>
+        <div className="premium-card p-12 text-center border-dashed border-2 border-default">
+          <i className="las la-book-open text-4xl text-secondary mb-3"></i>
+          <p className="text-muted font-bold">No journal entries found.</p>
         </div>
       )}
     </div>

@@ -111,13 +111,13 @@ export default function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[15vh]">
       <div 
-        className="premium-inner-box w-full max-w-2xl bg-[#0a0a0a] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95"
+        className="premium-inner-box w-full max-w-2xl bg-[#0a0a0a] border border-default rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Search Input */}
-        <div className="flex items-center px-4 border-b border-neutral-800">
-          <i className="las la-search text-2xl text-neutral-500"></i>
+        <div className="flex items-center px-4 border-b border-default">
+          <i className="las la-search text-2xl text-muted"></i>
           <input 
             type="text" 
             autoFocus
@@ -126,7 +126,7 @@ export default function CommandPalette() {
             placeholder="Type a command or search users..."
             className="w-full bg-transparent border-none text-white text-lg py-5 px-4 focus:outline-none focus:ring-0 placeholder-neutral-600 font-sans"
           />
-          <div className="flex gap-1 text-[10px] font-bold text-neutral-500 uppercase tracking-widest bg-neutral-900 px-2 py-1 rounded">
+          <div className="flex gap-1 text-[10px] font-bold text-muted uppercase tracking-widest bg-neutral-900 px-2 py-1 rounded">
             <span>ESC</span>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function CommandPalette() {
         {/* Results */}
         <div className="max-h-[60vh] overflow-y-auto p-2 no-scrollbar">
           {results.length === 0 ? (
-            <div className="text-center py-12 text-neutral-500 font-sans">
+            <div className="text-center py-12 text-muted font-sans">
               No results found for "{searchQuery}"
             </div>
           ) : (
@@ -152,12 +152,12 @@ export default function CommandPalette() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-500/20 text-blue-400' : 'bg-neutral-800 text-neutral-500'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-500/20 text-blue-400' : 'bg-neutral-800 text-muted'}`}>
                       <i className={`las ${item.type === 'page' ? 'la-file-alt' : 'la-user'} text-lg`}></i>
                     </div>
                     <div className="flex flex-col">
                       <span className={`font-bold font-sans ${isSelected ? 'text-blue-400' : 'text-white'}`}>{item.title}</span>
-                      {item.subtitle && <span className="text-xs text-neutral-500">{item.subtitle}</span>}
+                      {item.subtitle && <span className="text-xs text-muted">{item.subtitle}</span>}
                     </div>
                   </div>
                   {item.type === "page" && <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">Page</span>}
@@ -168,7 +168,7 @@ export default function CommandPalette() {
         </div>
         
         {/* Footer */}
-        <div className="bg-[#121212] px-4 py-2 border-t border-neutral-800 flex items-center justify-between text-[10px] font-bold text-neutral-500 uppercase tracking-widest font-sans">
+        <div className="bg-[#121212] px-4 py-2 border-t border-default flex items-center justify-between text-[10px] font-bold text-muted uppercase tracking-widest font-sans">
           <div className="flex gap-4">
             <span className="flex items-center gap-1"><kbd className="bg-neutral-800 px-1.5 py-0.5 rounded">↑↓</kbd> to navigate</span>
             <span className="flex items-center gap-1"><kbd className="bg-neutral-800 px-1.5 py-0.5 rounded">↵</kbd> to select</span>

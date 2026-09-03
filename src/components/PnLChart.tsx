@@ -17,7 +17,7 @@ interface PnLChartProps {
 export default function PnLChart({ data }: PnLChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-500 bg-[#111827] rounded-xl border border-gray-800">
+      <div className="h-64 flex items-center justify-center text-muted bg-[#111827] rounded-xl border border-gray-800">
         No equity data available
       </div>
     );

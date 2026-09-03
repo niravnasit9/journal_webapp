@@ -167,13 +167,13 @@ export default function AnalyticsOverview() {
           <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <i className="las la-chart-bar text-[#a855f7]"></i> Analytics Overview
           </h1>
-          <p className="text-neutral-400 mt-1">Deep institutional-grade analysis of your {isDomestic ? 'domestic' : 'global'} trading edge.</p>
+          <p className="text-secondary mt-1">Deep institutional-grade analysis of your {isDomestic ? 'domestic' : 'global'} trading edge.</p>
         </div>
         
         <div className="flex items-center gap-4">
           <MarketSwitcher />
           <select 
-            className="bg-[#121212] border border-neutral-800 text-white font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
+            className="bg-[#121212] border border-default text-white font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
           >
@@ -187,26 +187,26 @@ export default function AnalyticsOverview() {
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
-          <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2">Total P&L</span>
+        <div className="bg-[#0a0a0a] border border-default p-5 rounded-2xl shadow-xl">
+          <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Total P&L</span>
           <span className={`text-2xl md:text-3xl font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
             {totalPnl >= 0 ? '+' : '-'}{formatMoney(totalPnl)}
           </span>
         </div>
-        <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
-          <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2">Win Rate</span>
+        <div className="bg-[#0a0a0a] border border-default p-5 rounded-2xl shadow-xl">
+          <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Win Rate</span>
           <span className="text-2xl md:text-3xl font-black text-white">
             {winRate.toFixed(1)}%
           </span>
         </div>
-        <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
-          <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2">Profit Factor</span>
+        <div className="bg-[#0a0a0a] border border-default p-5 rounded-2xl shadow-xl">
+          <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Profit Factor</span>
           <span className={`text-2xl md:text-3xl font-black ${profitFactor >= 1.5 ? 'text-[#a855f7]' : 'text-white'}`}>
             {profitFactor.toFixed(2)}
           </span>
         </div>
-        <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
-          <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2">Total Trades</span>
+        <div className="bg-[#0a0a0a] border border-default p-5 rounded-2xl shadow-xl">
+          <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Total Trades</span>
           <span className="text-2xl md:text-3xl font-black text-white">
             {totalTrades}
           </span>

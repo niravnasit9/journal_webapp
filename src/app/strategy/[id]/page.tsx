@@ -58,7 +58,7 @@ export default function PublicStrategyPage() {
     return (
       <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0f1c] flex flex-col items-center justify-center transition-colors duration-500 relative">
         <LoadingSpinner className="w-16 h-16 border-[4px] border-yellow-500 border-t-transparent" />
-        <p className="mt-8 text-gray-500 dark:text-slate-400 font-black uppercase tracking-[0.3em] text-xs animate-pulse">Decrypting Playbook...</p>
+        <p className="mt-8 text-muted dark:text-slate-400 font-black uppercase tracking-[0.3em] text-xs animate-pulse">Decrypting Playbook...</p>
       </div>
     );
   }
@@ -72,7 +72,7 @@ export default function PublicStrategyPage() {
             <i className="las la-lock text-5xl text-rose-500"></i>
           </div>
           <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-4 tracking-tighter">Access Restricted</h1>
-          <p className="text-gray-500 dark:text-slate-400 mb-10 font-medium">
+          <p className="text-muted dark:text-slate-400 mb-10 font-medium">
             {error || "This strategy doesn't exist or has been hidden by the author."}
           </p>
           <Link href="/" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-xl shadow-lg transition-all hover:scale-105">
@@ -150,7 +150,7 @@ export default function PublicStrategyPage() {
               </div>
 
               <div className="mb-2">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-2">Strategy Name</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-secondary dark:text-slate-500 mb-2">Strategy Name</h3>
                 <h1 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight break-words">
                   {strategy.name}
                 </h1>
@@ -162,11 +162,11 @@ export default function PublicStrategyPage() {
                   {strategy.owner_photo_url ? (
                     <img src={strategy.owner_photo_url} alt="Author" className="w-full h-full object-cover" />
                   ) : (
-                    <i className="las la-user text-xl text-gray-400"></i>
+                    <i className="las la-user text-xl text-secondary"></i>
                   )}
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-0.5">Author</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary dark:text-slate-500 mb-0.5">Author</p>
                   <p className="text-sm font-bold text-gray-900 dark:text-white">
                     {strategy.owner_name ? strategy.owner_name : `@${strategy.owner_email ? strategy.owner_email.split('@')[0] : "Trader"}`}
                   </p>
@@ -176,7 +176,7 @@ export default function PublicStrategyPage() {
               <div className="h-px w-24 bg-yellow-400 my-8"></div>
 
               <div className="mb-8">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-3">Core Philosophy & Description</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-secondary dark:text-slate-500 mb-3">Core Philosophy & Description</h3>
                 <div className="bg-white/50 dark:bg-[#111318]/50 backdrop-blur-md rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm relative overflow-hidden">
                   <i className="las la-quote-left absolute top-4 right-4 text-6xl text-gray-100 dark:text-white/5 rotate-12"></i>
                   <p className="text-lg text-gray-700 dark:text-slate-300 font-medium leading-relaxed relative z-10">
@@ -189,14 +189,14 @@ export default function PublicStrategyPage() {
                 <div className="bg-white/50 dark:bg-[#111318]/50 backdrop-blur-md rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col">
                   <i className="las la-list-ol text-2xl text-yellow-500 mb-2"></i>
                   <span className="text-2xl font-black text-gray-900 dark:text-white">{strategy.rules.length}</span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Strict Rules</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted">Strict Rules</span>
                 </div>
                 <div className="bg-white/50 dark:bg-[#111318]/50 backdrop-blur-md rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col">
                   <i className="las la-calendar-check text-2xl text-blue-500 mb-2"></i>
                   <span className="text-xl font-black text-gray-900 dark:text-white mt-1">
                     {new Date(strategy.updated_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
                   </span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-1">Last Updated</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted mt-1">Last Updated</span>
                 </div>
               </div>
 
@@ -213,7 +213,7 @@ export default function PublicStrategyPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Execution Rules</h2>
-                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">All rules must be met to take a valid trade.</p>
+                  <p className="text-sm text-muted dark:text-slate-400 font-medium">All rules must be met to take a valid trade.</p>
                 </div>
               </div>
 
@@ -232,7 +232,7 @@ export default function PublicStrategyPage() {
                           <span className="text-gray-900 dark:text-white group-hover:text-black font-black text-2xl">{idx + 1}</span>
                         </div>
                         <div className="pt-1 flex-1 min-w-0">
-                          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 mb-2">Rule Parameter {idx + 1}</h4>
+                          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-secondary dark:text-slate-500 mb-2">Rule Parameter {idx + 1}</h4>
                           <p className="text-xl text-gray-800 dark:text-slate-200 font-bold leading-relaxed break-words">
                             {rule}
                           </p>
@@ -244,10 +244,10 @@ export default function PublicStrategyPage() {
               ) : (
                 <div className="p-10 md:p-16 rounded-3xl md:rounded-[3rem] bg-white/50 dark:bg-[#111318]/50 border border-dashed border-gray-200 dark:border-white/10 text-center shadow-inner">
                   <div className="w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i className="las la-folder-open text-4xl text-gray-400"></i>
+                    <i className="las la-folder-open text-4xl text-secondary"></i>
                   </div>
                   <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">No Rules Found</h3>
-                  <p className="text-gray-500 dark:text-slate-400 font-medium">This playbook has no execution parameters.</p>
+                  <p className="text-muted dark:text-slate-400 font-medium">This playbook has no execution parameters.</p>
                 </div>
               )}
 
@@ -286,7 +286,7 @@ export default function PublicStrategyPage() {
       </main>
       
       <footer className="py-8 text-center relative z-10 border-t border-gray-200 dark:border-white/5">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-slate-600">
+        <p className="text-xs font-bold uppercase tracking-widest text-secondary dark:text-slate-600">
           &copy; {new Date().getFullYear()} ProfitPulse. Discipline over conviction.
         </p>
       </footer>

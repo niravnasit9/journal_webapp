@@ -177,14 +177,14 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
           <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
             <i className="las la-pen text-2xl text-blue-500"></i> Edit Account
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+          <button onClick={onClose} className="text-secondary hover:text-gray-600 dark:hover:text-white transition-colors">
             <i className="las la-times text-2xl"></i>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-2">
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
               Account Name
             </label>
             <input 
@@ -196,7 +196,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
                 Account Type
               </label>
               <select 
@@ -211,7 +211,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
             </div>
             
             <div className="space-y-2">
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
                 Market Type
               </label>
               <select 
@@ -225,7 +225,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
                 Currency
               </label>
               <select 
@@ -241,7 +241,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
           {formData.market_type === "GLOBAL" && (
           <div className="space-y-2">
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
               Prop Firm Tracker
             </label>
             <select 
@@ -331,37 +331,37 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
               return (
                 <div className="mt-4 border-t border-gray-200 dark:border-white/10 pt-4 animate-in slide-in-from-top-2 duration-300">
-                  <h4 className="text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <i className="las la-list-alt text-indigo-500"></i>
                     Account Rules Summary
                   </h4>
                   <div className="bg-[#fafafa] dark:bg-[#0a0f1c] rounded-xl border border-gray-200 dark:border-white/10 p-4 space-y-3 shadow-inner">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Prop Firm</span>
+                      <span className="text-sm text-muted font-medium">Prop Firm</span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
                         {firm.name} {firm.is_popular && <i className="las la-star text-yellow-500 text-xs"></i>}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Account Size</span>
+                      <span className="text-sm text-muted font-medium">Account Size</span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white">${plan.account_size.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Daily Drawdown</span>
-                      <span className="text-sm font-bold text-rose-500">{plan.daily_loss_limit_pct}% <span className="text-[10px] text-gray-400 font-normal">({plan.daily_drawdown_type || 'Balance'})</span></span>
+                      <span className="text-sm text-muted font-medium">Daily Drawdown</span>
+                      <span className="text-sm font-bold text-rose-500">{plan.daily_loss_limit_pct}% <span className="text-[10px] text-secondary font-normal">({plan.daily_drawdown_type || 'Balance'})</span></span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Maximum Drawdown</span>
-                      <span className="text-sm font-bold text-rose-500">{plan.max_drawdown_pct}% <span className="text-[10px] text-gray-400 font-normal">({plan.drawdown_type || 'Static'})</span></span>
+                      <span className="text-sm text-muted font-medium">Maximum Drawdown</span>
+                      <span className="text-sm font-bold text-rose-500">{plan.max_drawdown_pct}% <span className="text-[10px] text-secondary font-normal">({plan.drawdown_type || 'Static'})</span></span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Phase / Type</span>
+                      <span className="text-sm text-muted font-medium">Phase / Type</span>
                       <span className="text-sm font-bold text-blue-500">{plan.program_name || plan.name} {plan.phase_name ? `- ${plan.phase_name}` : ''}</span>
                     </div>
                     {plan.rule_version_id && (
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500 font-medium">Rule Version</span>
-                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-widest">{plan.rule_version_id}</span>
+                        <span className="text-sm text-muted font-medium">Rule Version</span>
+                        <span className="text-[10px] font-bold text-secondary bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-widest">{plan.rule_version_id}</span>
                       </div>
                     )}
                   </div>

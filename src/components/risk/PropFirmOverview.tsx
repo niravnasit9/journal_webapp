@@ -20,7 +20,7 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
       <div className="premium-card w-full text-center">
         <i className="las la-rocket text-6xl text-neutral-800 mb-4"></i>
         <h2 className="heading-section tracking-tight mb-2">Prop Firm Overview</h2>
-        <p className="text-sm text-neutral-400">Log your first trade to unlock this module and track your consistency.</p>
+        <p className="text-sm text-secondary">Log your first trade to unlock this module and track your consistency.</p>
       </div>
     );
   }
@@ -82,15 +82,15 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
 
   return (
     <div className="premium-card w-full">
-      <div className="flex items-center justify-between mb-6 border-b border-neutral-800 pb-4">
+      <div className="flex items-center justify-between mb-6 border-b border-default pb-4">
         <div>
           <h2 className="heading-section flex items-center gap-2 mb-0 tracking-tight">
             <i className="las la-rocket text-blue-500"></i> Prop Firm Overview
           </h2>
-          <p className="text-sm text-neutral-400 mt-1">Command center for evaluation phase.</p>
+          <p className="text-sm text-secondary mt-1">Command center for evaluation phase.</p>
         </div>
         <div className="premium-inner-box py-2 text-right">
-          <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Reset In (EST)</span>
+          <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Reset In (EST)</span>
           <span className="text-lg font-mono text-white font-black animate-pulse">{timeLeft || "00:00:00"}</span>
         </div>
       </div>
@@ -102,11 +102,11 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
           <div className="flex justify-between items-end mb-4">
             <div>
               <span className="label-premium mb-1">Phase 1 Target (8%)</span>
-              <span className="text-2xl font-black text-white">{formatMoney(netGain)} <span className="text-sm font-medium text-neutral-500">/ {formatMoney(targetGoal)}</span></span>
+              <span className="text-2xl font-black text-white">{formatMoney(netGain)} <span className="text-sm font-medium text-muted">/ {formatMoney(targetGoal)}</span></span>
             </div>
             <span className="text-lg font-bold text-blue-500">{progressPct.toFixed(1)}%</span>
           </div>
-          <div className="h-3 w-full bg-neutral-900 rounded-full overflow-hidden border border-neutral-800">
+          <div className="h-3 w-full bg-neutral-900 rounded-full overflow-hidden border border-default">
             <div 
               className="h-full bg-blue-600 transition-all duration-1000 ease-out relative"
               style={{ width: `${progressPct}%` }}
@@ -115,7 +115,7 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-neutral-400">Projected Completion:</span>
+            <span className="text-secondary">Projected Completion:</span>
             <span className="font-bold text-white">
               {netGain >= targetGoal ? "Target Hit! 🎉" : (projectedDays ? `~${projectedDays} Trading Days` : "Need more data")}
             </span>
@@ -137,12 +137,12 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
               <span className={`text-3xl font-black ${consistencyPass ? 'text-white' : 'text-amber-500'}`}>
                 {consistencyPct.toFixed(1)}%
               </span>
-              <span className="text-sm text-neutral-500 mb-1 border-b border-neutral-700 border-dashed pb-0.5 tooltip-trigger">
+              <span className="text-sm text-muted mb-1 border-b border-strong border-dashed pb-0.5 tooltip-trigger">
                 Max 50%
               </span>
             </div>
           </div>
-          <p className="text-xs text-neutral-400 leading-relaxed mt-4">
+          <p className="text-xs text-secondary leading-relaxed mt-4">
             {consistencyPass 
               ? "Your largest winning day is well within the 50% consistency threshold. Excellent steady growth."
               : "Warning: A single day accounts for over 50% of your total profit. You must trade more to dilute this day before passing."}

@@ -188,7 +188,7 @@ export default function AddTradeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-white transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
         <h2 className="text-xl font-bold text-white mb-6">
@@ -200,7 +200,7 @@ export default function AddTradeModal({
             
             {/* Left Column */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Execution Details</h3>
+              <h3 className="text-sm font-bold text-secondary uppercase tracking-widest border-b border-default pb-2">Execution Details</h3>
               
               {isDomestic ? (
                 <>
@@ -254,8 +254,8 @@ export default function AddTradeModal({
                   <div>
                     <label className="label-premium block mb-2">Asset Symbol</label>
                     <div className="flex gap-2 mb-2">
-                      <button type="button" onClick={() => setSymbolMode("preset")} className={`flex-1 py-1 text-xs rounded-lg border ${symbolMode === 'preset' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-bold' : 'bg-transparent border-neutral-800 text-neutral-500'}`}>Presets</button>
-                      <button type="button" onClick={() => setSymbolMode("other")} className={`flex-1 py-1 text-xs rounded-lg border ${symbolMode === 'other' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-bold' : 'bg-transparent border-neutral-800 text-neutral-500'}`}>Custom</button>
+                      <button type="button" onClick={() => setSymbolMode("preset")} className={`flex-1 py-1 text-xs rounded-lg border ${symbolMode === 'preset' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-bold' : 'bg-transparent border-default text-muted'}`}>Presets</button>
+                      <button type="button" onClick={() => setSymbolMode("other")} className={`flex-1 py-1 text-xs rounded-lg border ${symbolMode === 'other' ? 'bg-blue-500/20 border-blue-500/50 text-blue-400 font-bold' : 'bg-transparent border-default text-muted'}`}>Custom</button>
                     </div>
                     {symbolMode === "preset" ? (
                       <select className="input-premium w-full" value={selectedPreset} onChange={e => setSelectedPreset(e.target.value)}>
@@ -306,7 +306,7 @@ export default function AddTradeModal({
 
             {/* Right Column */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Analytics</h3>
+              <h3 className="text-sm font-bold text-secondary uppercase tracking-widest border-b border-default pb-2">Analytics</h3>
               
               {isDomestic && formData.net_pnl ? (
                 <div className="premium-inner-box p-4 border border-orange-500/20 bg-orange-500/5">
@@ -348,7 +348,7 @@ export default function AddTradeModal({
 
               {riskRewardRatio !== null && (
                 <div className="premium-inner-box p-3 flex justify-between items-center">
-                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Risk/Reward</span>
+                  <span className="text-xs font-bold text-muted uppercase tracking-widest">Risk/Reward</span>
                   <span className="text-white font-bold font-mono">1 : {riskRewardRatio.toFixed(2)}</span>
                 </div>
               )}

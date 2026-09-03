@@ -73,17 +73,17 @@ export default function AdminSettingsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Global Platform Settings</h1>
-        <p className="text-sm text-neutral-400 mt-1">Comprehensive configuration panel for platform-wide toggles.</p>
+        <p className="text-sm text-secondary mt-1">Comprehensive configuration panel for platform-wide toggles.</p>
       </div>
 
       <form onSubmit={handleSave}>
-        <div className="premium-card p-0 shadow-2xl border border-neutral-800 mb-8">
+        <div className="premium-card p-0 shadow-2xl border border-default mb-8">
           
           <div className="p-6 md:p-8 space-y-8">
             
             {/* Section: Access & Operations */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-shield-alt text-blue-500"></i> Access & Operations
               </h2>
               
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
                     <h3 className="text-sm font-bold text-white">Maintenance Mode</h3>
-                    <p className="text-xs text-neutral-500 mt-1">Disables login and shows maintenance page to all non-admin users.</p>
+                    <p className="text-xs text-muted mt-1">Disables login and shows maintenance page to all non-admin users.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -108,7 +108,7 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
                     <h3 className="text-sm font-bold text-white">New User Registrations</h3>
-                    <p className="text-xs text-neutral-500 mt-1">Allow new users to sign up for the platform.</p>
+                    <p className="text-xs text-muted mt-1">Allow new users to sign up for the platform.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -126,7 +126,7 @@ export default function AdminSettingsPage() {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <i className="las la-globe-asia text-orange-400"></i> Enable Domestic Markets Module
                     </h3>
-                    <p className="text-xs text-neutral-500 mt-1">Activates the dual-market infrastructure for Indian Equity/F&O metrics alongside Global markets.</p>
+                    <p className="text-xs text-muted mt-1">Activates the dual-market infrastructure for Indian Equity/F&O metrics alongside Global markets.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -144,7 +144,7 @@ export default function AdminSettingsPage() {
 
             {/* Section: AI & Trading Engine */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-brain text-purple-500"></i> AI & Trading Engine
               </h2>
               
@@ -153,7 +153,7 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
                     <h3 className="text-sm font-bold text-white">Strict AI Enforcement</h3>
-                    <p className="text-xs text-neutral-500 mt-1">If enabled, AI rigidly flags trades that violate rules and decreases trust scores.</p>
+                    <p className="text-xs text-muted mt-1">If enabled, AI rigidly flags trades that violate rules and decreases trust scores.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -169,14 +169,14 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
                     <h3 className="text-sm font-bold text-white">AI Revenge Trading Gap (Mins)</h3>
-                    <p className="text-xs text-neutral-500 mt-1">Minimum time gap between trades before AI flags it as revenge trading.</p>
+                    <p className="text-xs text-muted mt-1">Minimum time gap between trades before AI flags it as revenge trading.</p>
                   </div>
                   <div className="md:w-1/3">
                     <input 
                       type="number" 
                       value={settings.ai_revenge_gap_mins}
                       onChange={e => setSettings({...settings, ai_revenge_gap_mins: Number(e.target.value)})}
-                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      className="input-premium w-full bg-black border-default text-sm"
                       min="1" max="120"
                     />
                   </div>
@@ -187,7 +187,7 @@ export default function AdminSettingsPage() {
 
             {/* Section: Integrations */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-plug text-purple-500"></i> Integrations
               </h2>
               
@@ -195,14 +195,14 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
                     <h3 className="text-sm font-bold text-white">FMP API Key (Economic Calendar)</h3>
-                    <p className="text-xs text-neutral-500 mt-1">Financial Modeling Prep API key for loading live macroeconomic news.</p>
+                    <p className="text-xs text-muted mt-1">Financial Modeling Prep API key for loading live macroeconomic news.</p>
                   </div>
                   <div className="md:w-1/3">
                     <input 
                       type="password" 
                       value={settings.fmp_api_key || ""}
                       onChange={e => setSettings({...settings, fmp_api_key: e.target.value})}
-                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      className="input-premium w-full bg-black border-default text-sm"
                       placeholder="Enter FMP API Key..."
                     />
                   </div>
@@ -212,7 +212,7 @@ export default function AdminSettingsPage() {
 
             {/* Section: Account Defaults */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-user-cog text-emerald-500"></i> Account Defaults
               </h2>
               
@@ -221,14 +221,14 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
                     <h3 className="text-sm font-bold text-white">Default Free Trial (Days)</h3>
-                    <p className="text-xs text-neutral-500 mt-1">Number of days a newly registered user gets on the Free tier before expiry.</p>
+                    <p className="text-xs text-muted mt-1">Number of days a newly registered user gets on the Free tier before expiry.</p>
                   </div>
                   <div className="md:w-1/3">
                     <input 
                       type="number" 
                       value={defaultFreeTrialDays}
                       onChange={e => setDefaultFreeTrialDays(Number(e.target.value))}
-                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      className="input-premium w-full bg-black border-default text-sm"
                       min="0" max="365"
                     />
                   </div>
@@ -237,14 +237,14 @@ export default function AdminSettingsPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
                     <h3 className="text-sm font-bold text-white">Support Email</h3>
-                    <p className="text-xs text-neutral-500 mt-1">The global email address for customer support inquiries.</p>
+                    <p className="text-xs text-muted mt-1">The global email address for customer support inquiries.</p>
                   </div>
                   <div className="md:w-1/3">
                     <input 
                       type="email" 
                       value={supportEmail}
                       onChange={e => setSupportEmail(e.target.value)}
-                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      className="input-premium w-full bg-black border-default text-sm"
                     />
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function AdminSettingsPage() {
 
           </div>
 
-          <div className="p-6 border-t border-neutral-800 bg-[#121212] flex justify-end">
+          <div className="p-6 border-t border-default bg-[#121212] flex justify-end">
             <button 
               type="submit" 
               disabled={isSubmitting}

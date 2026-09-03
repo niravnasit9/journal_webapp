@@ -98,12 +98,12 @@ export default function PricingPage() {
   };
 
   const getButtonAccent = (id: string, isCurrent: boolean) => {
-    if (isCurrent) return 'bg-neutral-800 text-neutral-500 cursor-not-allowed';
+    if (isCurrent) return 'bg-neutral-800 text-muted cursor-not-allowed';
     switch(id) {
-      case 'free': return 'bg-transparent border border-neutral-700 text-white hover:bg-neutral-800';
+      case 'free': return 'bg-transparent border border-strong text-white hover:bg-neutral-800';
       case 'pro': return 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-blue-500';
-      case 'elite': return 'bg-transparent border border-neutral-700 text-white hover:bg-neutral-800';
-      default: return 'bg-transparent border border-neutral-700 text-white hover:bg-neutral-800';
+      case 'elite': return 'bg-transparent border border-strong text-white hover:bg-neutral-800';
+      default: return 'bg-transparent border border-strong text-white hover:bg-neutral-800';
     }
   };
 
@@ -111,7 +111,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-[#0a0a0a] font-sans text-white">
       
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-neutral-800">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-default">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
@@ -144,20 +144,20 @@ export default function PricingPage() {
             Institutional-Grade Analytics. <br className="hidden md:block"/>
             <span className="text-blue-500">Retail Prices.</span>
           </h1>
-          <p className="text-lg text-neutral-400">
+          <p className="text-lg text-secondary">
             Pay securely with Crypto (USDT/USDC). Instant access.
           </p>
 
           {/* Billing Toggle */}
           <div className="mt-10 flex items-center justify-center gap-4">
-            <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-white' : 'text-neutral-500'}`}>Monthly</span>
+            <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-white' : 'text-muted'}`}>Monthly</span>
             <button 
               onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
               className="w-12 h-6 rounded-full bg-neutral-800 relative flex items-center p-1 transition-colors focus:outline-none"
             >
               <div className={`w-4 h-4 rounded-full bg-blue-500 shadow-sm transform transition-transform duration-300 ${billingCycle === 'yearly' ? 'translate-x-6' : 'translate-x-0'}`}></div>
             </button>
-            <span className={`text-sm font-medium flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-white' : 'text-neutral-500'}`}>
+            <span className={`text-sm font-medium flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-white' : 'text-muted'}`}>
               Yearly <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">Save up to 25%</span>
             </span>
           </div>
@@ -245,7 +245,7 @@ export default function PricingPage() {
                 className={`relative flex flex-col bg-[#121212] rounded-2xl p-8 transition-all duration-200 border ${
                   plan.isPopular 
                     ? 'border-blue-500/50 shadow-[0_0_30px_rgba(37,99,235,0.15)] z-10 scale-105' 
-                    : 'border-neutral-800'
+                    : 'border-default'
                 }`}
               >
                 {plan.isPopular && (
@@ -256,14 +256,14 @@ export default function PricingPage() {
 
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                  <p className="text-sm text-neutral-400 h-10">{plan.description}</p>
+                  <p className="text-sm text-secondary h-10">{plan.description}</p>
                 </div>
 
                 <div className="mb-8">
                   {plan.id === "free" ? (
                     <div className="flex items-end gap-1">
                       <span className="text-4xl font-bold tracking-tight">$0</span>
-                      <span className="text-neutral-500 text-sm mb-1">/forever</span>
+                      <span className="text-muted text-sm mb-1">/forever</span>
                     </div>
                   ) : (
                     <div className="flex flex-col">
@@ -276,16 +276,16 @@ export default function PricingPage() {
                       )}
                       <div className="flex items-end gap-2">
                         {hasDiscount && (
-                          <span className="text-2xl font-bold tracking-tight text-neutral-600 line-through mb-1">
+                          <span className="text-2xl font-bold tracking-tight text-secondary line-through mb-1">
                             ${billingCycle === 'yearly' ? (originalPriceYearly! / 12).toFixed(0) : originalPriceMonthly}
                           </span>
                         )}
                         <span className={`text-4xl font-bold tracking-tight ${hasDiscount ? 'text-emerald-400' : 'text-white'}`}>
                           ${billingCycle === 'yearly' ? (displayPriceYearly! / 12).toFixed(0) : displayPriceMonthly}
                         </span>
-                        <span className="text-neutral-500 text-sm mb-1">/month</span>
+                        <span className="text-muted text-sm mb-1">/month</span>
                       </div>
-                      <span className="text-xs text-neutral-500 mt-1">
+                      <span className="text-xs text-muted mt-1">
                         {billingCycle === 'yearly' 
                           ? `Billed annually at $${displayPriceYearly}` 
                           : `Billed annually at $${displayPriceYearly}`}
@@ -354,7 +354,7 @@ export default function PricingPage() {
 
         {/* Promo Code Section */}
         <div className="max-w-md mx-auto mb-24">
-          <div className="bg-[#121212] border border-neutral-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-[#121212] border border-default rounded-2xl p-6 shadow-lg">
             <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="las la-ticket-alt text-blue-500"></i> Have a promo code?</h4>
             <div className="flex gap-2">
               <input 
@@ -362,7 +362,7 @@ export default function PricingPage() {
                 value={couponCodeInput}
                 onChange={e => setCouponCodeInput(e.target.value.toUpperCase())}
                 placeholder="Enter code" 
-                className="flex-1 bg-[#0a0a0a] border border-neutral-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
+                className="flex-1 bg-[#0a0a0a] border border-default rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
               />
               <button 
                 onClick={handleApplyCoupon}
@@ -381,14 +381,14 @@ export default function PricingPage() {
         <div className="max-w-5xl mx-auto mb-24">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-white">Compare Plans</h2>
-            <p className="text-neutral-400 mt-2">Find the right features for your trading workflow.</p>
+            <p className="text-secondary mt-2">Find the right features for your trading workflow.</p>
           </div>
           
-          <div className="overflow-x-auto rounded-2xl border border-neutral-800 bg-[#121212]">
+          <div className="overflow-x-auto rounded-2xl border border-default bg-[#121212]">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0a0a0a] border-b border-neutral-800">
-                  <th className="py-5 px-6 font-semibold text-neutral-400 uppercase tracking-wider text-sm w-1/4">Features</th>
+                <tr className="bg-[#0a0a0a] border-b border-default">
+                  <th className="py-5 px-6 font-semibold text-secondary uppercase tracking-wider text-sm w-1/4">Features</th>
                   <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Free</th>
                   <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Starter</th>
                   <th className="py-5 px-6 font-bold text-blue-400 text-center text-lg w-[18%] relative">
@@ -401,51 +401,51 @@ export default function PricingPage() {
               <tbody className="divide-y divide-neutral-800">
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">Connected Accounts</td>
-                  <td className="py-4 px-6 text-center text-neutral-400 text-sm font-bold">1</td>
-                  <td className="py-4 px-6 text-center text-neutral-400 text-sm font-bold">3</td>
+                  <td className="py-4 px-6 text-center text-secondary text-sm font-bold">1</td>
+                  <td className="py-4 px-6 text-center text-secondary text-sm font-bold">3</td>
                   <td className="py-4 px-6 text-center text-white text-sm font-bold bg-blue-500/5">Unlimited</td>
                   <td className="py-4 px-6 text-center text-white text-sm font-bold">Unlimited</td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">MFE / MAE Scatter Plots</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-blue-500"><i className="las la-check text-xl"></i></td>
                   <td className="py-4 px-6 text-center text-blue-500 bg-blue-500/5"><i className="las la-check text-xl"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">TradingView Chart Imports</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-blue-500 bg-blue-500/5"><i className="las la-check text-xl"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">Drawdown Profile Analysis</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-blue-500 bg-blue-500/5"><i className="las la-check text-xl"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">AI Revenge Trading Alerts</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600 bg-blue-500/5"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary bg-blue-500/5"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">Risk of Ruin / Monte Carlo Simulator</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600 bg-blue-500/5"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary bg-blue-500/5"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">Session Heatmaps</td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600"><i className="las la-times"></i></td>
-                  <td className="py-4 px-6 text-center text-neutral-600 bg-blue-500/5"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary"><i className="las la-times"></i></td>
+                  <td className="py-4 px-6 text-center text-secondary bg-blue-500/5"><i className="las la-times"></i></td>
                   <td className="py-4 px-6 text-center text-amber-500"><i className="las la-check text-xl"></i></td>
                 </tr>
               </tbody>

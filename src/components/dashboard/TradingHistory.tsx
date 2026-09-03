@@ -29,13 +29,13 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
 
   return (
     <div className="premium-card p-0 overflow-hidden">
-      <div className="bg-[#121212] border-b border-neutral-800 p-5">
+      <div className="bg-[#121212] border-b border-default p-5">
         <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trading Ledger</h2>
       </div>
       <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>
-            <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+            <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
               <th className="px-6 py-4">Entry Time</th>
               <th className="px-6 py-4">Exit Time</th>
               {isDomestic ? (
@@ -60,8 +60,8 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
           <tbody className="divide-y divide-neutral-800">
             {trades.map(t => (
               <tr key={t.id} className="hover:bg-[#121212]/50 transition-colors">
-                <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{formatDate(t.open_time)}</td>
-                <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{formatDate(t.close_time)}</td>
+                <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.open_time)}</td>
+                <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time)}</td>
                 {isDomestic ? (
                   <>
                     <td className="px-6 py-4 font-bold text-white">
@@ -101,7 +101,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
             ))}
             {trades.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-neutral-500 font-bold">No trades found.</td>
+                <td colSpan={7} className="px-6 py-12 text-center text-muted font-bold">No trades found.</td>
               </tr>
             )}
           </tbody>

@@ -118,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar (Desktop & Mobile Drawer) */}
       <aside 
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[260px] bg-[#0a0a0a] border-r border-neutral-800 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen w-[260px] bg-surface border-r border-default transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none animate-slide-in-left ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -148,7 +148,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="flex-1 space-y-2 mt-2">
             {navSections.map((section, idx) => (
               <div key={idx}>
-                <h3 className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-6 mb-2 px-4">
+                <h3 className="text-[10px] text-muted font-bold uppercase tracking-widest mt-6 mb-2 px-4">
                   {section.title}
                 </h3>
                 <div className="space-y-1">
@@ -161,12 +161,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`group flex items-center justify-between px-4 py-2 transition-all duration-200 text-sm ${
                           isActive 
-                            ? "bg-blue-600/10 text-blue-400 font-bold border-l-2 border-blue-500" 
-                            : "text-neutral-400 font-medium hover:bg-[#121212] hover:text-white border-l-2 border-transparent"
+                            ? "bg-blue-600/10 text-blue-500 font-bold border-l-2 border-blue-500" 
+                            : "text-secondary font-medium hover:bg-elevated hover:text-primary border-l-2 border-transparent"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <i className={`${item.icon} text-lg ${isActive ? "text-blue-400" : "text-neutral-500 group-hover:text-white transition-colors"}`}></i>
+                          <i className={`${item.icon} text-lg ${isActive ? "text-blue-500" : "text-muted group-hover:text-primary transition-colors"}`}></i>
                           <span className="tracking-wide">{item.name}</span>
                         </div>
                         {item.tag && (
@@ -180,23 +180,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             ))}
           </nav>
         </div>
-        <div className="mt-auto border-t border-neutral-800 bg-[#0a0a0a] p-4">
+        <div className="mt-auto border-t border-subtle bg-elevated/30 p-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#121212] border border-neutral-800 flex items-center justify-center shrink-0">
-              <span className="text-sm font-black text-blue-500">
+            <div className="w-10 h-10 rounded-full bg-elevated border border-default flex items-center justify-center shrink-0">
+              <span className="text-sm font-black text-info">
                 {user?.email?.charAt(0).toUpperCase() || 'A'}
               </span>
             </div>
             <div className="overflow-hidden flex-1">
-              <p className="text-sm font-bold text-white truncate">{user?.email}</p>
-              <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-0.5">{role}</p>
+              <p className="text-sm font-bold text-primary truncate">{user?.email}</p>
+              <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mt-0.5">{role}</p>
             </div>
           </div>
-          <div className="space-y-3 pt-4 border-t border-neutral-800">
+          <div className="space-y-3 pt-4 border-t border-subtle">
             <ThemeToggle />
             <Button 
               variant="danger"
-              className="w-full justify-start text-sm bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-colors"
+              className="w-full justify-start text-sm transition-colors"
               onClick={handleLogout}
               leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
             >

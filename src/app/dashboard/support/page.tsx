@@ -87,7 +87,7 @@ export default function UserSupportPage() {
           <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
             <i className="las la-life-ring text-blue-500"></i> Support Tickets
           </h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400 font-medium mt-1">
+          <p className="text-sm text-muted dark:text-slate-400 font-medium mt-1">
             Need help? Open a ticket and our team will get back to you.
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function UserSupportPage() {
       <div className="bg-white dark:bg-[#111318] rounded-2xl border border-gray-200 dark:border-slate-800 shadow-lg dark:shadow-xl overflow-hidden transition-colors duration-300">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-sm text-gray-700 dark:text-slate-300">
-            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
+            <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-secondary dark:text-slate-500 uppercase tracking-widest border-b border-yellow-200 dark:border-slate-800">
               <tr>
                 <th className="px-6 py-4">Ticket ID</th>
                 <th className="px-6 py-4">Subject</th>
@@ -123,15 +123,15 @@ export default function UserSupportPage() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <i className="las la-inbox text-3xl text-gray-400 dark:text-slate-500"></i>
+                      <i className="las la-inbox text-3xl text-secondary dark:text-slate-500"></i>
                     </div>
-                    <p className="text-gray-500 dark:text-slate-400 font-medium">You don't have any support tickets yet.</p>
+                    <p className="text-muted dark:text-slate-400 font-medium">You don't have any support tickets yet.</p>
                   </td>
                 </tr>
               ) : (
                 tickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-gray-100 dark:hover:bg-[#16181d] transition-colors group cursor-pointer">
-                    <td className="px-6 py-4 font-mono text-xs text-gray-400 dark:text-slate-500">
+                    <td className="px-6 py-4 font-mono text-xs text-secondary dark:text-slate-500">
                       #{ticket.id.slice(0, 8)}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">
@@ -141,12 +141,12 @@ export default function UserSupportPage() {
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
                         ticket.status === 'open' 
                           ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                          : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
+                          : 'bg-gray-500/10 text-muted border border-gray-500/20'
                       }`}>
                         {ticket.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-medium">
+                    <td className="px-6 py-4 text-muted dark:text-slate-400 font-medium">
                       {ticket.updated_at ? new Date(ticket.updated_at.toMillis()).toLocaleString() : "Just now"}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -173,38 +173,38 @@ export default function UserSupportPage() {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
                 <i className="las la-life-ring text-2xl text-blue-500"></i> Open Support Ticket
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-secondary hover:text-gray-900 dark:hover:text-white transition-colors">
                 <i className="las la-times text-xl"></i>
               </button>
             </div>
             
             <form onSubmit={handleCreateTicket} className="p-6 space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Subject</label>
+                <label className="block text-xs font-bold text-muted dark:text-slate-400 uppercase tracking-wider mb-2">Subject</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Issue connecting Exness account" 
                   value={subject} 
                   onChange={(e) => setSubject(e.target.value)} 
-                  className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-gray-400 dark:placeholder:text-slate-600" 
+                  className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-secondary dark:placeholder:text-slate-600" 
                   required 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">How can we help?</label>
+                <label className="block text-xs font-bold text-muted dark:text-slate-400 uppercase tracking-wider mb-2">How can we help?</label>
                 <textarea 
                   placeholder="Describe your issue in detail..." 
                   value={message} 
                   onChange={(e) => setMessage(e.target.value)} 
                   rows={5}
-                  className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-gray-400 dark:placeholder:text-slate-600 resize-none custom-scrollbar" 
+                  className="w-full bg-[#fafafa] dark:bg-[#0a0f1c] border border-yellow-200 dark:border-slate-800 rounded-lg px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-secondary dark:placeholder:text-slate-600 resize-none custom-scrollbar" 
                   required 
                 />
               </div>
 
               <div className="pt-2 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors rounded-lg hover:bg-[#e5e7eb] dark:bg-slate-800">Cancel</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-muted dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors rounded-lg hover:bg-[#e5e7eb] dark:bg-slate-800">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 disabled:opacity-50 text-black px-6 py-2.5 rounded-lg text-sm font-bold transition shadow-[0_0_15px_rgba(234,179,8,0.2)] flex items-center gap-2">
                   {isSubmitting ? <><i className="las la-spinner la-spin text-lg"></i> Submitting...</> : "Submit Ticket"}
                 </button>

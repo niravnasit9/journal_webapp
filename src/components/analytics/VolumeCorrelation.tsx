@@ -64,13 +64,13 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
 
   if (!isPremium) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
         <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-neutral-800 mb-4">
-            <i className="las la-lock text-3xl text-neutral-400"></i>
+          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+            <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Volume Correlation Locked</h3>
-          <p className="text-sm text-neutral-400 font-medium mb-6 max-w-sm">
+          <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Pro to mathematically prove if your edge decays when you increase your lot size.
           </p>
           <Link href="/pricing" className="bg-[#a855f7] hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold transition-colors">
@@ -89,10 +89,10 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
 
   if (trades.length < 5) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-weight-hanging text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Volume Correlation</h2>
-        <p className="text-sm text-neutral-500 mt-2">Log at least 5 trades to correlate lot sizes against performance.</p>
+        <p className="text-sm text-muted mt-2">Log at least 5 trades to correlate lot sizes against performance.</p>
       </div>
     );
   }
@@ -100,11 +100,11 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#121212] border border-neutral-800 p-3 rounded-lg shadow-xl">
-          <p className="text-xs text-neutral-400 mb-2 font-bold">{label}</p>
+        <div className="bg-[#121212] border border-default p-3 rounded-lg shadow-xl">
+          <p className="text-xs text-secondary mb-2 font-bold">{label}</p>
           <p className="text-sm font-bold text-[#a855f7] mb-1">Win Rate: {payload[0].value.toFixed(1)}%</p>
           <p className="text-xs text-emerald-400">Profit Factor: {payload[0].payload.profitFactor.toFixed(2)}</p>
-          <p className="text-xs text-neutral-500 mt-2">Sample Size: {payload[0].payload.total} Trades</p>
+          <p className="text-xs text-muted mt-2">Sample Size: {payload[0].payload.total} Trades</p>
         </div>
       );
     }
@@ -112,7 +112,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
           <i className="las la-weight-hanging text-[#a855f7]"></i> Volume Correlation

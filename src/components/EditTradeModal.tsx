@@ -214,7 +214,7 @@ export default function EditTradeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-white transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
         <h2 className="text-xl font-bold text-white mb-6">
@@ -226,7 +226,7 @@ export default function EditTradeModal({
             
             {/* Left Column */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Execution Details</h3>
+              <h3 className="text-sm font-bold text-secondary uppercase tracking-widest border-b border-default pb-2">Execution Details</h3>
               
               {isDomestic ? (
                 <>
@@ -322,7 +322,7 @@ export default function EditTradeModal({
 
             {/* Right Column */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Analytics</h3>
+              <h3 className="text-sm font-bold text-secondary uppercase tracking-widest border-b border-default pb-2">Analytics</h3>
               
               {isDomestic && formData.net_pnl ? (
                 <div className="premium-inner-box p-4 border border-orange-500/20 bg-orange-500/5">
@@ -364,7 +364,7 @@ export default function EditTradeModal({
 
               {riskRewardRatio !== null && (
                 <div className="premium-inner-box p-3 flex justify-between items-center">
-                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Risk/Reward</span>
+                  <span className="text-xs font-bold text-muted uppercase tracking-widest">Risk/Reward</span>
                   <span className="text-white font-bold font-mono">1 : {riskRewardRatio.toFixed(2)}</span>
                 </div>
               )}

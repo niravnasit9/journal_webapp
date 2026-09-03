@@ -100,13 +100,13 @@ export default function AdminOverview() {
             <i className="las la-chart-pie text-4xl text-blue-500"></i>
             Platform Overview
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 font-medium mt-2">
+          <p className="text-muted dark:text-slate-400 font-medium mt-2">
             Real-time analytics and user distribution.
           </p>
         </div>
         
         <div className="flex items-center gap-4 bg-white dark:bg-[#111318] p-2 rounded-xl border border-gray-200 dark:border-white/5 shadow-sm">
-          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 pl-3">Market:</span>
+          <span className="text-sm font-bold text-muted dark:text-slate-400 pl-3">Market:</span>
           <div className="w-32">
             <CustomSelect 
               options={[
@@ -118,7 +118,7 @@ export default function AdminOverview() {
             />
           </div>
           <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1"></div>
-          <span className="text-sm font-bold text-gray-500 dark:text-slate-400">Users:</span>
+          <span className="text-sm font-bold text-muted dark:text-slate-400">Users:</span>
           <div className="w-40">
             <CustomSelect 
               options={[
@@ -143,7 +143,7 @@ export default function AdminOverview() {
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
               <i className="las la-users text-xl"></i>
             </div>
-            <h3 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest">Total Users</h3>
+            <h3 className="text-sm font-bold text-muted dark:text-slate-400 uppercase tracking-widest">Total Users</h3>
           </div>
           <p className="text-4xl font-black text-gray-900 dark:text-white">{stats.totalUsers}</p>
         </div>
@@ -194,7 +194,7 @@ export default function AdminOverview() {
             <h3 className="text-sm font-bold text-blue-600 dark:text-blue-500 uppercase tracking-widest">{marketFilter} Accounts</h3>
           </div>
           <p className="text-4xl font-black text-blue-600 dark:text-blue-400">{marketAccounts}</p>
-          <div className="text-xs font-medium text-gray-500 mt-2">Out of {stats.totalAccounts} total</div>
+          <div className="text-xs font-medium text-muted mt-2">Out of {stats.totalAccounts} total</div>
         </div>
 
         {/* Total Assets */}
@@ -244,11 +244,11 @@ export default function AdminOverview() {
               <i className="las la-user-clock text-2xl text-blue-500"></i>
               Recent Registrations
             </h2>
-            <span className="px-3 py-1 bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg">Top 10</span>
+            <span className="px-3 py-1 bg-gray-100 dark:bg-white/5 text-muted dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-lg">Top 10</span>
           </div>
           <div className="overflow-x-auto flex-1">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+              <thead className="bg-[#fafafa] dark:bg-[#0a0f1c] text-xs font-bold text-secondary dark:text-slate-500 uppercase tracking-widest">
                 <tr>
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Tier</th>
@@ -258,7 +258,7 @@ export default function AdminOverview() {
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-gray-500 dark:text-slate-400">
+                    <td colSpan={3} className="px-6 py-8 text-center text-muted dark:text-slate-400">
                       No users found in this tier.
                     </td>
                   </tr>
@@ -271,12 +271,12 @@ export default function AdminOverview() {
                             {u.photo_url ? (
                               <img src={u.photo_url} alt="Profile" className="w-full h-full rounded-lg object-cover" />
                             ) : (
-                              <i className="las la-user text-gray-400"></i>
+                              <i className="las la-user text-secondary"></i>
                             )}
                           </div>
                           <div>
                             <p className="font-bold text-gray-900 dark:text-white">{u.name || "Unknown"}</p>
-                            <p className="text-[10px] text-gray-500">{u.email}</p>
+                            <p className="text-[10px] text-muted">{u.email}</p>
                           </div>
                         </div>
                       </td>
@@ -288,10 +288,10 @@ export default function AdminOverview() {
                         ) : u.subscription_tier === "starter" ? (
                           <span className="text-blue-600 dark:text-blue-500 font-black uppercase tracking-widest text-[10px]">STARTER</span>
                         ) : (
-                          <span className="text-gray-500 font-black uppercase tracking-widest text-[10px]">FREE</span>
+                          <span className="text-muted font-black uppercase tracking-widest text-[10px]">FREE</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right font-medium text-gray-500 dark:text-slate-400 text-xs">
+                      <td className="px-6 py-4 text-right font-medium text-muted dark:text-slate-400 text-xs">
                         {new Date(u.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                     </tr>

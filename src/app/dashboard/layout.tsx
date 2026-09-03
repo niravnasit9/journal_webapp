@@ -406,7 +406,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="premium-card text-center py-20 my-auto shadow-2xl">
               <i className="las la-lock text-6xl text-amber-500 mb-4 animate-bounce"></i>
               <h2 className="heading-page mb-2">Your Plan Has Expired</h2>
-              <p className="text-neutral-400 mb-8 max-w-md mx-auto">Renew your plan to unlock your data and maintain full access to our premium analytics command center.</p>
+              <p className="text-secondary mb-8 max-w-md mx-auto">Renew your plan to unlock your data and maintain full access to our premium analytics command center.</p>
               <Link href="/pricing" className="btn-primary inline-flex">
                 Renew Plan
               </Link>

@@ -122,8 +122,8 @@ const CustomEconomicNews = () => {
   if (error) {
     return <div className="w-full rounded-2xl border border-red-500/20 bg-red-500/5 mt-6 p-6 text-center">
       <p className="text-red-400 font-bold mb-2">Could not load economic calendar</p>
-      <p className="text-sm text-neutral-400">{error}</p>
-      <p className="text-xs text-neutral-500 mt-4">Please try refreshing the page in a few minutes if rate limits apply.</p>
+      <p className="text-sm text-secondary">{error}</p>
+      <p className="text-xs text-muted mt-4">Please try refreshing the page in a few minutes if rate limits apply.</p>
     </div>;
   }
 
@@ -163,8 +163,8 @@ const CustomEconomicNews = () => {
         {showFilters && (
           <div className="w-full bg-white dark:bg-[#111318] border border-gray-200 dark:border-white/10 rounded-lg p-4 flex flex-wrap gap-6 shadow-lg animate-in fade-in slide-in-from-top-2">
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">Category <i className="las la-info-circle text-gray-400"></i></label>
-              <select disabled className="px-3 py-2 rounded-md border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black text-sm text-gray-500 w-[200px] cursor-not-allowed">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">Category <i className="las la-info-circle text-secondary"></i></label>
+              <select disabled className="px-3 py-2 rounded-md border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black text-sm text-muted w-[200px] cursor-not-allowed">
                 <option>All Categories</option>
               </select>
             </div>
@@ -218,7 +218,7 @@ const CustomEconomicNews = () => {
                       <i className="las la-globe-asia text-3xl text-blue-500"></i>
                     </div>
                     <p className="text-lg font-bold text-gray-900 dark:text-white mb-2">No Events Found</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                    <p className="text-sm text-muted dark:text-secondary max-w-sm">
                       {activeWorkspace === "DOMESTIC" 
                         ? "There are currently no major macroeconomic events scheduled for the Indian market this week." 
                         : "There are no major global macroeconomic events that match your filters."}
@@ -239,7 +239,7 @@ const CustomEconomicNews = () => {
                   </tr>
                 )}
                 <tr className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
-                  <td className="px-4 py-3 font-medium text-gray-600 dark:text-gray-400 w-24">
+                  <td className="px-4 py-3 font-medium text-gray-600 dark:text-secondary w-24">
                     {formatTime(n.date)}
                   </td>
                   <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200 w-24 flex items-center gap-2">
@@ -255,10 +255,10 @@ const CustomEconomicNews = () => {
                   <td className="px-4 py-3 font-bold text-gray-900 dark:text-white w-28">
                     {n.actual || ""}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 w-28">
+                  <td className="px-4 py-3 text-muted dark:text-secondary w-28">
                     {n.estimate || ""}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 w-28">
+                  <td className="px-4 py-3 text-muted dark:text-secondary w-28">
                     {n.previous || ""}
                   </td>
                 </tr>

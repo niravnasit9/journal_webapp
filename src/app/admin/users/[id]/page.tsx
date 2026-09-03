@@ -115,7 +115,7 @@ export default function UserCRMProfile() {
       {/* 360 Header */}
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between mb-8">
         <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-2xl bg-neutral-800 border-2 border-neutral-700 flex items-center justify-center text-3xl font-black text-neutral-500 shadow-xl overflow-hidden">
+          <div className="w-20 h-20 rounded-2xl bg-neutral-800 border-2 border-strong flex items-center justify-center text-3xl font-black text-muted shadow-xl overflow-hidden">
             {user.photo_url ? (
               <img src={user.photo_url} alt={(user as any).username || user.email} className="w-full h-full object-cover" />
             ) : (
@@ -125,12 +125,12 @@ export default function UserCRMProfile() {
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight leading-none mb-2">{(user as any).username || (user as any).name || "Unknown User"}</h1>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-mono text-neutral-400">{user.email}</span>
+              <span className="text-sm font-mono text-secondary">{user.email}</span>
               <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-[0_0_10px_rgba(currentColor,0.1)] ${
                 user.subscription_tier === 'elite' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-purple-500/20' :
                 user.subscription_tier === 'pro' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-blue-500/20' :
                 user.subscription_tier === 'starter' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/20' :
-                'bg-neutral-800 text-neutral-400 border-neutral-700'
+                'bg-neutral-800 text-secondary border-strong'
               }`}>
                 {user.subscription_tier} Tier
               </span>
@@ -138,7 +138,7 @@ export default function UserCRMProfile() {
           </div>
         </div>
         
-        <div className="flex flex-col items-end gap-1 font-mono text-xs text-neutral-500">
+        <div className="flex flex-col items-end gap-1 font-mono text-xs text-muted">
           <div>UID: <span className="text-neutral-300">{user.id}</span></div>
           <div>Joined: <span className="text-neutral-300">{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}</span></div>
         </div>
@@ -154,13 +154,13 @@ export default function UserCRMProfile() {
           </h2>
           <div className="space-y-4">
             <div className="premium-inner-box p-4 flex justify-between items-center">
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Plan Expiry</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-widest">Plan Expiry</span>
               <span className="font-mono text-white text-sm">
                 {user.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString() : "Lifetime"}
               </span>
             </div>
             <div className="premium-inner-box p-4 flex justify-between items-center">
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Total Logins</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-widest">Total Logins</span>
               <span className="font-mono text-emerald-400 font-bold text-sm">--</span>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function UserCRMProfile() {
           </h2>
           <div className="space-y-4">
             <div className="premium-inner-box p-4 text-center">
-              <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-1">Lifetime Value (LTV)</div>
+              <div className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Lifetime Value (LTV)</div>
               <div className="text-3xl font-bold text-emerald-400 font-mono">${ltv.toFixed(2)}</div>
             </div>
           </div>
@@ -189,23 +189,23 @@ export default function UserCRMProfile() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="premium-inner-box p-4 text-center">
-                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Total Trades</div>
+                <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Total Trades</div>
                 <div className="text-xl font-bold text-white font-mono">{tradesCount}</div>
               </div>
               <div className="premium-inner-box p-4 text-center">
-                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Win Rate</div>
+                <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Win Rate</div>
                 <div className="text-xl font-bold text-white font-mono">{winRate.toFixed(1)}%</div>
               </div>
             </div>
             <div className="premium-inner-box p-4 flex justify-between items-center">
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Linked Prop Firms</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-widest">Linked Prop Firms</span>
               <span className="font-mono text-amber-400 font-bold text-sm">{propFirmsCount}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-neutral-800">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-default">
         
         {/* Admin Notes */}
         <div className="premium-card p-6 shadow-xl">
@@ -225,9 +225,9 @@ export default function UserCRMProfile() {
             value={adminNotes}
             onChange={e => setAdminNotes(e.target.value)}
             placeholder="Add internal notes about this user's behavior, refunds, etc..."
-            className="input-premium w-full bg-[#121212] border-neutral-800 h-32 resize-none text-sm"
+            className="input-premium w-full bg-[#121212] border-default h-32 resize-none text-sm"
           ></textarea>
-          <p className="text-[10px] text-neutral-500 mt-2 font-bold uppercase tracking-widest">Visible only to admins</p>
+          <p className="text-[10px] text-muted mt-2 font-bold uppercase tracking-widest">Visible only to admins</p>
         </div>
 
         {/* Danger Zone */}
@@ -235,7 +235,7 @@ export default function UserCRMProfile() {
           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
           <i className="las la-exclamation-triangle text-4xl text-rose-500 mb-3 animate-pulse"></i>
           <h2 className="text-lg font-bold text-white mb-2">Danger Zone</h2>
-          <p className="text-xs text-neutral-400 mb-6 max-w-xs">
+          <p className="text-xs text-secondary mb-6 max-w-xs">
             Permanently banning this user will instantly revoke their access and destroy their live sessions.
           </p>
           <button 

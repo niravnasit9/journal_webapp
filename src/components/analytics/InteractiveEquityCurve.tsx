@@ -52,10 +52,10 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
 
   if (trades.length === 0) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center">
         <i className="las la-chart-area text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Equity Curve</h2>
-        <p className="text-sm text-neutral-500 mt-2">Log trades to visualize your growth.</p>
+        <p className="text-sm text-muted mt-2">Log trades to visualize your growth.</p>
       </div>
     );
   }
@@ -63,8 +63,8 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#121212] border border-neutral-800 p-3 rounded-lg shadow-xl">
-          <p className="text-xs text-neutral-400 mb-1">{label}</p>
+        <div className="bg-[#121212] border border-default p-3 rounded-lg shadow-xl">
+          <p className="text-xs text-secondary mb-1">{label}</p>
           <p className="text-sm font-bold text-white flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#a855f7]"></span>
             {formatMoney(payload[0].value)}
@@ -118,16 +118,16 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight">Equity Curve</h2>
-          <p className="text-sm text-neutral-400 mt-1">Cumulative net profit progression.</p>
+          <p className="text-sm text-secondary mt-1">Cumulative net profit progression.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
           <select 
-            className="bg-[#121212] border border-neutral-800 text-neutral-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-[#a855f7]"
+            className="bg-[#121212] border border-default text-neutral-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-[#a855f7]"
             value={timeFilter}
             onChange={(e) => setTimeFilter(e.target.value as any)}
           >
@@ -137,7 +137,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
             <option value="1Y">Last Year</option>
           </select>
           
-          <div className="flex items-center bg-[#121212] border border-neutral-800 rounded-lg p-1">
+          <div className="flex items-center bg-[#121212] border border-default rounded-lg p-1">
             {(['Area', 'Line', 'Bar'] as ChartType[]).map(type => (
               <button
                 key={type}
@@ -145,7 +145,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
                 className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${
                   chartType === type 
                     ? 'bg-[#a855f7] text-white shadow-lg' 
-                    : 'text-neutral-500 hover:text-white'
+                    : 'text-muted hover:text-white'
                 }`}
               >
                 {type}

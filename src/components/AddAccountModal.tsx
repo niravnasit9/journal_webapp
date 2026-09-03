@@ -152,14 +152,14 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
             <i className="las la-plus-circle text-2xl text-blue-500"></i> Add Account
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+          <button onClick={onClose} className="text-secondary hover:text-gray-600 dark:hover:text-white transition-colors">
             <i className="las la-times text-2xl"></i>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Name</label>
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Name</label>
             <input
               required type="text" placeholder={marketType === "DOMESTIC" ? "e.g. Main Demat, Zerodha F&O" : "e.g. Main Funded $50k"}
               value={label} onChange={e => setLabel(e.target.value)}
@@ -168,7 +168,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           </div>
 
           <div>
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Broker / Platform</label>
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Broker / Platform</label>
             <input
               type="text" placeholder={marketType === "DOMESTIC" ? "e.g. Zerodha, Upstox, Groww" : "e.g. Exness, FTMO, GoatFunded"}
               value={broker} onChange={e => setBroker(e.target.value)}
@@ -178,7 +178,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Type</label>
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Type</label>
               <CustomSelect
                 options={marketType === "DOMESTIC" 
                   ? [{ value: "Real", label: "Real" }, { value: "Demo", label: "Demo" }]
@@ -188,7 +188,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Market Type</label>
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Market Type</label>
               <CustomSelect
                 options={[{ value: "GLOBAL", label: "Global" }, { value: "DOMESTIC", label: "Domestic" }]}
                 value={marketType}
@@ -196,7 +196,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Currency</label>
+              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Currency</label>
               <CustomSelect
                 options={[{ value: "USD", label: "USD ($)" }, { value: "INR", label: "INR (₹)" }]}
                 value={currency}
@@ -206,7 +206,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           </div>
 
           <div>
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Starting Balance</label>
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Starting Balance</label>
             <input
               required type="number" step="any" placeholder={marketType === "DOMESTIC" ? "100000" : "5000"}
               value={initialBalance} onChange={e => setInitialBalance(e.target.value)}
@@ -216,7 +216,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
 
           {marketType === "GLOBAL" && (
             <div>
-            <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">
+            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">
               Prop Firm Challenge Tracker
               <span className="ml-2 text-purple-500 font-bold normal-case">(Optional)</span>
             </label>
@@ -307,37 +307,37 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
 
               return (
                 <div className="mt-4 border-t border-gray-200 dark:border-white/10 pt-4 animate-in slide-in-from-top-2 duration-300">
-                  <h4 className="text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <i className="las la-list-alt text-purple-500"></i>
                     Account Rules Summary
                   </h4>
                   <div className="bg-[#fafafa] dark:bg-[#0a0f1c] rounded-xl border border-gray-200 dark:border-white/10 p-4 space-y-3 shadow-inner">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Prop Firm</span>
+                      <span className="text-sm text-muted font-medium">Prop Firm</span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
                         {firm.name} {firm.is_popular && <i className="las la-star text-yellow-500 text-xs"></i>}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Account Size</span>
+                      <span className="text-sm text-muted font-medium">Account Size</span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white">${plan.account_size.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Daily Drawdown</span>
-                      <span className="text-sm font-bold text-rose-500">{plan.daily_loss_limit_pct}% <span className="text-[10px] text-gray-400 font-normal">({plan.daily_drawdown_type || 'Balance'})</span></span>
+                      <span className="text-sm text-muted font-medium">Daily Drawdown</span>
+                      <span className="text-sm font-bold text-rose-500">{plan.daily_loss_limit_pct}% <span className="text-[10px] text-secondary font-normal">({plan.daily_drawdown_type || 'Balance'})</span></span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Maximum Drawdown</span>
-                      <span className="text-sm font-bold text-rose-500">{plan.max_drawdown_pct}% <span className="text-[10px] text-gray-400 font-normal">({plan.drawdown_type || 'Static'})</span></span>
+                      <span className="text-sm text-muted font-medium">Maximum Drawdown</span>
+                      <span className="text-sm font-bold text-rose-500">{plan.max_drawdown_pct}% <span className="text-[10px] text-secondary font-normal">({plan.drawdown_type || 'Static'})</span></span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
-                      <span className="text-sm text-gray-500 font-medium">Phase / Type</span>
+                      <span className="text-sm text-muted font-medium">Phase / Type</span>
                       <span className="text-sm font-bold text-blue-500">{plan.program_name || plan.name} {plan.phase_name ? `- ${plan.phase_name}` : ''}</span>
                     </div>
                     {plan.rule_version_id && (
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500 font-medium">Rule Version</span>
-                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-widest">{plan.rule_version_id}</span>
+                        <span className="text-sm text-muted font-medium">Rule Version</span>
+                        <span className="text-[10px] font-bold text-secondary bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md tracking-widest">{plan.rule_version_id}</span>
                       </div>
                     )}
                   </div>

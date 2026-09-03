@@ -123,7 +123,7 @@ export default function AdminTicketDetailPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-white dark:bg-[#0f1115] border-b border-gray-200 dark:border-transparent p-6 transition-colors duration-300 rounded-b-2xl shadow-sm">
         <div>
-          <Link href="/admin/support" className="text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
+          <Link href="/admin/support" className="text-sm font-bold text-secondary hover:text-gray-900 dark:hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
             <i className="las la-arrow-left"></i> Back to Tickets
           </Link>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mt-1">
@@ -131,17 +131,17 @@ export default function AdminTicketDetailPage() {
             <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
               ticket.status === 'open' 
                 ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' 
-                : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
+                : 'bg-gray-500/10 text-muted border border-gray-500/20'
             }`}>
               {ticket.status}
             </span>
           </h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
-            <p className="text-xs text-gray-500 dark:text-slate-400 font-medium font-mono">
+            <p className="text-xs text-muted dark:text-slate-400 font-medium font-mono">
               Ticket: #{ticket.id}
             </p>
             <span className="hidden sm:inline text-gray-300 dark:text-slate-600">•</span>
-            <p className="text-xs text-gray-500 dark:text-slate-400 font-medium font-mono flex items-center gap-1">
+            <p className="text-xs text-muted dark:text-slate-400 font-medium font-mono flex items-center gap-1">
               <i className="las la-user"></i> {ticket.user_email}
             </p>
           </div>
@@ -172,10 +172,10 @@ export default function AdminTicketDetailPage() {
                     : 'bg-white dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-bl-none shadow-sm'
                 }`}>
                   <div className="flex items-center justify-between gap-4 mb-2">
-                    <span className={`text-xs font-bold ${isMe ? 'text-indigo-100' : 'text-gray-500 dark:text-slate-400'}`}>
+                    <span className={`text-xs font-bold ${isMe ? 'text-indigo-100' : 'text-muted dark:text-slate-400'}`}>
                       {isMe ? 'Admin (You)' : 'User'}
                     </span>
-                    <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-gray-400 dark:text-slate-500'}`}>
+                    <span className={`text-[10px] ${isMe ? 'text-indigo-200' : 'text-secondary dark:text-slate-500'}`}>
                       {msg.created_at ? new Date(msg.created_at.toMillis()).toLocaleString() : 'Just now'}
                     </span>
                   </div>
@@ -196,7 +196,7 @@ export default function AdminTicketDetailPage() {
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Type your reply to the user..."
                 rows={4}
-                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium placeholder:text-gray-400 dark:placeholder:text-slate-600 resize-none custom-scrollbar pb-14"
+                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium placeholder:text-secondary dark:placeholder:text-slate-600 resize-none custom-scrollbar pb-14"
                 required
               />
               <div className="absolute bottom-3 right-3 flex items-center gap-2">
@@ -212,8 +212,8 @@ export default function AdminTicketDetailPage() {
           </form>
         ) : (
           <div className="p-6 bg-gray-50 dark:bg-[#0f1115] border-t border-gray-200 dark:border-slate-800 text-center">
-            <i className="las la-lock text-3xl text-gray-400 dark:text-slate-500 mb-2"></i>
-            <p className="text-sm font-bold text-gray-500 dark:text-slate-400">This ticket has been closed.</p>
+            <i className="las la-lock text-3xl text-secondary dark:text-slate-500 mb-2"></i>
+            <p className="text-sm font-bold text-muted dark:text-slate-400">This ticket has been closed.</p>
           </div>
         )}
       </div>

@@ -97,7 +97,7 @@ export default function UserTicketDetailPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0f1115] border-b border-gray-200 dark:border-transparent p-6 transition-colors duration-300 rounded-b-2xl shadow-sm">
         <div>
-          <Link href="/dashboard/support" className="text-sm font-bold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
+          <Link href="/dashboard/support" className="text-sm font-bold text-secondary hover:text-gray-900 dark:hover:text-white transition-colors mb-2 inline-flex items-center gap-1">
             <i className="las la-arrow-left"></i> Back to Tickets
           </Link>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mt-1">
@@ -105,12 +105,12 @@ export default function UserTicketDetailPage() {
             <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
               ticket.status === 'open' 
                 ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' 
-                : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
+                : 'bg-gray-500/10 text-muted border border-gray-500/20'
             }`}>
               {ticket.status}
             </span>
           </h1>
-          <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-2 font-mono">
+          <p className="text-xs text-muted dark:text-slate-400 font-medium mt-2 font-mono">
             Ticket ID: #{ticket.id}
           </p>
         </div>
@@ -129,10 +129,10 @@ export default function UserTicketDetailPage() {
                     : 'bg-white dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-bl-none shadow-sm'
                 }`}>
                   <div className="flex items-center justify-between gap-4 mb-2">
-                    <span className={`text-xs font-bold ${isMe ? 'text-blue-100' : 'text-gray-500 dark:text-slate-400'}`}>
+                    <span className={`text-xs font-bold ${isMe ? 'text-blue-100' : 'text-muted dark:text-slate-400'}`}>
                       {isMe ? 'You' : 'Support Team'}
                     </span>
-                    <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400 dark:text-slate-500'}`}>
+                    <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-secondary dark:text-slate-500'}`}>
                       {msg.created_at ? new Date(msg.created_at.toMillis()).toLocaleString() : 'Just now'}
                     </span>
                   </div>
@@ -153,7 +153,7 @@ export default function UserTicketDetailPage() {
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Type your reply here..."
                 rows={3}
-                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-gray-400 dark:placeholder:text-slate-600 resize-none custom-scrollbar pb-12"
+                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all font-medium placeholder:text-secondary dark:placeholder:text-slate-600 resize-none custom-scrollbar pb-12"
                 required
               />
               <div className="absolute bottom-3 right-3">
@@ -169,8 +169,8 @@ export default function UserTicketDetailPage() {
           </form>
         ) : (
           <div className="p-6 bg-gray-50 dark:bg-[#0f1115] border-t border-gray-200 dark:border-slate-800 text-center">
-            <i className="las la-lock text-3xl text-gray-400 dark:text-slate-500 mb-2"></i>
-            <p className="text-sm font-bold text-gray-500 dark:text-slate-400">This ticket has been closed.</p>
+            <i className="las la-lock text-3xl text-secondary dark:text-slate-500 mb-2"></i>
+            <p className="text-sm font-bold text-muted dark:text-slate-400">This ticket has been closed.</p>
           </div>
         )}
       </div>

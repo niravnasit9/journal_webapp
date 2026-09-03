@@ -146,16 +146,16 @@ export default function AdminTradesPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Global Trades Ledger</h1>
-        <p className="text-sm text-neutral-400 mt-1">
+        <p className="text-sm text-secondary mt-1">
           Audit and review all real-time and historical trade activity across the platform.
         </p>
       </div>
 
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-neutral-800">
+        <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-          <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Total Volume Traded</div>
+          <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Volume Traded</div>
           <div className="text-3xl font-bold text-white">{totalVolume.toLocaleString(undefined, { maximumFractionDigits: 2 })} Lots</div>
         </div>
         
@@ -176,7 +176,7 @@ export default function AdminTradesPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trade Activity</h2>
           <select
             value={marketFilter}
@@ -192,7 +192,7 @@ export default function AdminTradesPage() {
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">User Email</th>
                 <th className="px-6 py-4">Asset / Pair</th>
@@ -211,18 +211,18 @@ export default function AdminTradesPage() {
                 </tr>
               ) : trades.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted font-bold">
                     No trades found on the platform.
                   </td>
                 </tr>
               ) : (
                 filteredTrades.map(trade => (
-                  <tr key={trade.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                  <tr key={trade.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <span className="text-neutral-300 font-medium">{new Date(trade.open_time).toLocaleString()}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-neutral-400">{trade.userEmail}</span>
+                      <span className="text-sm text-secondary">{trade.userEmail}</span>
                     </td>
                     <td className="px-6 py-4">
                       {trade.domestic_segment === "FNO_OPTIONS" ? (
@@ -243,7 +243,7 @@ export default function AdminTradesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-neutral-400 font-mono text-xs">{trade.risk_reward_ratio ? `1:${trade.risk_reward_ratio.toFixed(2)}` : 'N/A'}</span>
+                      <span className="text-secondary font-mono text-xs">{trade.risk_reward_ratio ? `1:${trade.risk_reward_ratio.toFixed(2)}` : 'N/A'}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -270,10 +270,10 @@ export default function AdminTradesPage() {
       {/* Details/Edit/Delete Modal */}
       {isModalOpen && currentTrade && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-neutral-800">
+          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
@@ -285,40 +285,40 @@ export default function AdminTradesPage() {
                 </h2>
                 
                 <div className="premium-inner-box p-5 mb-6 space-y-3 text-sm">
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Trade ID</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Trade ID</span>
                     <span className="text-white font-mono">{currentTrade.id}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">User</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">User</span>
                     <span className="text-white">{currentTrade.userEmail}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Asset</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Asset</span>
                     <span className="text-white font-bold">{currentTrade.symbol}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Direction</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Direction</span>
                     <span className="text-white">{currentTrade.direction}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Open Price</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Open Price</span>
                     <span className="text-white font-mono">{currentTrade.open_price}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Close Price</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Close Price</span>
                     <span className="text-white font-mono">{currentTrade.close_price || "Open"}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Lots</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Lots</span>
                     <span className="text-white font-mono">{currentTrade.lot_size}</span>
                   </div>
-                  <div className="flex justify-between border-b border-neutral-800 pb-2">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Emotion</span>
+                  <div className="flex justify-between border-b border-default pb-2">
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Emotion</span>
                     <span className="text-white">{currentTrade.emotion || "N/A"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Net PnL</span>
+                    <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Net PnL</span>
                     <span className={`font-bold ${currentTrade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       ${currentTrade.profit_loss.toFixed(2)}
                     </span>
@@ -348,7 +348,7 @@ export default function AdminTradesPage() {
                   <p className="text-sm text-amber-500/80 mb-2 font-bold">
                     WARNING: This will permanently delete this trade from the global ledger.
                   </p>
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-secondary">
                     This action will alter the ledger math for {currentTrade.userEmail}'s personal dashboard.
                   </p>
                 </div>
@@ -377,20 +377,20 @@ export default function AdminTradesPage() {
                 <div className="space-y-4 mb-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Asset / Symbol</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Asset / Symbol</label>
                       <input 
                         type="text" 
                         value={formData.symbol || ""}
                         onChange={e => setFormData({...formData, symbol: e.target.value.toUpperCase()})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800 uppercase"
+                        className="input-premium w-full bg-[#121212] border-default uppercase"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Direction</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Direction</label>
                       <select 
                         value={formData.direction || "BUY"}
                         onChange={e => setFormData({...formData, direction: e.target.value as "BUY" | "SELL"})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       >
                         <option value="BUY">BUY (Long)</option>
                         <option value="SELL">SELL (Short)</option>
@@ -400,22 +400,22 @@ export default function AdminTradesPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Lot Size</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Lot Size</label>
                       <input 
                         type="number" 
                         value={formData.lot_size || 0}
                         onChange={e => setFormData({...formData, lot_size: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.01"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Net PnL (USD)</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Net PnL (USD)</label>
                       <input 
                         type="number" 
                         value={formData.profit_loss || 0}
                         onChange={e => setFormData({...formData, profit_loss: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.01"
                       />
                     </div>
@@ -423,22 +423,22 @@ export default function AdminTradesPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Open Price</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Open Price</label>
                       <input 
                         type="number" 
                         value={formData.open_price || 0}
                         onChange={e => setFormData({...formData, open_price: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.00001"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Close Price</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Close Price</label>
                       <input 
                         type="number" 
                         value={formData.close_price || 0}
                         onChange={e => setFormData({...formData, close_price: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.00001"
                       />
                     </div>
@@ -446,32 +446,32 @@ export default function AdminTradesPage() {
 
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Pips</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Pips</label>
                       <input 
                         type="number" 
                         value={formData.pips || 0}
                         onChange={e => setFormData({...formData, pips: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.1"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Commission</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Commission</label>
                       <input 
                         type="number" 
                         value={formData.commission || 0}
                         onChange={e => setFormData({...formData, commission: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.01"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Swap</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Swap</label>
                       <input 
                         type="number" 
                         value={formData.swap || 0}
                         onChange={e => setFormData({...formData, swap: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                         step="0.01"
                       />
                     </div>
@@ -479,11 +479,11 @@ export default function AdminTradesPage() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Emotion</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Emotion</label>
                       <select 
                         value={formData.emotion || "Neutral"}
                         onChange={e => setFormData({...formData, emotion: e.target.value as any})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       >
                         <option value="Neutral">Neutral</option>
                         <option value="FOMO">FOMO</option>
@@ -494,11 +494,11 @@ export default function AdminTradesPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Execution</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Execution</label>
                       <select 
                         value={formData.execution_score || "None"}
                         onChange={e => setFormData({...formData, execution_score: e.target.value as any})}
-                        className="input-premium w-full bg-[#121212] border-neutral-800"
+                        className="input-premium w-full bg-[#121212] border-default"
                       >
                         <option value="None">None</option>
                         <option value="Perfect">Perfect</option>
@@ -510,7 +510,7 @@ export default function AdminTradesPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+                <div className="flex justify-end gap-3 pt-4 border-t border-default">
                   <button onClick={() => setModalMode("view")} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
                   <button onClick={handleEditSubmit} className="btn-primary flex items-center gap-2" disabled={isSubmitting}>
                     {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-save"></i>} Commit Override

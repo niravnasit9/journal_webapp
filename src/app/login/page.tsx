@@ -149,7 +149,7 @@ export default function LoginPage() {
           <>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Welcome Back</h2>
-              <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">Sign in to your ProfitPulse account</p>
+              <p className="text-muted dark:text-slate-400 text-sm font-medium">Sign in to your ProfitPulse account</p>
             </div>
 
             {error && (
@@ -162,15 +162,15 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-5" noValidate>
               {/* Email */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
+                <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
                 <div className="relative group">
-                  <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+                  <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
                   <input
                     id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600"
+                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600"
                     placeholder="you@example.com"
                     autoComplete="email"
                   />
@@ -180,7 +180,7 @@ export default function LoginPage() {
               {/* Password */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between pl-1 pr-1">
-                  <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Password</label>
+                  <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest">Password</label>
                   <button
                     type="button"
                     onClick={() => { setResetMode(true); setError(""); setResetEmail(email); }}
@@ -190,20 +190,20 @@ export default function LoginPage() {
                   </button>
                 </div>
                 <div className="relative group">
-                  <i className="las la-lock absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+                  <i className="las la-lock absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
                   <input
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600"
+                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-12 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600"
                     placeholder="••••••••"
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 hover:text-indigo-500 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary dark:text-slate-500 hover:text-indigo-500 transition-colors"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     <i className={`las ${showPassword ? "la-eye-slash" : "la-eye"} text-xl`}></i>
@@ -225,7 +225,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-8 text-center text-sm font-semibold text-gray-500 dark:text-slate-400">
+            <div className="mt-8 text-center text-sm font-semibold text-muted dark:text-slate-400">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
                 Create one now
@@ -239,7 +239,7 @@ export default function LoginPage() {
                 <i className="las la-envelope text-3xl text-indigo-500"></i>
               </div>
               <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Reset Password</h2>
-              <p className="text-gray-500 dark:text-slate-400 text-sm font-medium">Enter your email and we&apos;ll send you a reset link</p>
+              <p className="text-muted dark:text-slate-400 text-sm font-medium">Enter your email and we&apos;ll send you a reset link</p>
             </div>
 
             {error && (
@@ -257,15 +257,15 @@ export default function LoginPage() {
 
             <form onSubmit={handleForgotPassword} className="space-y-5" noValidate>
               <div className="space-y-2">
-                <label className="block text-[11px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
+                <label className="block text-[11px] font-black text-secondary dark:text-slate-500 uppercase tracking-widest pl-1">Email Address</label>
                 <div className="relative group">
-                  <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gray-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
+                  <i className="las la-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xl text-secondary dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none"></i>
                   <input
                     id="reset-email"
                     type="email"
                     value={resetEmail}
                     onChange={(e) => { setResetEmail(e.target.value); setError(""); }}
-                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-gray-400 dark:placeholder:text-slate-600"
+                    className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 dark:text-white transition-all font-semibold placeholder:text-secondary dark:placeholder:text-slate-600"
                     placeholder="you@example.com"
                     autoComplete="email"
                   />
@@ -288,7 +288,7 @@ export default function LoginPage() {
 
             <button
               onClick={() => { setResetMode(false); setError(""); setSuccessMsg(""); }}
-              className="mt-6 w-full text-center text-sm font-bold text-gray-500 dark:text-slate-400 hover:text-indigo-500 transition-colors flex items-center justify-center gap-1"
+              className="mt-6 w-full text-center text-sm font-bold text-muted dark:text-slate-400 hover:text-indigo-500 transition-colors flex items-center justify-center gap-1"
             >
               <i className="las la-arrow-left"></i> Back to Sign In
             </button>

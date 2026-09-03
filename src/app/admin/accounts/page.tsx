@@ -122,7 +122,7 @@ export default function AdminAccountsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Global Accounts List</h1>
-        <p className="text-sm text-neutral-400 mt-1">
+        <p className="text-sm text-secondary mt-1">
           Monitor and manage all trading accounts connected across the platform.
         </p>
       </div>
@@ -131,7 +131,7 @@ export default function AdminAccountsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-neutral-700"></div>
-          <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Total Accounts (All Time)</div>
+          <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Accounts (All Time)</div>
           <div className="text-3xl font-bold text-white">{totalAccounts}</div>
         </div>
         
@@ -150,7 +150,7 @@ export default function AdminAccountsPage() {
 
       {/* Data Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Platform Accounts</h2>
           <select
             value={marketFilter}
@@ -166,7 +166,7 @@ export default function AdminAccountsPage() {
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">Account Label</th>
                 <th className="px-6 py-4">Owner (User)</th>
                 <th className="px-6 py-4">Type</th>
@@ -178,24 +178,24 @@ export default function AdminAccountsPage() {
             <tbody className="divide-y divide-neutral-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
                     <LoadingSpinner className="w-8 h-8 mx-auto border-blue-500" />
                   </td>
                 </tr>
               ) : accounts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">
                     No accounts found on the platform.
                   </td>
                 </tr>
               ) : (
                 filteredAccounts.map(acc => (
-                  <tr key={acc.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                  <tr key={acc.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div>
                           <div className="font-bold text-white">{acc.label}</div>
-                          <div className="text-xs text-neutral-500 font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
+                          <div className="text-xs text-muted font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
                         </div>
                         {acc.market_type === 'DOMESTIC' || acc.currency === 'INR' ? (
                           <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Domestic</span>
@@ -214,7 +214,7 @@ export default function AdminAccountsPage() {
                       <span className="text-neutral-300 font-medium">{acc.broker || "N/A"}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-neutral-400 font-bold">{acc.currency || "USD"}</span>
+                      <span className="text-secondary font-bold">{acc.currency || "USD"}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
@@ -239,21 +239,21 @@ export default function AdminAccountsPage() {
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative">
             <button 
               onClick={() => setManageAccountId(null)} 
-              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
             <h2 className="text-xl font-bold text-white tracking-tight mb-4">Manage Account</h2>
             <div className="premium-inner-box p-4 text-center">
-              <i className="las la-tools text-4xl text-neutral-500 mb-2"></i>
-              <p className="text-sm text-neutral-400">Settings and management options for account:<br/><span className="font-mono text-white font-bold mt-1 inline-block">{manageAccountId}</span></p>
+              <i className="las la-tools text-4xl text-muted mb-2"></i>
+              <p className="text-sm text-secondary">Settings and management options for account:<br/><span className="font-mono text-white font-bold mt-1 inline-block">{manageAccountId}</span></p>
             </div>
             
-            <div className="mt-6 border-t border-neutral-800 pt-6">
+            <div className="mt-6 border-t border-default pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-sm font-bold text-danger">Danger Zone</h3>
-                  <p className="text-xs text-neutral-500 mt-1">Permanently delete this account and all associated trades.</p>
+                  <p className="text-xs text-muted mt-1">Permanently delete this account and all associated trades.</p>
                 </div>
               </div>
               <button 

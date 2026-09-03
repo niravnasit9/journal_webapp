@@ -22,7 +22,7 @@ export const PlanStatusCard = () => {
         </div>
         <div>
           <h3 className="text-sm font-bold text-white tracking-tight">Active Plan</h3>
-          <span className="text-[10px] text-neutral-400 font-medium">
+          <span className="text-[10px] text-secondary font-medium">
             {isLifetime ? 'One-time purchase' : 'Subscription billing'}
           </span>
         </div>
@@ -42,18 +42,18 @@ export const PlanStatusCard = () => {
         ) : (
           <div className="flex-1 md:w-48 space-y-1">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-neutral-400">Duration</span>
+              <span className="text-secondary">Duration</span>
               <span className={isExpired ? "text-red-400 font-bold" : "text-white font-bold"}>
                 {isExpired ? "Expired" : `${daysRemaining} Days Left`}
               </span>
             </div>
-            <div className="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden border border-neutral-700/50">
+            <div className="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden border border-strong/50">
               <div 
                 className={`h-full transition-all duration-1000 ${isExpired ? 'bg-red-500' : 'bg-blue-500'}`}
                 style={{ width: `${Math.min(100, elapsedPercentage)}%` }}
               />
             </div>
-            <p className="text-[10px] text-neutral-500 pt-1 text-right">
+            <p className="text-[10px] text-muted pt-1 text-right">
               Expires: {expiresAt}
             </p>
           </div>

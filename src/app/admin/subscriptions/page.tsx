@@ -136,7 +136,7 @@ export default function AdminSubscriptionsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Global Subscriptions</h1>
-        <p className="text-sm text-neutral-400 mt-1">
+        <p className="text-sm text-secondary mt-1">
           Monitor user plan lifecycles, manage access tiers, and track expirations.
         </p>
       </div>
@@ -164,7 +164,7 @@ export default function AdminSubscriptionsPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Subscription Directory</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input 
@@ -172,12 +172,12 @@ export default function AdminSubscriptionsPage() {
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-premium bg-black border-neutral-800 text-sm"
+              className="input-premium bg-black border-default text-sm"
             />
             <select 
               value={filter}
               onChange={(e) => setFilter(e.target.value as any)}
-              className="input-premium bg-black border-neutral-800 text-sm font-bold text-neutral-400"
+              className="input-premium bg-black border-default text-sm font-bold text-secondary"
             >
               <option value="All">All Users</option>
               <option value="Active">Active Plans</option>
@@ -190,7 +190,7 @@ export default function AdminSubscriptionsPage() {
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Current Plan</th>
                 <th className="px-6 py-4">Status</th>
@@ -207,7 +207,7 @@ export default function AdminSubscriptionsPage() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-neutral-500 font-bold">
+                  <td colSpan={5} className="px-6 py-12 text-center text-muted font-bold">
                     No subscriptions match your criteria.
                   </td>
                 </tr>
@@ -215,19 +215,19 @@ export default function AdminSubscriptionsPage() {
                 filteredUsers.map(user => {
                   const status = getStatus(user);
                   return (
-                    <tr key={user.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                    <tr key={user.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden border border-neutral-700">
+                          <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden border border-strong">
                             {user.photo_url ? (
                               <img src={user.photo_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <i className="las la-user text-neutral-500"></i>
+                              <i className="las la-user text-muted"></i>
                             )}
                           </div>
                           <div>
                             <div className="text-white font-bold">{user.name || "Unknown"}</div>
-                            <div className="text-xs text-neutral-500">{user.email}</div>
+                            <div className="text-xs text-muted">{user.email}</div>
                           </div>
                         </div>
                       </td>
@@ -238,7 +238,7 @@ export default function AdminSubscriptionsPage() {
                         {user.subscription_tier === "elite" && <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.2)]">Elite</span>}
                       </td>
                       <td className="px-6 py-4">
-                        {status === "FREE" && <span className="text-neutral-500 font-bold text-xs">—</span>}
+                        {status === "FREE" && <span className="text-muted font-bold text-xs">—</span>}
                         {status === "LIFETIME" && <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1"><i className="las la-infinity"></i> Lifetime</span>}
                         {status === "ACTIVE" && <span className="text-blue-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1"><i className="las la-check-circle"></i> Active</span>}
                         {status === "EXPIRING_SOON" && <span className="text-amber-400 font-bold text-xs uppercase tracking-widest flex items-center gap-1"><i className="las la-clock"></i> Expiring Soon</span>}
@@ -246,7 +246,7 @@ export default function AdminSubscriptionsPage() {
                       </td>
                       <td className="px-6 py-4">
                         {(status === "FREE" || status === "LIFETIME") ? (
-                          <span className="text-neutral-600 font-mono text-xs">—</span>
+                          <span className="text-secondary font-mono text-xs">—</span>
                         ) : (
                           <span className={`font-mono text-xs font-bold ${status === 'EXPIRED' ? 'text-rose-400' : 'text-neutral-300'}`}>
                             {user.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "—"}
@@ -274,10 +274,10 @@ export default function AdminSubscriptionsPage() {
       {/* Manage Access Modal */}
       {isModalOpen && currentUser && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-neutral-800">
+          <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
@@ -285,12 +285,12 @@ export default function AdminSubscriptionsPage() {
             <h2 className="text-xl font-bold text-white tracking-tight mb-2 flex items-center gap-2">
               <i className="las la-key text-blue-500"></i> Manage Access
             </h2>
-            <p className="text-xs text-neutral-400 mb-6">Modify the plan tier and expiration logic for <strong>{currentUser.email}</strong>.</p>
+            <p className="text-xs text-secondary mb-6">Modify the plan tier and expiration logic for <strong>{currentUser.email}</strong>.</p>
             
             <div className="space-y-6 mb-8">
               {/* Step 1: Tier Selection */}
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-3">Step 1: Select Tier</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3">Step 1: Select Tier</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(["FREE", "STARTER", "PRO", "ELITE"] as const).map(tier => (
                     <button
@@ -302,7 +302,7 @@ export default function AdminSubscriptionsPage() {
                           : tier === "STARTER" ? "bg-blue-500/20 text-blue-400 border-blue-500" 
                           : tier === "PRO" ? "bg-purple-500/20 text-purple-400 border-purple-500" 
                           : "bg-amber-500/20 text-amber-400 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-                          : "bg-[#121212] text-neutral-500 border-neutral-800 hover:border-neutral-700"
+                          : "bg-[#121212] text-muted border-default hover:border-strong"
                       }`}
                     >
                       {tier}
@@ -314,7 +314,7 @@ export default function AdminSubscriptionsPage() {
               {/* Step 2: Duration (Only if not free) */}
               {selectedTier !== "FREE" && (
                 <div className="animate-in slide-in-from-top-2">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-3">Step 2: Add Duration</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3">Step 2: Add Duration</label>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
                     {(["1_MONTH", "3_MONTHS", "1_YEAR", "LIFETIME", "CUSTOM"] as const).map(dur => (
                       <button
@@ -323,7 +323,7 @@ export default function AdminSubscriptionsPage() {
                         className={`py-2 px-1 text-center rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${
                           selectedDuration === dur 
                             ? "bg-white/10 text-white border-white/20" 
-                            : "bg-[#121212] text-neutral-500 border-neutral-800 hover:border-neutral-700"
+                            : "bg-[#121212] text-muted border-default hover:border-strong"
                         }`}
                       >
                         {dur.replace("_", " ")}
@@ -333,12 +333,12 @@ export default function AdminSubscriptionsPage() {
 
                   {selectedDuration === "CUSTOM" && (
                     <div className="animate-in slide-in-from-top-2">
-                      <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Custom Expiration Date</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Custom Expiration Date</label>
                       <input 
                         type="date" 
                         value={customExpiry}
                         onChange={e => setCustomExpiry(e.target.value)}
-                        className="input-premium w-full bg-[#121212] border-neutral-800 text-sm"
+                        className="input-premium w-full bg-[#121212] border-default text-sm"
                       />
                     </div>
                   )}
@@ -346,7 +346,7 @@ export default function AdminSubscriptionsPage() {
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-default">
               <button onClick={() => setIsModalOpen(false)} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
               <button onClick={handleUpdateAccess} className="btn-primary flex items-center gap-2" disabled={isSubmitting}>
                 {isSubmitting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-check"></i>} Apply Changes

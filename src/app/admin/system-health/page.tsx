@@ -50,12 +50,12 @@ export default function AdminSystemHealthPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="heading-page text-white">System Health & Node Status</h1>
-          <p className="text-sm text-neutral-400 mt-1">Live server infrastructure and external API monitor.</p>
+          <p className="text-sm text-secondary mt-1">Live server infrastructure and external API monitor.</p>
         </div>
         <button 
           onClick={runDiagnostics} 
           disabled={isPinging}
-          className="btn-ghost border border-neutral-700 font-bold bg-[#121212] flex items-center gap-2"
+          className="btn-ghost border border-strong font-bold bg-[#121212] flex items-center gap-2"
         >
           {isPinging ? <LoadingSpinner className="w-5 h-5 border-blue-500" /> : <i className="las la-sync-alt"></i>}
           Run Diagnostics
@@ -72,13 +72,13 @@ export default function AdminSystemHealthPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.firestore.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.firestore.status}</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.firestore.status}</span>
             </div>
           </div>
           <h3 className="font-bold text-white text-lg">Firebase Firestore</h3>
-          <p className="text-xs text-neutral-500 mt-1 mb-4">Primary database cluster</p>
+          <p className="text-xs text-muted mt-1 mb-4">Primary database cluster</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
             <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.firestore.latency}</span>
           </div>
         </div>
@@ -91,13 +91,13 @@ export default function AdminSystemHealthPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.auth.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.auth.status}</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.auth.status}</span>
             </div>
           </div>
           <h3 className="font-bold text-white text-lg">Firebase Auth</h3>
-          <p className="text-xs text-neutral-500 mt-1 mb-4">Token issuance & JWT verification</p>
+          <p className="text-xs text-muted mt-1 mb-4">Token issuance & JWT verification</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
             <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.auth.latency}</span>
           </div>
         </div>
@@ -110,13 +110,13 @@ export default function AdminSystemHealthPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.visionAPI.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.visionAPI.status}</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.visionAPI.status}</span>
             </div>
           </div>
           <h3 className="font-bold text-white text-lg">AI Auto-Tagger</h3>
-          <p className="text-xs text-neutral-500 mt-1 mb-4">Google Cloud Vision API inference</p>
+          <p className="text-xs text-muted mt-1 mb-4">Google Cloud Vision API inference</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
             <span className={`font-mono font-bold text-sm ${nodes.visionAPI.status === 'degraded' ? 'text-amber-400' : 'text-emerald-400'}`}>{nodes.visionAPI.latency}</span>
           </div>
         </div>
@@ -129,20 +129,20 @@ export default function AdminSystemHealthPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${getStatusColor(nodes.cryptoWebhook.status)} shadow-[0_0_10px_currentColor] animate-pulse`}></div>
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{nodes.cryptoWebhook.status}</span>
+              <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.cryptoWebhook.status}</span>
             </div>
           </div>
           <h3 className="font-bold text-white text-lg">Payment Webhooks</h3>
-          <p className="text-xs text-neutral-500 mt-1 mb-4">USDT network confirmation listeners</p>
+          <p className="text-xs text-muted mt-1 mb-4">USDT network confirmation listeners</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Latency</span>
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
             <span className="font-mono text-emerald-400 font-bold text-sm">{nodes.cryptoWebhook.latency}</span>
           </div>
         </div>
 
       </div>
 
-      <div className="text-center text-[10px] text-neutral-600 font-mono mt-4">
+      <div className="text-center text-[10px] text-secondary font-mono mt-4">
         Last diagnostic ping: {lastPing ? lastPing.toLocaleTimeString() : "..."}
       </div>
 

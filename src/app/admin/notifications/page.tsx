@@ -81,13 +81,13 @@ export default function AdminNotificationsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Notifications & System Broadcasts</h1>
-        <p className="text-sm text-neutral-400 mt-1">Send immediate platform-wide alerts and announcements.</p>
+        <p className="text-sm text-secondary mt-1">Send immediate platform-wide alerts and announcements.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Left Section: Broadcast Form */}
-        <div className="premium-card p-6 shadow-2xl relative overflow-hidden group border border-neutral-800">
+        <div className="premium-card p-6 shadow-2xl relative overflow-hidden group border border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
             <i className="las la-broadcast-tower text-blue-500"></i> New Broadcast
@@ -95,32 +95,32 @@ export default function AdminNotificationsPage() {
           
           <form onSubmit={handlePublish} className="space-y-5">
             <div>
-              <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Announcement Title</label>
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Announcement Title</label>
               <input 
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Scheduled Maintenance Notice"
-                className="input-premium w-full bg-[#121212] border-neutral-800 text-sm"
+                className="input-premium w-full bg-[#121212] border-default text-sm"
               />
             </div>
             
             <div>
-              <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Message Body</label>
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Message Body</label>
               <textarea 
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Write your alert here..."
-                className="input-premium w-full bg-[#121212] border-neutral-800 h-32 resize-none text-sm"
+                className="input-premium w-full bg-[#121212] border-default h-32 resize-none text-sm"
               ></textarea>
             </div>
             
             <div>
-              <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Target Audience</label>
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Target Audience</label>
               <select 
                 value={target}
                 onChange={e => setTarget(e.target.value as any)}
-                className="input-premium w-full bg-[#121212] border-neutral-800 text-sm font-bold text-neutral-400"
+                className="input-premium w-full bg-[#121212] border-default text-sm font-bold text-secondary"
               >
                 <option value="ALL">All Users (Platform-Wide)</option>
                 <option value="PRO_ELITE">Pro & Elite Members Only</option>
@@ -128,7 +128,7 @@ export default function AdminNotificationsPage() {
               </select>
             </div>
             
-            <div className="pt-4 mt-4 border-t border-neutral-800">
+            <div className="pt-4 mt-4 border-t border-default">
               <button 
                 type="submit" 
                 disabled={isSubmitting}
@@ -141,10 +141,10 @@ export default function AdminNotificationsPage() {
         </div>
 
         {/* Right Section: Broadcast History */}
-        <div className="premium-card p-0 shadow-2xl border border-neutral-800 flex flex-col h-full">
-          <div className="p-6 border-b border-neutral-800 bg-[#121212]">
+        <div className="premium-card p-0 shadow-2xl border border-default flex flex-col h-full">
+          <div className="p-6 border-b border-default bg-[#121212]">
             <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              <i className="las la-history text-neutral-400"></i> Broadcast History
+              <i className="las la-history text-secondary"></i> Broadcast History
             </h2>
           </div>
           
@@ -154,20 +154,20 @@ export default function AdminNotificationsPage() {
                 <LoadingSpinner className="w-8 h-8 border-blue-500" />
               </div>
             ) : broadcasts.length === 0 ? (
-              <div className="text-center text-neutral-500 py-12 italic">No broadcasts sent yet.</div>
+              <div className="text-center text-muted py-12 italic">No broadcasts sent yet.</div>
             ) : (
               broadcasts.map(b => (
-                <div key={b.id} className="premium-inner-box p-4 border border-neutral-800 hover:border-neutral-700 transition-colors">
+                <div key={b.id} className="premium-inner-box p-4 border border-default hover:border-strong transition-colors">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-white text-sm">{b.title}</h3>
-                    <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-mono">
+                    <span className="text-[10px] text-muted uppercase tracking-widest font-mono">
                       {new Date(b.created_at).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-400 mb-4 line-clamp-2">{b.message}</p>
+                  <p className="text-xs text-secondary mb-4 line-clamp-2">{b.message}</p>
                   
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest pt-3 border-t border-neutral-800">
-                    <div className="flex items-center gap-2 text-neutral-500">
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest pt-3 border-t border-default">
+                    <div className="flex items-center gap-2 text-muted">
                       <i className="las la-user-shield"></i> {b.sender}
                     </div>
                     <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">

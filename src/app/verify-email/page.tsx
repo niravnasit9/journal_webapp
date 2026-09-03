@@ -47,7 +47,7 @@ export default function VerifyEmailPage() {
         
         <h1 className="relative z-10 text-3xl font-black mb-3 tracking-tight">Check your email</h1>
         
-        <p className="relative z-10 text-gray-500 dark:text-slate-400 mb-8 font-medium">
+        <p className="relative z-10 text-muted dark:text-slate-400 mb-8 font-medium">
           We've sent a verification link to <strong className="text-gray-900 dark:text-white">{user.email}</strong>. 
           Please verify your email address to continue.
         </p>
@@ -94,7 +94,7 @@ export default function VerifyEmailPage() {
 
           <button
             onClick={handleLogout}
-            className="w-full pt-4 text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-slate-500 dark:hover:text-white transition-colors"
+            className="w-full pt-4 text-sm font-bold text-muted hover:text-gray-900 dark:text-slate-500 dark:hover:text-white transition-colors"
           >
             Sign in with a different account
           </button>

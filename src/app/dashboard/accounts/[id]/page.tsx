@@ -112,7 +112,7 @@ export default function AccountDetailView() {
             <h1 className="heading-page text-white">{account.label}</h1>
             <MarketSwitcher />
           </div>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-secondary">
             {account.broker} • {account.account_type}
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function AccountDetailView() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto no-scrollbar border-b border-neutral-800">
+      <div className="flex overflow-x-auto no-scrollbar border-b border-default">
         {(["Account Overview", "Trading Overview", "Trading History", "Psychology"] as TabType[]).map((tab) => (
           <button
             key={tab}
@@ -136,7 +136,7 @@ export default function AccountDetailView() {
             className={`px-6 py-4 text-sm font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
               activeTab === tab
                 ? "border-blue-500 text-blue-400 bg-blue-500/5"
-                : "border-transparent text-neutral-500 hover:text-white hover:bg-white/5"
+                : "border-transparent text-muted hover:text-white hover:bg-white/5"
             }`}
           >
             {tab}

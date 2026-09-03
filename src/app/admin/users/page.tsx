@@ -161,12 +161,12 @@ export default function AdminUsersPage() {
       case 'starter':
         return <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Starter</span>;
       default:
-        return <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Free</span>;
+        return <span className="bg-neutral-800 text-neutral-300 border border-strong px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">Free</span>;
     }
   };
 
   const renderExpiry = (user: UserDoc) => {
-    if (!user.subscription_tier || user.subscription_tier === 'free') return <span className="text-neutral-600">-</span>;
+    if (!user.subscription_tier || user.subscription_tier === 'free') return <span className="text-secondary">-</span>;
     if (!user.plan_expires_at) return <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest">Lifetime</span>;
     
     const expiresAt = new Date(user.plan_expires_at).getTime();
@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.uid} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
+                  <tr key={u.uid} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
                     <td className="px-4 md:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-elevated flex items-center justify-center shrink-0 border border-default hidden sm:flex">
@@ -231,7 +231,7 @@ export default function AdminUsersPage() {
                         </div>
                         <div>
                           <p className="font-bold text-white line-clamp-1">{u.name || "Unknown Trader"}</p>
-                          <p className="text-sm text-neutral-500">{u.email}</p>
+                          <p className="text-sm text-muted">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -283,9 +283,9 @@ export default function AdminUsersPage() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">Manage Access</h2>
-                <p className="text-sm text-neutral-400 mt-1">For <span className="font-bold text-white">{manageAccessUser.name || manageAccessUser.email}</span></p>
+                <p className="text-sm text-secondary mt-1">For <span className="font-bold text-white">{manageAccessUser.name || manageAccessUser.email}</span></p>
               </div>
-              <button onClick={closeManageAccess} className="text-neutral-500 hover:text-white transition-colors">
+              <button onClick={closeManageAccess} className="text-muted hover:text-white transition-colors">
                 <i className="las la-times text-2xl"></i>
               </button>
             </div>
@@ -307,10 +307,10 @@ export default function AdminUsersPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                         selectedTier === plan.id 
                           ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
-                          : 'border-neutral-800 bg-[#121212] hover:bg-neutral-800/50'
+                          : 'border-default bg-[#121212] hover:bg-neutral-800/50'
                       }`}
                     >
-                      <span className={`text-sm font-bold uppercase tracking-widest ${selectedTier === plan.id ? 'text-blue-400' : 'text-neutral-400'}`}>
+                      <span className={`text-sm font-bold uppercase tracking-widest ${selectedTier === plan.id ? 'text-blue-400' : 'text-secondary'}`}>
                         {plan.label}
                       </span>
                     </div>
@@ -351,7 +351,7 @@ export default function AdminUsersPage() {
               )}
             </div>
 
-            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-neutral-800">
+            <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-default">
               <button 
                 onClick={closeManageAccess}
                 className="btn-ghost"

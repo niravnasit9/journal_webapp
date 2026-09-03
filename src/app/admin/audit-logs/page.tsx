@@ -69,7 +69,7 @@ export default function AdminAuditLogsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Security Audit Logs</h1>
-        <p className="text-sm text-neutral-400 mt-1">High-density tracking ledger for compliance and monitoring.</p>
+        <p className="text-sm text-secondary mt-1">High-density tracking ledger for compliance and monitoring.</p>
       </div>
 
       {/* Top Metric Cards */}
@@ -94,21 +94,21 @@ export default function AdminAuditLogsPage() {
       </div>
 
       {/* Table */}
-      <div className="premium-card p-0 overflow-hidden border border-neutral-800">
-        <div className="bg-[#121212] border-b border-neutral-800 p-4">
+      <div className="premium-card p-0 overflow-hidden border border-default">
+        <div className="bg-[#121212] border-b border-default p-4">
           <input 
             type="text"
             placeholder="Search by IP, Email, or Action Type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input-premium w-full max-w-md bg-black border-neutral-800 text-sm font-mono"
+            className="input-premium w-full max-w-md bg-black border-default text-sm font-mono"
           />
         </div>
         
         <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left font-mono text-xs text-neutral-400 whitespace-nowrap">
+          <table className="w-full text-left font-mono text-xs text-secondary whitespace-nowrap">
             <thead>
-              <tr className="bg-[#0a0a0a] text-neutral-600 font-bold uppercase tracking-widest border-b border-neutral-800">
+              <tr className="bg-[#0a0a0a] text-secondary font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-3">Timestamp</th>
                 <th className="px-6 py-3">Actor / Email</th>
                 <th className="px-6 py-3">Action Type</th>
@@ -120,14 +120,14 @@ export default function AdminAuditLogsPage() {
               {loading ? (
                 <tr><td colSpan={5} className="px-6 py-12 text-center"><LoadingSpinner className="w-8 h-8 mx-auto border-blue-500" /></td></tr>
               ) : filteredLogs.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-neutral-600 font-bold">No logs found.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-secondary font-bold">No logs found.</td></tr>
               ) : (
                 filteredLogs.map(log => (
                   <tr key={log.id} className="hover:bg-[#121212] transition-colors">
                     <td className="px-6 py-3">{new Date(log.created_at).toISOString().replace('T', ' ').substring(0,19)}</td>
                     <td className="px-6 py-3 text-neutral-300 font-bold">{log.admin_email}</td>
                     <td className="px-6 py-3">
-                      <span className="bg-neutral-800 text-neutral-300 px-2 py-1 rounded border border-neutral-700 font-bold">
+                      <span className="bg-neutral-800 text-neutral-300 px-2 py-1 rounded border border-strong font-bold">
                         {log.action_type}
                       </span>
                     </td>

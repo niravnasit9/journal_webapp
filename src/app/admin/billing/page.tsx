@@ -179,11 +179,11 @@ export default function AdminBillingPage() {
       {/* Header & Tabs */}
       <div className="mb-8">
         <h1 className="heading-page text-white">Billing & Payments</h1>
-        <p className="text-sm text-neutral-400 mt-1 mb-6">
+        <p className="text-sm text-secondary mt-1 mb-6">
           Manage crypto receiving wallets, verify transactions, and configure promotion engines.
         </p>
         
-        <div className="flex border-b border-neutral-800 gap-6">
+        <div className="flex border-b border-default gap-6">
           {[
             { id: "gateways", label: "Crypto Gateways", icon: "la-wallet" },
             { id: "ledger", label: "Transaction Ledger", icon: "la-file-invoice-dollar" },
@@ -195,7 +195,7 @@ export default function AdminBillingPage() {
               className={`pb-3 text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border-b-2 ${
                 activeTab === tab.id 
                   ? "text-blue-400 border-blue-500" 
-                  : "text-neutral-500 border-transparent hover:text-neutral-300"
+                  : "text-muted border-transparent hover:text-neutral-300"
               }`}
             >
               <i className={`las ${tab.icon} text-lg`}></i> {tab.label}
@@ -223,7 +223,7 @@ export default function AdminBillingPage() {
               </div>
 
               {gateways.length === 0 ? (
-                <div className="premium-card p-12 text-center text-neutral-500 font-bold">No crypto gateways configured.</div>
+                <div className="premium-card p-12 text-center text-muted font-bold">No crypto gateways configured.</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {gateways.map(gw => (
@@ -232,7 +232,7 @@ export default function AdminBillingPage() {
                       
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-[#121212] border border-neutral-800 flex items-center justify-center text-xl text-neutral-400 overflow-hidden">
+                          <div className="w-10 h-10 rounded-xl bg-[#121212] border border-default flex items-center justify-center text-xl text-secondary overflow-hidden">
                             {gw.logo ? (
                               <img src={gw.logo} alt={gw.name} className="w-full h-full object-contain p-1" />
                             ) : (
@@ -241,7 +241,7 @@ export default function AdminBillingPage() {
                           </div>
                           <div>
                             <h3 className="font-bold text-white leading-tight">{gw.name}</h3>
-                            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">{gw.symbol} • {gw.network}</span>
+                            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">{gw.symbol} • {gw.network}</span>
                           </div>
                         </div>
                         <button 
@@ -253,7 +253,7 @@ export default function AdminBillingPage() {
                       </div>
 
                       <div className="premium-inner-box p-3 mb-4">
-                        <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Deposit Address</div>
+                        <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Deposit Address</div>
                         <div className="flex items-center gap-2 justify-between">
                           <div className="font-mono text-xs text-neutral-300 break-all">{gw.depositAddress}</div>
                           <button 
@@ -285,13 +285,13 @@ export default function AdminBillingPage() {
           {/* TAB 2: TRANSACTION LEDGER */}
           {activeTab === "ledger" && (
             <div className="premium-card p-0 overflow-hidden">
-              <div className="bg-[#121212] border-b border-neutral-800 p-5">
+              <div className="bg-[#121212] border-b border-default p-5">
                 <h2 className="text-sm font-bold text-white uppercase tracking-widest">Global Transactions</h2>
               </div>
               <div className="overflow-x-auto no-scrollbar">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead>
-                    <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+                    <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                       <th className="px-6 py-4">Date</th>
                       <th className="px-6 py-4">User</th>
                       <th className="px-6 py-4">Plan Tier</th>
@@ -302,7 +302,7 @@ export default function AdminBillingPage() {
                   </thead>
                   <tbody className="divide-y divide-neutral-800">
                     {transactions.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">No transactions found.</td></tr>
+                      <tr><td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">No transactions found.</td></tr>
                     ) : (
                       transactions.map(tx => {
                         const txDate = tx.created_at?.toDate ? tx.created_at.toDate() : (tx.timestamp?.toDate ? tx.timestamp.toDate() : new Date(tx.created_at || tx.timestamp));
@@ -310,7 +310,7 @@ export default function AdminBillingPage() {
                         
                         return (
                           <tr key={tx.id} className="hover:bg-[#121212]/50 transition-colors">
-                            <td className="px-6 py-4 text-neutral-400">
+                            <td className="px-6 py-4 text-secondary">
                               {txDate.toLocaleString()}
                             </td>
                             <td className="px-6 py-4 font-bold text-white">{(tx.user_id || tx.uid)?.substring(0,10)}...</td>
@@ -324,7 +324,7 @@ export default function AdminBillingPage() {
                               <a href={`https://tronscan.org/#/transaction/${txId}`} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-400 font-mono text-xs flex items-center gap-1">
                                 {txId.substring(0,12)}...<i className="las la-external-link-alt"></i>
                               </a>
-                              <div className="text-[10px] text-neutral-500 uppercase font-bold mt-1">{tx.cryptoId || tx.payment_method || "Crypto"}</div>
+                              <div className="text-[10px] text-muted uppercase font-bold mt-1">{tx.cryptoId || tx.payment_method || "Crypto"}</div>
                             </td>
                             <td className="px-6 py-4 text-right">
                               {(tx.status === "verified" || tx.status === "completed") && <span className="text-emerald-400 font-bold text-xs uppercase tracking-widest flex items-center justify-end gap-1"><i className="las la-check-circle text-base"></i> Verified</span>}
@@ -357,7 +357,7 @@ export default function AdminBillingPage() {
                 <div className="overflow-x-auto no-scrollbar">
                   <table className="w-full text-left text-sm whitespace-nowrap">
                     <thead>
-                      <tr className="bg-[#1a1a1a] text-neutral-500 text-[10px] font-bold uppercase tracking-widest border-b border-neutral-800">
+                      <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                         <th className="px-6 py-4">Code</th>
                         <th className="px-6 py-4">Discount</th>
                         <th className="px-6 py-4">Target Plans</th>
@@ -368,16 +368,16 @@ export default function AdminBillingPage() {
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
                       {promotions.length === 0 ? (
-                        <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500 font-bold">No active promotions.</td></tr>
+                        <tr><td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">No active promotions.</td></tr>
                       ) : (
                         promotions.map(promo => (
                           <tr key={promo.id} className="hover:bg-[#121212]/50 transition-colors">
                             <td className="px-6 py-4 font-mono font-bold text-xl text-white tracking-widest">{promo.code}</td>
                             <td className="px-6 py-4 font-bold text-emerald-400">{promo.discount_pct}% OFF</td>
-                            <td className="px-6 py-4 text-neutral-400 text-sm">{(promo.target_plans || []).join(', ')}</td>
+                            <td className="px-6 py-4 text-secondary text-sm">{(promo.target_plans || []).join(', ')}</td>
                             <td className="px-6 py-4">
                               {promo.target_users === "ALL" ? (
-                                <span className="text-neutral-400 text-sm">All Users</span>
+                                <span className="text-secondary text-sm">All Users</span>
                               ) : (
                                 <div className="flex gap-1 flex-wrap">
                                   {Array.isArray(promo.target_users) && promo.target_users.map(u => (
@@ -389,7 +389,7 @@ export default function AdminBillingPage() {
                             <td className="px-6 py-4">
                               {promo.is_active 
                                 ? <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Active</span>
-                                : <span className="bg-neutral-800 text-neutral-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Paused</span>
+                                : <span className="bg-neutral-800 text-muted px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Paused</span>
                               }
                             </td>
                             <td className="px-6 py-4 text-right">
@@ -425,65 +425,65 @@ export default function AdminBillingPage() {
       {/* Gateway Modal */}
       {gatewayModal.isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-neutral-800">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-default">
             <h2 className="text-xl font-bold text-white mb-6">
               {gatewayModal.mode === "add" ? "Add Crypto Gateway" : "Edit Gateway"}
             </h2>
             <div className="space-y-4 mb-8">
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Display Name</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Display Name</label>
                 <input 
                   type="text" 
                   value={gatewayModal.data?.name || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, name: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-neutral-800"
+                  className="input-premium w-full bg-[#121212] border-default"
                   placeholder="e.g. Tether (USDT)"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Symbol</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Symbol</label>
                   <input 
                     type="text" 
                     value={gatewayModal.data?.symbol || ""}
                     onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, symbol: e.target.value.toUpperCase() } })}
-                    className="input-premium w-full bg-[#121212] border-neutral-800 uppercase"
+                    className="input-premium w-full bg-[#121212] border-default uppercase"
                     placeholder="USDT"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Network</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Network</label>
                   <input 
                     type="text" 
                     value={gatewayModal.data?.network || ""}
                     onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, network: e.target.value } })}
-                    className="input-premium w-full bg-[#121212] border-neutral-800"
+                    className="input-premium w-full bg-[#121212] border-default"
                     placeholder="TRC20"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Deposit Address (Wallet)</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Deposit Address (Wallet)</label>
                 <input 
                   type="text" 
                   value={gatewayModal.data?.depositAddress || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, depositAddress: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-neutral-800 font-mono text-sm"
+                  className="input-premium w-full bg-[#121212] border-default font-mono text-sm"
                   placeholder="T..."
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Logo URL (Optional)</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Logo URL (Optional)</label>
                 <input 
                   type="text" 
                   value={gatewayModal.data?.logo || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, logo: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-neutral-800 text-sm"
+                  className="input-premium w-full bg-[#121212] border-default text-sm"
                   placeholder="https://example.com/usdt.png"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-default">
               <button onClick={() => setGatewayModal({ isOpen: false, mode: "add", data: null })} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
               <button onClick={handleGatewaySubmit} className="btn-primary" disabled={isSubmitting}>Save Gateway</button>
             </div>
@@ -494,34 +494,34 @@ export default function AdminBillingPage() {
       {/* Promo Modal */}
       {promoModal.isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-neutral-800">
+          <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-default">
             <h2 className="text-xl font-bold text-white mb-6">
               {promoModal.mode === "add" ? "Create Promotion Code" : "Edit Promotion"}
             </h2>
             <div className="space-y-4 mb-8">
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Discount Code</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Discount Code</label>
                 <input 
                   type="text" 
                   value={promoModal.data?.code || ""}
                   onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, code: e.target.value.toUpperCase() } })}
-                  className="input-premium w-full bg-[#121212] border-neutral-800 font-mono tracking-widest uppercase text-xl"
+                  className="input-premium w-full bg-[#121212] border-default font-mono tracking-widest uppercase text-xl"
                   placeholder="BLACKFRIDAY50"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Discount Percentage (%)</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Discount Percentage (%)</label>
                 <input 
                   type="number" 
                   value={promoModal.data?.discount_pct || 0}
                   onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, discount_pct: Number(e.target.value) } })}
-                  className="input-premium w-full bg-[#121212] border-neutral-800"
+                  className="input-premium w-full bg-[#121212] border-default"
                   min="1" max="100"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Target Plans</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Target Plans</label>
                 <div className="flex gap-4 flex-wrap">
                   {["ALL", "STARTER", "PRO", "ELITE"].map(plan => (
                     <label key={plan} className="flex items-center gap-2 text-white text-sm cursor-pointer">
@@ -543,11 +543,11 @@ export default function AdminBillingPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-2">Target Users</label>
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Target Users</label>
                 <select 
                   value={promoModal.data?.target_users === "ALL" ? "ALL" : "SPECIFIC"}
                   onChange={e => setPromoModal({...promoModal, data: { ...promoModal.data!, target_users: e.target.value === "ALL" ? "ALL" : [] }})}
-                  className="input-premium w-full bg-[#121212] border-neutral-800 font-bold text-neutral-400 mb-2"
+                  className="input-premium w-full bg-[#121212] border-default font-bold text-secondary mb-2"
                 >
                   <option value="ALL">All Users</option>
                   <option value="SPECIFIC">Specific Users</option>
@@ -560,12 +560,12 @@ export default function AdminBillingPage() {
                       placeholder="Search user by username..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="input-premium w-full bg-[#0a0a0a] border-neutral-800 text-sm" 
+                      className="input-premium w-full bg-[#0a0a0a] border-default text-sm" 
                     />
-                    {isSearching && <i className="las la-spinner la-spin absolute right-3 top-2.5 text-neutral-500"></i>}
+                    {isSearching && <i className="las la-spinner la-spin absolute right-3 top-2.5 text-muted"></i>}
                     
                     {searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 w-full mt-1 bg-[#1a1a1a] border border-neutral-800 rounded-lg shadow-xl overflow-hidden z-20">
+                      <div className="absolute top-full left-0 w-full mt-1 bg-[#1a1a1a] border border-default rounded-lg shadow-xl overflow-hidden z-20">
                         {searchResults.map(user => (
                           <button
                             key={user.uid}
@@ -607,18 +607,18 @@ export default function AdminBillingPage() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-neutral-800">
+              <div className="flex items-center gap-3 pt-4 border-t border-default">
                 <input 
                   type="checkbox" 
                   id="promoActive"
                   checked={promoModal.data?.is_active ?? true}
                   onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, is_active: e.target.checked } })}
-                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
+                  className="w-4 h-4 rounded border-strong bg-neutral-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-neutral-900"
                 />
                 <label htmlFor="promoActive" className="text-sm font-bold text-neutral-300">Code is Active</label>
               </div>
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-default">
               <button onClick={() => setPromoModal({ isOpen: false, mode: "add", data: null })} className="btn-ghost" disabled={isSubmitting}>Cancel</button>
               <button onClick={handlePromoSubmit} className="btn-primary" disabled={isSubmitting}>Save Code</button>
             </div>

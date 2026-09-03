@@ -89,13 +89,13 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
 
   if (!isElite) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full relative overflow-hidden">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden">
         <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-neutral-800 mb-4">
-            <i className="las la-lock text-3xl text-neutral-400"></i>
+          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+            <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Monte Carlo Simulator Locked</h3>
-          <p className="text-sm text-neutral-400 font-medium mb-6 max-w-sm">
+          <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Elite to unlock 10,000-iteration Risk of Ruin simulations based on your unique edge.
           </p>
           <Link href="/pricing" className="bg-[#a855f7] hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold transition-colors">
@@ -116,10 +116,10 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
 
   if (trades.length < 5) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-dice text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Monte Carlo Simulator</h2>
-        <p className="text-sm text-neutral-500 mt-2">Log at least 5 trades to calculate your edge and run projections.</p>
+        <p className="text-sm text-muted mt-2">Log at least 5 trades to calculate your edge and run projections.</p>
       </div>
     );
   }
@@ -129,19 +129,19 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
             <i className="las la-dice text-[#a855f7]"></i> Monte Carlo Simulator
           </h2>
-          <p className="text-sm text-neutral-400 mt-1">Projecting next 50 trades over 100 simulations.</p>
+          <p className="text-sm text-secondary mt-1">Projecting next 50 trades over 100 simulations.</p>
         </div>
         
-        <div className="bg-[#121212] border border-neutral-800 px-5 py-3 rounded-xl text-right flex items-center gap-4">
+        <div className="bg-[#121212] border border-default px-5 py-3 rounded-xl text-right flex items-center gap-4">
           <div>
-            <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Risk of Ruin</span>
-            <span className="block text-[9px] text-neutral-600">(10% Drawdown)</span>
+            <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Risk of Ruin</span>
+            <span className="block text-[9px] text-secondary">(10% Drawdown)</span>
           </div>
           <span className={`text-3xl font-black ${riskOfRuin > 20 ? 'text-rose-500' : riskOfRuin > 5 ? 'text-amber-500' : 'text-emerald-400'}`}>
             {riskOfRuin.toFixed(1)}%

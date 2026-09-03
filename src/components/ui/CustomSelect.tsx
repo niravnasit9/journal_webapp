@@ -34,7 +34,7 @@ export default function CustomSelect({ options, value, onChange, className = "",
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      {icon && <i className={`${icon} text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 z-10 pointer-events-none`}></i>}
+      {icon && <i className={`${icon} text-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-secondary dark:text-slate-500 z-10 pointer-events-none`}></i>}
       
       <div 
         onClick={() => setIsOpen(!isOpen)}
@@ -44,7 +44,7 @@ export default function CustomSelect({ options, value, onChange, className = "",
           {selectedOption?.logo && <img src={selectedOption.logo} alt="" className="w-5 h-5 rounded-full object-contain" />}
           {selectedOption?.label}
         </span>
-        <i className={`las la-angle-down text-[12px] absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
+        <i className={`las la-angle-down text-[12px] absolute right-3 top-1/2 -translate-y-1/2 text-secondary dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
       </div>
 
       {isOpen && (

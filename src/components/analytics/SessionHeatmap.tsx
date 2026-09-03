@@ -75,13 +75,13 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
 
   if (!isElite) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
         <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-neutral-800 mb-4">
-            <i className="las la-lock text-3xl text-neutral-400"></i>
+          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+            <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Algorithmic Session Heatmap Locked</h3>
-          <p className="text-sm text-neutral-400 font-medium mb-6 max-w-sm">
+          <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Elite to auto-detect your most profitable trading hours and days using institutional heatmaps.
           </p>
           <Link href="/pricing" className="bg-[#a855f7] hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-bold transition-colors">
@@ -102,10 +102,10 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
 
   if (trades.length < 10) {
     return (
-      <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-th text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Session Heatmap</h2>
-        <p className="text-sm text-neutral-500 mt-2">Log at least 10 trades to map your most profitable time windows.</p>
+        <p className="text-sm text-muted mt-2">Log at least 10 trades to map your most profitable time windows.</p>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
   const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
   return (
-    <div className="bg-[#0a0a0a] border border-neutral-800 rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
           <i className="las la-th text-[#a855f7]"></i> Algorithmic Session Heatmap
@@ -132,7 +132,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
           <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr] gap-1 mb-2">
             <div></div>
             {dayLabels.map(d => (
-              <div key={d} className="text-center text-xs font-bold text-neutral-500 uppercase">{d}</div>
+              <div key={d} className="text-center text-xs font-bold text-muted uppercase">{d}</div>
             ))}
           </div>
           
@@ -146,7 +146,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
               
               return (
                 <div key={row.hour} className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr] gap-1 h-8">
-                  <div className="text-right pr-2 text-xs text-neutral-500 flex items-center justify-end">{`${h12}${ampm}`}</div>
+                  <div className="text-right pr-2 text-xs text-muted flex items-center justify-end">{`${h12}${ampm}`}</div>
                   {row.days.map((cell, idx) => {
                     let bgColor = 'bg-[#121212]';
                     if (cell.total > 0) {
@@ -164,10 +164,10 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
                       >
                         {cell.total > 0 && <span className="text-[10px] text-white/50 font-medium">{cell.total}</span>}
                         {cell.total > 0 && (
-                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#121212] border border-neutral-800 text-white text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
+                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#121212] border border-default text-white text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
                             <p className="font-bold">P&L: ${cell.pnl.toFixed(2)}</p>
-                            <p className="text-neutral-400">Win Rate: {(cell.winRate * 100).toFixed(0)}%</p>
-                            <p className="text-neutral-400">Trades: {cell.total}</p>
+                            <p className="text-secondary">Win Rate: {(cell.winRate * 100).toFixed(0)}%</p>
+                            <p className="text-secondary">Trades: {cell.total}</p>
                           </div>
                         )}
                       </div>

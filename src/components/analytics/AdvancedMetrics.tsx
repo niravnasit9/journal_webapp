@@ -71,9 +71,9 @@ export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-      <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-[#121212] border border-default rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Expectancy / Trade</span>
+          <span className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Expectancy / Trade</span>
           <span className={`text-xl font-black ${stats.expectancy > 0 ? 'text-[#a855f7]' : 'text-rose-500'}`}>
             {stats.expectancy > 0 ? '+' : ''}${stats.expectancy.toFixed(2)}
           </span>
@@ -83,9 +83,9 @@ export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
         </div>
       </div>
       
-      <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-[#121212] border border-default rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Max Drawdown</span>
+          <span className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Max Drawdown</span>
           <span className="text-xl font-black text-rose-500">
             -{stats.maxDrawdownPct.toFixed(2)}%
           </span>
@@ -95,9 +95,9 @@ export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
         </div>
       </div>
 
-      <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-[#121212] border border-default rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Avg R:R Ratio</span>
+          <span className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Avg R:R Ratio</span>
           <span className="text-xl font-black text-white">
             1 : {stats.avgRr.toFixed(2)}
           </span>
