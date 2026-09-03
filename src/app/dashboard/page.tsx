@@ -110,7 +110,7 @@ export default function UserDashboardCommandCenter() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-white transition-colors">
+            <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-primary transition-colors">
               <i className="las la-dollar-sign text-xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
@@ -123,7 +123,7 @@ export default function UserDashboardCommandCenter() {
 
         <Card className="p-6 border-default shadow-sm hover:border-success transition-colors group">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-white transition-colors">
+            <div className="w-10 h-10 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-primary transition-colors">
               <i className="las la-chart-line text-xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
@@ -149,7 +149,7 @@ export default function UserDashboardCommandCenter() {
 
         <Card className="p-6 border-default shadow-sm hover:border-warning transition-colors group">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-white transition-colors">
+            <div className="w-10 h-10 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-primary transition-colors">
               <i className="las la-bullseye text-xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Win Rate</h3>

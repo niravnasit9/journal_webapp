@@ -283,7 +283,7 @@ export default function TransactionsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="overflow-hidden">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Amount</p>
-                    <p className="text-xl font-bold text-slate-900 dark:text-white">${selectedTx.amount.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-slate-900 dark:text-primary">${selectedTx.amount.toFixed(2)}</p>
                   </div>
                   <div className="overflow-hidden">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Date</p>
@@ -334,7 +334,7 @@ export default function TransactionsPage() {
             <div className="p-4 border-t border-subtle bg-surface/80 backdrop-blur-md">
               <button 
                 onClick={() => setSelectedTx(null)}
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold rounded-xl transition-colors shadow-sm"
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-primary font-bold rounded-xl transition-colors shadow-sm"
               >
                 Close Receipt
               </button>

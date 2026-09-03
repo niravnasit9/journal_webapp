@@ -87,8 +87,8 @@ export const EdgeDecayChart: React.FC<EdgeDecayChartProps> = ({ trades }) => {
             <div className="bg-[var(--plan-elite-bg)] px-3 py-1 rounded-full border border-[var(--plan-elite)]/20">
                <span className="text-xs font-bold text-[var(--plan-elite)] uppercase tracking-widest">Elite Tier Required</span>
             </div>
-            <h3 className="text-lg font-bold text-white mt-1">Hold-Time Edge Decay</h3>
-            <p className="text-sm text-white/70 max-w-sm">
+            <h3 className="text-lg font-bold text-primary mt-1">Hold-Time Edge Decay</h3>
+            <p className="text-sm text-primary/70 max-w-sm">
               Upgrade to Elite to discover exactly when your statistical edge expires in a trade, preventing you from holding losers too long.
             </p>
           </div>

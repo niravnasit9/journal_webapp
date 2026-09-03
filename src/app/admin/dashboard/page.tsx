@@ -147,7 +147,7 @@ export default function AdminDashboardOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-white transition-colors">
+            <div className="w-12 h-12 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-primary transition-colors">
               <i className="las la-users text-2xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Total Users</h3>
@@ -159,7 +159,7 @@ export default function AdminDashboardOverview() {
 
         <Card className="p-6 border-default shadow-sm hover:border-success transition-colors group">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-white transition-colors">
+            <div className="w-12 h-12 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-primary transition-colors">
               <i className="las la-wallet text-2xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Accounts</h3>
@@ -183,7 +183,7 @@ export default function AdminDashboardOverview() {
 
         <Card className="p-6 border-default shadow-sm hover:border-warning transition-colors group">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-white transition-colors">
+            <div className="w-12 h-12 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-primary transition-colors">
               <i className="las la-building text-2xl"></i>
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Prop Firms</h3>

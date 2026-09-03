@@ -84,7 +84,7 @@ export default function UserSupportPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#0f1115] border-b border-gray-200 dark:border-transparent p-4 md:px-6 md:py-6 transition-colors duration-300 rounded-b-2xl shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-black text-gray-900 dark:text-primary tracking-tight flex items-center gap-2">
             <i className="las la-life-ring text-blue-500"></i> Support Tickets
           </h1>
           <p className="text-sm text-muted dark:text-slate-400 font-medium mt-1">
@@ -134,7 +134,7 @@ export default function UserSupportPage() {
                     <td className="px-6 py-4 font-mono text-xs text-secondary dark:text-slate-500">
                       #{ticket.id.slice(0, 8)}
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 font-bold text-gray-900 dark:text-primary">
                       {ticket.subject}
                     </td>
                     <td className="px-6 py-4">
@@ -152,7 +152,7 @@ export default function UserSupportPage() {
                     <td className="px-6 py-4 text-right">
                       <Link 
                         href={`/dashboard/support/${ticket.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-900 dark:text-white text-xs font-bold rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-900 dark:text-primary text-xs font-bold rounded-lg transition-colors"
                       >
                         View <i className="las la-arrow-right"></i>
                       </Link>
@@ -170,10 +170,10 @@ export default function UserSupportPage() {
         <div className="fixed inset-0 bg-[#fafafa]/80 dark:bg-[#0a0f1c]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-200 dark:border-slate-700 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-center p-5 border-b border-yellow-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0f1523]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-primary flex items-center gap-2 tracking-tight">
                 <i className="las la-life-ring text-2xl text-blue-500"></i> Open Support Ticket
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-secondary hover:text-gray-900 dark:hover:text-white transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="text-secondary hover:text-gray-900 dark:hover:text-primary transition-colors">
                 <i className="las la-times text-xl"></i>
               </button>
             </div>

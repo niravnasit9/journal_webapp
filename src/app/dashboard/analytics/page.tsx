@@ -164,7 +164,7 @@ export default function AnalyticsOverview() {
       {/* Header & Account Selector */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight flex items-center gap-3">
             <i className="las la-chart-bar text-[#a855f7]"></i> Analytics Overview
           </h1>
           <p className="text-secondary mt-1">Deep institutional-grade analysis of your {isDomestic ? 'domestic' : 'global'} trading edge.</p>
@@ -173,7 +173,7 @@ export default function AnalyticsOverview() {
         <div className="flex items-center gap-4">
           <MarketSwitcher />
           <select 
-            className="bg-elevated border border-default text-white font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
+            className="bg-elevated border border-default text-primary font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
           >
@@ -195,7 +195,7 @@ export default function AnalyticsOverview() {
         </div>
         <div className="bg-surface border border-default p-5 rounded-2xl shadow-xl">
           <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Win Rate</span>
-          <span className="text-2xl md:text-3xl font-black text-white">
+          <span className="text-2xl md:text-3xl font-black text-primary">
             {winRate.toFixed(1)}%
           </span>
         </div>
@@ -207,7 +207,7 @@ export default function AnalyticsOverview() {
         </div>
         <div className="bg-surface border border-default p-5 rounded-2xl shadow-xl">
           <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-2">Total Trades</span>
-          <span className="text-2xl md:text-3xl font-black text-white">
+          <span className="text-2xl md:text-3xl font-black text-primary">
             {totalTrades}
           </span>
         </div>

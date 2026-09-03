@@ -54,7 +54,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center">
         <i className="las la-chart-area text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight">Equity Curve</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight">Equity Curve</h2>
         <p className="text-sm text-muted mt-2">Log trades to visualize your growth.</p>
       </div>
     );
@@ -65,7 +65,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
       return (
         <div className="bg-elevated border border-default p-3 rounded-lg shadow-xl">
           <p className="text-xs text-secondary mb-1">{label}</p>
-          <p className="text-sm font-bold text-white flex items-center gap-2">
+          <p className="text-sm font-bold text-primary flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#a855f7]"></span>
             {formatMoney(payload[0].value)}
           </p>
@@ -118,10 +118,10 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
   };
 
   return (
-    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-4 md:p-6 shadow-xl w-full min-w-0 overflow-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Equity Curve</h2>
+          <h2 className="text-xl font-bold text-primary tracking-tight">Equity Curve</h2>
           <p className="text-sm text-secondary mt-1">Cumulative net profit progression.</p>
         </div>
         

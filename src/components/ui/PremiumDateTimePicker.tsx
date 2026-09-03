@@ -214,7 +214,7 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
               </div>
             </div>
             
-            <button type="button" onClick={() => setIsOpen(false)} className="text-xs font-bold text-info hover:text-white transition-all bg-info/10 hover:bg-info px-4 py-2 rounded-lg shadow-sm">
+            <button type="button" onClick={() => setIsOpen(false)} className="text-xs font-bold text-info hover:text-primary transition-all bg-info/10 hover:bg-info px-4 py-2 rounded-lg shadow-sm">
               Done
             </button>
           </div>

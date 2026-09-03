@@ -40,7 +40,7 @@ export default function ConfirmModal({
             <i className={`las text-2xl ${isDanger ? 'la-exclamation-triangle' : 'la-info-circle'}`}></i>
           </div>
           <div>
-            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">{title}</h3>
+            <h3 className="text-lg font-black text-gray-900 dark:text-primary mb-2">{title}</h3>
             <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed font-medium">
               {message}
             </p>

@@ -141,26 +141,26 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
           </div>
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Total Trades</span>
-            <span className="text-lg font-bold text-white">{quickStats.totalTrades}</span>
+            <span className="text-lg font-bold text-primary">{quickStats.totalTrades}</span>
           </div>
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Total Volume</span>
-            <span className="text-lg font-bold text-white">{quickStats.totalVolume.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary">{quickStats.totalVolume.toFixed(2)}</span>
           </div>
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">L / S Ratio</span>
-            <span className="text-lg font-bold text-white">{quickStats.longs} : {quickStats.shorts}</span>
+            <span className="text-lg font-bold text-primary">{quickStats.longs} : {quickStats.shorts}</span>
           </div>
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Commissions</span>
-            <span className="text-lg font-bold text-white">{formatMoney(quickStats.totalCommission)}</span>
+            <span className="text-lg font-bold text-primary">{formatMoney(quickStats.totalCommission)}</span>
           </div>
         </div>
 
         {/* Table Header / Filters */}
         <div className="p-4 md:p-6 border-b border-default flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center bg-surface">
           <div className="flex justify-between items-center w-full xl:w-auto">
-            <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-lg font-bold text-primary tracking-tight flex items-center gap-2">
               <i className="las la-history text-blue-500"></i> Trade History
             </h2>
             
@@ -294,7 +294,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                     <td className="px-6 py-4 text-secondary font-medium">
                       {new Date(trade.open_time).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 font-bold text-white">
+                    <td className="px-6 py-4 font-bold text-primary">
                       <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full ${trade.profit_loss >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                         {trade.symbol}
@@ -349,7 +349,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
             <div className={`relative w-full border-t border-default rounded-t-3xl shadow-2xl p-6 pb-10 bg-surface animate-in slide-in-from-bottom-full duration-300 transition-all`}>
               <div className="w-12 h-1.5 bg-neutral-800 rounded-full mx-auto mb-6"></div>
               
-              <h3 className="text-xl font-bold text-white mb-6">Filter Trades</h3>
+              <h3 className="text-xl font-bold text-primary mb-6">Filter Trades</h3>
               
               <div className="space-y-5">
                 <div>

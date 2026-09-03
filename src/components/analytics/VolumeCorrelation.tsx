@@ -69,7 +69,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
           <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
-          <h3 className="text-xl font-black text-white mb-2">Volume Correlation Locked</h3>
+          <h3 className="text-xl font-black text-primary mb-2">Volume Correlation Locked</h3>
           <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Pro to mathematically prove if your edge decays when you increase your lot size.
           </p>
@@ -79,7 +79,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
         </div>
         <div className="opacity-20 pointer-events-none blur-sm w-full h-full">
            <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Volume Correlation</h2>
+            <h2 className="text-xl font-bold text-primary">Volume Correlation</h2>
           </div>
           <div className="h-[250px] bg-neutral-900 rounded-lg"></div>
         </div>
@@ -91,7 +91,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-weight-hanging text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight">Volume Correlation</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight">Volume Correlation</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades to correlate lot sizes against performance.</p>
       </div>
     );
@@ -112,14 +112,14 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
   };
 
   return (
-    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-4 md:p-6 shadow-xl w-full min-w-0 overflow-hidden">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
           <i className="las la-weight-hanging text-[#a855f7]"></i> Volume Correlation
         </h2>
         {correlationAlert && (
           <div className="mt-4 bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
-            <p className="text-sm text-white font-medium">
+            <p className="text-sm text-primary font-medium">
               <span className="text-rose-500 font-bold">Risk Alert:</span> {correlationAlert}
             </p>
           </div>
@@ -132,7 +132,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
             <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
             <XAxis dataKey="name" stroke="#525252" fontSize={10} tickLine={false} axisLine={false} />
             <YAxis stroke="#525252" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#121212' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--border-subtle)' }} />
             <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.winRate > 50 ? '#a855f7' : '#ef4444'} />

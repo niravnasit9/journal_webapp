@@ -184,7 +184,7 @@ export default function AdminPropFirmsPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="heading-page text-white">Prop Firm Analytics</h1>
+          <h1 className="heading-page text-primary">Prop Firm Analytics</h1>
           <p className="text-sm text-secondary mt-1">
             Monitor performance metrics and pass rates across all connected proprietary trading firms.
           </p>
@@ -199,19 +199,19 @@ export default function AdminPropFirmsPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-purple-500"></div>
           <div className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-1">Total Tracked Firms</div>
-          <div className="text-3xl font-bold text-white">{totalFirms}</div>
+          <div className="text-3xl font-bold text-primary">{totalFirms}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Global Pass Rate</div>
-          <div className="text-3xl font-bold text-white">{globalPassRate}%</div>
+          <div className="text-3xl font-bold text-primary">{globalPassRate}%</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
           <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Estimated Funded Capital</div>
-          <div className="text-3xl font-bold text-white">${totalFundedCapital.toLocaleString()}</div>
+          <div className="text-3xl font-bold text-primary">${totalFundedCapital.toLocaleString()}</div>
         </div>
       </div>
 
@@ -231,7 +231,7 @@ export default function AdminPropFirmsPage() {
               
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-white tracking-tight">{firm.name}</h3>
+                  <h3 className="text-xl font-bold text-primary tracking-tight">{firm.name}</h3>
                 </div>
                 <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border ${firm.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
                   {firm.is_active ? 'Active' : 'Inactive'}
@@ -242,7 +242,7 @@ export default function AdminPropFirmsPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center border-b border-default pb-2">
                     <span className="text-xs text-muted font-bold uppercase tracking-widest">Challenges</span>
-                    <span className="text-sm font-bold text-white">{firm.challenges.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-primary">{firm.challenges.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-default pb-2">
                     <span className="text-xs text-muted font-bold uppercase tracking-widest">Funded</span>
@@ -281,14 +281,14 @@ export default function AdminPropFirmsPage() {
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
             
             {modalMode === "delete" ? (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-4 flex items-center gap-2">
                   <i className="las la-exclamation-triangle text-amber-500"></i> Delete Prop Firm
                 </h2>
                 <div className="premium-inner-box p-4 text-center border-amber-500/20 bg-amber-500/5">
@@ -308,7 +308,7 @@ export default function AdminPropFirmsPage() {
               </>
             ) : (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-6">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-6">
                   {modalMode === "add" ? "Add New Prop Firm" : "Edit Prop Firm"}
                 </h2>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">

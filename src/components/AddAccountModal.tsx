@@ -149,10 +149,10 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
     <div className="fixed inset-0 bg-[#fafafa] dark:bg-[#0a0f1c]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-300 dark:border-slate-700 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-5 border-b border-yellow-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0f1523]">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 tracking-tight">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-primary flex items-center gap-2 tracking-tight">
             <i className="las la-plus-circle text-2xl text-blue-500"></i> Add Account
           </h3>
-          <button onClick={onClose} className="text-secondary hover:text-gray-600 dark:hover:text-white transition-colors">
+          <button onClick={onClose} className="text-secondary hover:text-gray-600 dark:hover:text-primary transition-colors">
             <i className="las la-times text-2xl"></i>
           </button>
         </div>
@@ -314,13 +314,13 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
                   <div className="bg-[#fafafa] dark:bg-[#0a0f1c] rounded-xl border border-gray-200 dark:border-white/10 p-4 space-y-3 shadow-inner">
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
                       <span className="text-sm text-muted font-medium">Prop Firm</span>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                      <span className="text-sm font-bold text-gray-900 dark:text-primary flex items-center gap-1">
                         {firm.name} {firm.is_popular && <i className="las la-star text-yellow-500 text-xs"></i>}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
                       <span className="text-sm text-muted font-medium">Account Size</span>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">${plan.account_size.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-gray-900 dark:text-primary">${plan.account_size.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-white/5">
                       <span className="text-sm text-muted font-medium">Daily Drawdown</span>

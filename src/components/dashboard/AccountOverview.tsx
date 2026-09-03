@@ -28,11 +28,11 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="premium-card p-6 border-t-2 border-t-orange-500">
           <p className="text-xs font-bold text-muted uppercase">Available Funds</p>
-          <p className="text-2xl font-bold text-white mt-2">{formatCurrency(availableFunds, true)}</p>
+          <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(availableFunds, true)}</p>
         </div>
         <div className="premium-card p-6 border-t-2 border-t-neutral-700">
           <p className="text-xs font-bold text-muted uppercase">Margin Used</p>
-          <p className="text-2xl font-bold text-white mt-2">{formatCurrency(0, true)}</p>
+          <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(0, true)}</p>
         </div>
         <div className="premium-card p-6 border-t-2 border-t-rose-500">
           <p className="text-xs font-bold text-muted uppercase">Total Taxes Paid</p>
@@ -56,15 +56,15 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="premium-card p-6 border-t-2 border-t-blue-500">
         <p className="text-xs font-bold text-muted uppercase">Account Balance</p>
-        <p className="text-2xl font-bold text-white mt-2">{formatCurrency(account.initial_balance, false)}</p>
+        <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(account.initial_balance, false)}</p>
       </div>
       <div className="premium-card p-6 border-t-2 border-t-indigo-500">
         <p className="text-xs font-bold text-muted uppercase">Equity</p>
-        <p className="text-2xl font-bold text-white mt-2">{formatCurrency(equity, false)}</p>
+        <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(equity, false)}</p>
       </div>
       <div className="premium-card p-6 border-t-2 border-t-neutral-700">
         <p className="text-xs font-bold text-muted uppercase">Free Margin</p>
-        <p className="text-2xl font-bold text-white mt-2">{formatCurrency(equity, false)}</p>
+        <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(equity, false)}</p>
       </div>
       <div className="premium-card p-6 border-t-2 border-t-emerald-500">
         <p className="text-xs font-bold text-muted uppercase">Gross PnL</p>

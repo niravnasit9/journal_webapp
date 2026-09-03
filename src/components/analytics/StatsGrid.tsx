@@ -97,9 +97,9 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ trades, currency = "USD" }
           <div className="absolute inset-0 bg-neutral-900/60 backdrop-blur-[3px] flex items-center justify-center z-10 transition-all duration-300">
             <div className="flex flex-col items-center gap-2 group-hover:scale-110 transition-transform">
               <div className="h-10 w-10 rounded-full bg-surface/50 border border-white/10 flex items-center justify-center shadow-xl">
-                <i className="las la-lock text-xl text-white/70"></i>
+                <i className="las la-lock text-xl text-primary/70"></i>
               </div>
-              <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Pro Tier</span>
+              <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest">Pro Tier</span>
             </div>
           </div>
           <div className="text-sm font-bold text-muted uppercase tracking-wider mb-2 opacity-30">{label}</div>

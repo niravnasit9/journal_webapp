@@ -98,7 +98,7 @@ export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
       <div className="bg-elevated border border-default rounded-xl p-4 flex items-center justify-between">
         <div>
           <span className="block text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Avg R:R Ratio</span>
-          <span className="text-xl font-black text-white">
+          <span className="text-xl font-black text-primary">
             1 : {stats.avgRr.toFixed(2)}
           </span>
         </div>

@@ -60,7 +60,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
           <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
-          <h3 className="text-xl font-black text-white mb-2">Drawdown Profile Locked</h3>
+          <h3 className="text-xl font-black text-primary mb-2">Drawdown Profile Locked</h3>
           <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Pro or Elite to visualize your precise underwater equity depth and recovery timeline.
           </p>
@@ -70,8 +70,8 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
         </div>
         <div className="opacity-20 pointer-events-none blur-sm w-full h-full">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Underwater Profile</h2>
-            <div className="text-xl font-black text-white">- $1,250</div>
+            <h2 className="text-xl font-bold text-primary">Underwater Profile</h2>
+            <div className="text-xl font-black text-primary">- $1,250</div>
           </div>
           <div className="h-[250px] bg-neutral-900 rounded-lg"></div>
         </div>
@@ -83,7 +83,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-water text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight">Drawdown Profile</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight">Drawdown Profile</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades to calculate High Water Marks and underwater depth.</p>
       </div>
     );
@@ -104,10 +104,10 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
   };
 
   return (
-    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-4 md:p-6 shadow-xl w-full min-w-0 overflow-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
             <i className="las la-water text-rose-500"></i> Underwater Profile
           </h2>
           <p className="text-sm text-secondary mt-1">Equity depth below the High Water Mark.</p>
@@ -120,7 +120,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
           </div>
           <div className="border-l border-default pl-4">
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Avg Recovery</span>
-            <span className="text-lg font-black text-white">{avgRecoveryTrades} <span className="text-xs font-normal text-secondary">Trades</span></span>
+            <span className="text-lg font-black text-primary">{avgRecoveryTrades} <span className="text-xs font-normal text-secondary">Trades</span></span>
           </div>
         </div>
       </div>

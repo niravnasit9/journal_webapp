@@ -145,7 +145,7 @@ export default function AdminTradesPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Global Trades Ledger</h1>
+        <h1 className="heading-page text-primary">Global Trades Ledger</h1>
         <p className="text-sm text-secondary mt-1">
           Audit and review all real-time and historical trade activity across the platform.
         </p>
@@ -156,7 +156,7 @@ export default function AdminTradesPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Volume Traded</div>
-          <div className="text-3xl font-bold text-white">{totalVolume.toLocaleString(undefined, { maximumFractionDigits: 2 })} Lots</div>
+          <div className="text-3xl font-bold text-primary">{totalVolume.toLocaleString(undefined, { maximumFractionDigits: 2 })} Lots</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
@@ -170,14 +170,14 @@ export default function AdminTradesPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
           <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Active Open Trades</div>
-          <div className="text-3xl font-bold text-white">{activeOpenTrades}</div>
+          <div className="text-3xl font-bold text-primary">{activeOpenTrades}</div>
         </div>
       </div>
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trade Activity</h2>
+          <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Trade Activity</h2>
           <select
             value={marketFilter}
             onChange={(e) => setMarketFilter(e.target.value as any)}
@@ -226,9 +226,9 @@ export default function AdminTradesPage() {
                     </td>
                     <td className="px-6 py-4">
                       {trade.domestic_segment === "FNO_OPTIONS" ? (
-                        <span className="font-bold text-white">{trade.symbol} {trade.strike_price} {trade.option_type}</span>
+                        <span className="font-bold text-primary">{trade.symbol} {trade.strike_price} {trade.option_type}</span>
                       ) : (
-                        <span className="font-bold text-white">{trade.symbol}</span>
+                        <span className="font-bold text-primary">{trade.symbol}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -273,49 +273,49 @@ export default function AdminTradesPage() {
           <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
             
             {modalMode === "view" ? (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-4 flex items-center gap-2">
                   <i className="las la-chart-bar text-blue-500"></i> Trade Details
                 </h2>
                 
                 <div className="premium-inner-box p-5 mb-6 space-y-3 text-sm">
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Trade ID</span>
-                    <span className="text-white font-mono">{currentTrade.id}</span>
+                    <span className="text-primary font-mono">{currentTrade.id}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">User</span>
-                    <span className="text-white">{currentTrade.userEmail}</span>
+                    <span className="text-primary">{currentTrade.userEmail}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Asset</span>
-                    <span className="text-white font-bold">{currentTrade.symbol}</span>
+                    <span className="text-primary font-bold">{currentTrade.symbol}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Direction</span>
-                    <span className="text-white">{currentTrade.direction}</span>
+                    <span className="text-primary">{currentTrade.direction}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Open Price</span>
-                    <span className="text-white font-mono">{currentTrade.open_price}</span>
+                    <span className="text-primary font-mono">{currentTrade.open_price}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Close Price</span>
-                    <span className="text-white font-mono">{currentTrade.close_price || "Open"}</span>
+                    <span className="text-primary font-mono">{currentTrade.close_price || "Open"}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Lots</span>
-                    <span className="text-white font-mono">{currentTrade.lot_size}</span>
+                    <span className="text-primary font-mono">{currentTrade.lot_size}</span>
                   </div>
                   <div className="flex justify-between border-b border-default pb-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Emotion</span>
-                    <span className="text-white">{currentTrade.emotion || "N/A"}</span>
+                    <span className="text-primary">{currentTrade.emotion || "N/A"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted font-bold uppercase tracking-widest text-[10px]">Net PnL</span>
@@ -341,7 +341,7 @@ export default function AdminTradesPage() {
               </>
             ) : modalMode === "delete" ? (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-4 flex items-center gap-2">
                   <i className="las la-exclamation-triangle text-amber-500"></i> Delete Trade
                 </h2>
                 <div className="premium-inner-box p-4 text-center border-amber-500/20 bg-amber-500/5 mb-6">
@@ -361,7 +361,7 @@ export default function AdminTradesPage() {
               </>
             ) : (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-4 flex items-center gap-2">
                   <i className="las la-tools text-amber-500"></i> Admin Override
                 </h2>
                 

@@ -230,7 +230,7 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-white line-clamp-1">{u.name || "Unknown Trader"}</p>
+                          <p className="font-bold text-primary line-clamp-1">{u.name || "Unknown Trader"}</p>
                           <p className="text-sm text-muted">{u.email}</p>
                         </div>
                       </div>
@@ -282,10 +282,10 @@ export default function AdminUsersPage() {
           <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight">Manage Access</h2>
-                <p className="text-sm text-secondary mt-1">For <span className="font-bold text-white">{manageAccessUser.name || manageAccessUser.email}</span></p>
+                <h2 className="text-xl font-bold text-primary tracking-tight">Manage Access</h2>
+                <p className="text-sm text-secondary mt-1">For <span className="font-bold text-primary">{manageAccessUser.name || manageAccessUser.email}</span></p>
               </div>
-              <button onClick={closeManageAccess} className="text-muted hover:text-white transition-colors">
+              <button onClick={closeManageAccess} className="text-muted hover:text-primary transition-colors">
                 <i className="las la-times text-2xl"></i>
               </button>
             </div>

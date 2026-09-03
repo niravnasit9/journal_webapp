@@ -199,7 +199,7 @@ const CustomEconomicNews = () => {
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
-              <tr className="text-gray-900 dark:text-white font-bold text-[13px] border-b border-gray-200 dark:border-white/5">
+              <tr className="text-gray-900 dark:text-primary font-bold text-[13px] border-b border-gray-200 dark:border-white/5">
                 <th className="px-4 py-4 w-24">Time</th>
                 <th className="px-4 py-4 w-24">Cur.</th>
                 <th className="px-4 py-4">Event</th>
@@ -217,7 +217,7 @@ const CustomEconomicNews = () => {
                     <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
                       <i className="las la-globe-asia text-3xl text-blue-500"></i>
                     </div>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white mb-2">No Events Found</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-primary mb-2">No Events Found</p>
                     <p className="text-sm text-muted dark:text-secondary max-w-sm">
                       {activeWorkspace === "DOMESTIC" 
                         ? "There are currently no major macroeconomic events scheduled for the Indian market this week." 
@@ -252,7 +252,7 @@ const CustomEconomicNews = () => {
                   <td className="px-4 py-3 w-32">
                     {getImpactIcon(n.impact)}
                   </td>
-                  <td className="px-4 py-3 font-bold text-gray-900 dark:text-white w-28">
+                  <td className="px-4 py-3 font-bold text-gray-900 dark:text-primary w-28">
                     {n.actual || ""}
                   </td>
                   <td className="px-4 py-3 text-muted dark:text-secondary w-28">

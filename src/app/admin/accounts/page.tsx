@@ -121,7 +121,7 @@ export default function AdminAccountsPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Global Accounts List</h1>
+        <h1 className="heading-page text-primary">Global Accounts List</h1>
         <p className="text-sm text-secondary mt-1">
           Monitor and manage all trading accounts connected across the platform.
         </p>
@@ -132,26 +132,26 @@ export default function AdminAccountsPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-neutral-700"></div>
           <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Accounts (All Time)</div>
-          <div className="text-3xl font-bold text-white">{totalAccounts}</div>
+          <div className="text-3xl font-bold text-primary">{totalAccounts}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
           <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Active Funded Accounts</div>
-          <div className="text-3xl font-bold text-white">{activeFunded}</div>
+          <div className="text-3xl font-bold text-primary">{activeFunded}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Active Challenge Accounts</div>
-          <div className="text-3xl font-bold text-white">{activeChallenge}</div>
+          <div className="text-3xl font-bold text-primary">{activeChallenge}</div>
         </div>
       </div>
 
       {/* Data Table */}
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Platform Accounts</h2>
+          <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Platform Accounts</h2>
           <select
             value={marketFilter}
             onChange={(e) => setMarketFilter(e.target.value as any)}
@@ -194,7 +194,7 @@ export default function AdminAccountsPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div>
-                          <div className="font-bold text-white">{acc.label}</div>
+                          <div className="font-bold text-primary">{acc.label}</div>
                           <div className="text-xs text-muted font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
                         </div>
                         {acc.market_type === 'DOMESTIC' || acc.currency === 'INR' ? (
@@ -239,14 +239,14 @@ export default function AdminAccountsPage() {
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative">
             <button 
               onClick={() => setManageAccountId(null)} 
-              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
-            <h2 className="text-xl font-bold text-white tracking-tight mb-4">Manage Account</h2>
+            <h2 className="text-xl font-bold text-primary tracking-tight mb-4">Manage Account</h2>
             <div className="premium-inner-box p-4 text-center">
               <i className="las la-tools text-4xl text-muted mb-2"></i>
-              <p className="text-sm text-secondary">Settings and management options for account:<br/><span className="font-mono text-white font-bold mt-1 inline-block">{manageAccountId}</span></p>
+              <p className="text-sm text-secondary">Settings and management options for account:<br/><span className="font-mono text-primary font-bold mt-1 inline-block">{manageAccountId}</span></p>
             </div>
             
             <div className="mt-6 border-t border-default pt-6">

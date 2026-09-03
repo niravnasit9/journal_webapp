@@ -19,7 +19,7 @@ export const PlanRenewalBanner = () => {
       <div className="flex items-center gap-2">
         <i className="las la-exclamation-triangle text-lg"></i>
         <span>
-          ⚠️ Your {planName} plan expires in <strong className="text-white">{daysRemaining} days</strong>. Renew now to keep full access to your analytics.
+          ⚠️ Your {planName} plan expires in <strong className="text-primary">{daysRemaining} days</strong>. Renew now to keep full access to your analytics.
         </span>
       </div>
       <Link href="/pricing" className="bg-amber-500 hover:bg-amber-600 text-black font-bold px-3 py-1 rounded-md transition-colors text-xs uppercase tracking-wider shadow-lg">

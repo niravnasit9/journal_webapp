@@ -12,7 +12,7 @@ export const CoachingAlerts: React.FC<CoachingAlertsProps> = ({ alerts }) => {
 
   return (
     <div className="space-y-4 mb-8">
-      <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
         <i className="las la-robot text-blue-500 text-lg"></i> AI Coaching Insights
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -214,10 +214,10 @@ export default function EditTradeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
-        <h2 className="text-xl font-bold text-white mb-6">
+        <h2 className="text-xl font-bold text-primary mb-6">
           Edit {isDomestic ? 'Domestic' : 'Global'} Trade
         </h2>
 
@@ -332,7 +332,7 @@ export default function EditTradeModal({
                     <div className="flex justify-between text-rose-400"><span>Brokerage</span><span>-₹{formData.tax_breakdown?.brokerage?.toFixed(2)}</span></div>
                     <div className="flex justify-between text-rose-400"><span>STT</span><span>-₹{formData.tax_breakdown?.stt?.toFixed(2)}</span></div>
                     <div className="flex justify-between text-rose-400"><span>Other Taxes</span><span>-₹{(Number(formData.total_taxes) - formData.tax_breakdown?.brokerage - formData.tax_breakdown?.stt).toFixed(2)}</span></div>
-                    <div className="border-t border-orange-500/20 my-2 pt-2 flex justify-between font-bold text-white">
+                    <div className="border-t border-orange-500/20 my-2 pt-2 flex justify-between font-bold text-primary">
                       <span>Net PnL</span>
                       <span className={Number(formData.net_pnl) >= 0 ? "text-emerald-400" : "text-rose-400"}>₹{Number(formData.net_pnl).toFixed(2)}</span>
                     </div>
@@ -342,11 +342,11 @@ export default function EditTradeModal({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="premium-inner-box p-3">
                     <label className="label-premium block mb-1">Gross P&L ($)</label>
-                    <input type="number" step="0.01" className="bg-transparent text-white font-bold text-lg w-full outline-none" value={formData.profit_loss} onChange={e => setFormData({...formData, profit_loss: e.target.value})} placeholder="0.00" />
+                    <input type="number" step="0.01" className="bg-transparent text-primary font-bold text-lg w-full outline-none" value={formData.profit_loss} onChange={e => setFormData({...formData, profit_loss: e.target.value})} placeholder="0.00" />
                   </div>
                   <div className="premium-inner-box p-3">
                     <label className="label-premium block mb-1">Commission</label>
-                    <input type="number" step="0.01" className="bg-transparent text-white font-bold text-lg w-full outline-none" value={formData.commission} onChange={e => setFormData({...formData, commission: e.target.value})} placeholder="0.00" />
+                    <input type="number" step="0.01" className="bg-transparent text-primary font-bold text-lg w-full outline-none" value={formData.commission} onChange={e => setFormData({...formData, commission: e.target.value})} placeholder="0.00" />
                   </div>
                 </div>
               )}
@@ -365,7 +365,7 @@ export default function EditTradeModal({
               {riskRewardRatio !== null && (
                 <div className="premium-inner-box p-3 flex justify-between items-center">
                   <span className="text-xs font-bold text-muted uppercase tracking-widest">Risk/Reward</span>
-                  <span className="text-white font-bold font-mono">1 : {riskRewardRatio.toFixed(2)}</span>
+                  <span className="text-primary font-bold font-mono">1 : {riskRewardRatio.toFixed(2)}</span>
                 </div>
               )}
 

@@ -120,7 +120,7 @@ export const PsychologyDashboard: React.FC<{ trades: TradeDoc[], currency: "USD"
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full text-center">
         <i className="las la-brain text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight mb-2">Psychological Analytics</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight mb-2">Psychological Analytics</h2>
         <p className="text-sm text-secondary">Log your first trade to unlock deep behavioral insights and the Cost of Mistakes ledger.</p>
       </div>
     );
@@ -150,7 +150,7 @@ export const PsychologyDashboard: React.FC<{ trades: TradeDoc[], currency: "USD"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black text-white">{disciplineScore}</span>
+              <span className="text-4xl font-black text-primary">{disciplineScore}</span>
               <span className="text-xs text-muted font-bold uppercase">/ 100</span>
             </div>
           </div>
@@ -227,7 +227,7 @@ export const PsychologyDashboard: React.FC<{ trades: TradeDoc[], currency: "USD"
                 ) : (
                   Object.entries(emotionStats).sort((a,b) => b[1].count - a[1].count).map(([emo, data]) => (
                     <tr key={emo} className="border-b border-default/50 hover:bg-elevated transition-colors">
-                      <td className="px-4 py-3 font-bold text-white">{emo}</td>
+                      <td className="px-4 py-3 font-bold text-primary">{emo}</td>
                       <td className="px-4 py-3 text-secondary">{data.count}</td>
                       <td className="px-4 py-3 text-secondary">{((data.wins / data.count) * 100).toFixed(0)}%</td>
                       <td className={`px-4 py-3 text-right font-bold ${data.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>

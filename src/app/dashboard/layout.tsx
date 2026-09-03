@@ -282,14 +282,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <>
                   <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i className="las la-camera text-white"></i>
+                    <i className="las la-camera text-primary"></i>
                   </div>
                 </>
               ) : (
                 <>
                   <i className="las la-user"></i>
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i className="las la-camera text-white"></i>
+                    <i className="las la-camera text-primary"></i>
                   </div>
                 </>
               )}

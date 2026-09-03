@@ -178,7 +178,7 @@ export default function AdminBillingPage() {
       
       {/* Header & Tabs */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Billing & Payments</h1>
+        <h1 className="heading-page text-primary">Billing & Payments</h1>
         <p className="text-sm text-secondary mt-1 mb-6">
           Manage crypto receiving wallets, verify transactions, and configure promotion engines.
         </p>
@@ -240,7 +240,7 @@ export default function AdminBillingPage() {
                             )}
                           </div>
                           <div>
-                            <h3 className="font-bold text-white leading-tight">{gw.name}</h3>
+                            <h3 className="font-bold text-primary leading-tight">{gw.name}</h3>
                             <span className="text-[10px] font-bold text-muted uppercase tracking-widest">{gw.symbol} • {gw.network}</span>
                           </div>
                         </div>
@@ -286,7 +286,7 @@ export default function AdminBillingPage() {
           {activeTab === "ledger" && (
             <div className="premium-card p-0 overflow-hidden">
               <div className="bg-elevated border-b border-default p-5">
-                <h2 className="text-sm font-bold text-white uppercase tracking-widest">Global Transactions</h2>
+                <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Global Transactions</h2>
               </div>
               <div className="overflow-x-auto no-scrollbar">
                 <table className="w-full text-left text-sm whitespace-nowrap">
@@ -313,7 +313,7 @@ export default function AdminBillingPage() {
                             <td className="px-6 py-4 text-secondary">
                               {txDate.toLocaleString()}
                             </td>
-                            <td className="px-6 py-4 font-bold text-white">{(tx.user_id || tx.uid)?.substring(0,10)}...</td>
+                            <td className="px-6 py-4 font-bold text-primary">{(tx.user_id || tx.uid)?.substring(0,10)}...</td>
                             <td className="px-6 py-4">
                               <span className="bg-neutral-800 text-neutral-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
                                 {tx.tier}
@@ -372,7 +372,7 @@ export default function AdminBillingPage() {
                       ) : (
                         promotions.map(promo => (
                           <tr key={promo.id} className="hover:bg-elevated/50 transition-colors">
-                            <td className="px-6 py-4 font-mono font-bold text-xl text-white tracking-widest">{promo.code}</td>
+                            <td className="px-6 py-4 font-mono font-bold text-xl text-primary tracking-widest">{promo.code}</td>
                             <td className="px-6 py-4 font-bold text-emerald-400">{promo.discount_pct}% OFF</td>
                             <td className="px-6 py-4 text-secondary text-sm">{(promo.target_plans || []).join(', ')}</td>
                             <td className="px-6 py-4">
@@ -426,7 +426,7 @@ export default function AdminBillingPage() {
       {gatewayModal.isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-default">
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="text-xl font-bold text-primary mb-6">
               {gatewayModal.mode === "add" ? "Add Crypto Gateway" : "Edit Gateway"}
             </h2>
             <div className="space-y-4 mb-8">
@@ -495,7 +495,7 @@ export default function AdminBillingPage() {
       {promoModal.isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 border border-default">
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="text-xl font-bold text-primary mb-6">
               {promoModal.mode === "add" ? "Create Promotion Code" : "Edit Promotion"}
             </h2>
             <div className="space-y-4 mb-8">
@@ -524,7 +524,7 @@ export default function AdminBillingPage() {
                 <label className="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2">Target Plans</label>
                 <div className="flex gap-4 flex-wrap">
                   {["ALL", "STARTER", "PRO", "ELITE"].map(plan => (
-                    <label key={plan} className="flex items-center gap-2 text-white text-sm cursor-pointer">
+                    <label key={plan} className="flex items-center gap-2 text-primary text-sm cursor-pointer">
                       <input 
                         type="checkbox" 
                         checked={(promoModal.data?.target_plans || []).includes(plan as any)}
@@ -583,7 +583,7 @@ export default function AdminBillingPage() {
                               setSearchQuery("");
                               setSearchResults([]);
                             }}
-                            className="w-full text-left px-4 py-2 hover:bg-white/10 text-white text-sm"
+                            className="w-full text-left px-4 py-2 hover:bg-white/10 text-primary text-sm"
                           >
                             {user.username}
                           </button>

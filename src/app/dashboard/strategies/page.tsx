@@ -241,7 +241,7 @@ export default function StrategiesPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 text-xs font-black uppercase tracking-widest mb-4">
             <i className="las la-book"></i> Playbooks
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter mb-2">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-primary tracking-tighter mb-2">
             My Strategies
           </h1>
           <p className="text-muted dark:text-slate-400 font-medium">
@@ -258,7 +258,7 @@ export default function StrategiesPage() {
             <i className="las la-plus text-lg"></i>
             Create Strategy
             {hasReachedLimit(strategies.length, 'maxStrategies') && (
-              <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 w-64 bg-slate-900 text-white text-xs p-3 rounded-lg shadow-xl z-50">
+              <div className="absolute hidden group-hover:block bottom-full mb-2 right-0 w-64 bg-slate-900 text-primary text-xs p-3 rounded-lg shadow-xl z-50">
                 You have reached your plan limit of {maxStrategies} strategies. Upgrade to Pro for unlimited strategies!
               </div>
             )}
@@ -283,7 +283,7 @@ export default function StrategiesPage() {
           <div className="w-24 h-24 bg-gradient-to-tr from-yellow-100 to-yellow-50 dark:from-yellow-500/20 dark:to-yellow-500/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner rotate-3">
             <i className="las la-chess-knight text-5xl text-yellow-500"></i>
           </div>
-          <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tighter mb-4">No Strategies Yet</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-primary tracking-tighter mb-4">No Strategies Yet</h2>
           <p className="text-muted dark:text-slate-400 max-w-lg mx-auto mb-10 font-medium text-lg">
             A trader without a strategy is just a gambler. Build your first playbook to define your edge in the market.
           </p>
@@ -313,7 +313,7 @@ export default function StrategiesPage() {
                         Public
                       </div>
                     ) : (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-widest shadow-sm">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
                         <i className="las la-lock"></i>
                         Private
                       </div>
@@ -367,7 +367,7 @@ export default function StrategiesPage() {
                   </button>
                 </div>
 
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight line-clamp-2 mb-3 mt-4">
+                <h3 className="text-2xl font-black text-gray-900 dark:text-primary tracking-tighter leading-tight line-clamp-2 mb-3 mt-4">
                   {strategy.name}
                 </h3>
 
@@ -417,7 +417,7 @@ export default function StrategiesPage() {
           <div className="bg-white dark:bg-[#111318] rounded-[2rem] w-full max-w-lg shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 overflow-hidden scale-in-95 duration-300">
             
             <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-              <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+              <h2 className="text-xl font-black text-gray-900 dark:text-primary flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/20 flex items-center justify-center text-blue-500">
                   <i className="las la-share-alt text-2xl"></i>
                 </div>
@@ -425,7 +425,7 @@ export default function StrategiesPage() {
               </h2>
               <button 
                 onClick={() => setIsShareModalOpen(false)}
-                className="w-10 h-10 rounded-full bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 text-muted hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors shadow-sm"
+                className="w-10 h-10 rounded-full bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 text-muted hover:text-gray-900 dark:hover:text-primary flex items-center justify-center transition-colors shadow-sm"
               >
                 <i className="las la-times text-xl"></i>
               </button>
@@ -433,7 +433,7 @@ export default function StrategiesPage() {
 
             <div className="p-8">
               <p className="text-gray-600 dark:text-slate-400 mb-8 font-medium leading-relaxed">
-                Generate a beautiful public page for <strong className="text-gray-900 dark:text-white">{strategyToShare.name}</strong>. Anyone with the link will be able to read your philosophy and rules.
+                Generate a beautiful public page for <strong className="text-gray-900 dark:text-primary">{strategyToShare.name}</strong>. Anyone with the link will be able to read your philosophy and rules.
               </p>
 
               <div className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-5 flex items-center justify-between mb-8 shadow-sm">
@@ -442,7 +442,7 @@ export default function StrategiesPage() {
                     <i className={`las text-2xl ${strategyToShare.is_public ? 'la-globe' : 'la-lock'}`}></i>
                   </div>
                   <div>
-                    <h4 className="font-black text-gray-900 dark:text-white">Public Access</h4>
+                    <h4 className="font-black text-gray-900 dark:text-primary">Public Access</h4>
                     <p className="text-sm text-muted dark:text-slate-400 mt-0.5">Let others view this playbook.</p>
                   </div>
                 </div>
@@ -458,12 +458,12 @@ export default function StrategiesPage() {
                 <div className="animate-in slide-in-from-bottom-4 duration-500 bg-gray-50 dark:bg-[#0a0f1c] rounded-2xl p-5 border border-gray-100 dark:border-white/5">
                   <label className="block text-[11px] font-black uppercase tracking-widest text-muted dark:text-slate-400 mb-3">Your Shareable Link</label>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-sm text-gray-900 dark:text-white font-medium truncate overflow-hidden shadow-inner">
+                    <div className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-sm text-gray-900 dark:text-primary font-medium truncate overflow-hidden shadow-inner">
                       {window.location.origin}/strategy/{strategyToShare.id}
                     </div>
                     <button 
                       onClick={copyPublicLink}
-                      className="w-14 h-[52px] shrink-0 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 flex items-center justify-center transition-all shadow-md hover:shadow-lg"
+                      className="w-14 h-[52px] shrink-0 rounded-xl bg-gray-900 dark:bg-white text-primary dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 flex items-center justify-center transition-all shadow-md hover:shadow-lg"
                       title="Copy Link"
                     >
                       <i className="las la-copy text-2xl"></i>
@@ -492,12 +492,12 @@ export default function StrategiesPage() {
           <div className="bg-white dark:bg-[#111318] rounded-[2rem] w-full max-w-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 my-auto scale-in-95 duration-300">
             
             <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center sticky top-0 bg-white/90 dark:bg-[#111318]/90 backdrop-blur-xl rounded-t-[2rem] z-10">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+              <h2 className="text-2xl font-black text-gray-900 dark:text-primary tracking-tight">
                 {isEditing ? "Manage Playbook" : "Draft New Playbook"}
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 text-muted hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors shadow-sm"
+                className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 text-muted hover:text-gray-900 dark:hover:text-primary flex items-center justify-center transition-colors shadow-sm"
               >
                 <i className="las la-times text-xl"></i>
               </button>
@@ -509,7 +509,7 @@ export default function StrategiesPage() {
                 <div className="space-y-6 bg-gray-50/50 dark:bg-black/10 p-6 rounded-3xl border border-gray-100 dark:border-white/5">
                   {/* Image Upload Area */}
                   <div>
-                    <label className="block text-sm font-black text-gray-900 dark:text-white mb-2">Cover Image (Optional)</label>
+                    <label className="block text-sm font-black text-gray-900 dark:text-primary mb-2">Cover Image (Optional)</label>
                     <div className="flex items-center gap-4">
                       {imageUrl ? (
                         <div className="relative w-32 h-20 rounded-xl overflow-hidden shadow-sm group">
@@ -518,7 +518,7 @@ export default function StrategiesPage() {
                             <button 
                               type="button" 
                               onClick={() => setImageUrl("")}
-                              className="text-white hover:text-rose-400"
+                              className="text-primary hover:text-rose-400"
                             >
                               <i className="las la-trash-alt text-xl"></i>
                             </button>
@@ -548,25 +548,25 @@ export default function StrategiesPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-black text-gray-900 dark:text-white mb-2">Playbook Name <span className="text-rose-500">*</span></label>
+                    <label className="block text-sm font-black text-gray-900 dark:text-primary mb-2">Playbook Name <span className="text-rose-500">*</span></label>
                     <input 
                       type="text" 
                       value={name}
                       onChange={e => setName(e.target.value)}
                       placeholder="e.g. The London Breakout"
-                      className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-gray-900 dark:text-white placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-bold transition-all shadow-sm"
+                      className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-gray-900 dark:text-primary placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-bold transition-all shadow-sm"
                       required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-black text-gray-900 dark:text-white mb-2">Core Philosophy</label>
+                    <label className="block text-sm font-black text-gray-900 dark:text-primary mb-2">Core Philosophy</label>
                     <textarea 
                       value={description}
                       onChange={e => setDescription(e.target.value)}
                       placeholder="Describe the overall edge and market condition this strategy exploits..."
                       rows={4}
-                      className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-gray-900 dark:text-white placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-medium transition-all resize-none shadow-sm"
+                      className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-gray-900 dark:text-primary placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-medium transition-all resize-none shadow-sm"
                     ></textarea>
                   </div>
                 </div>
@@ -574,7 +574,7 @@ export default function StrategiesPage() {
                 <div className="p-6 rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111318]">
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-white/5">
                     <div>
-                      <h3 className="text-lg font-black text-gray-900 dark:text-white">Strict Rules</h3>
+                      <h3 className="text-lg font-black text-gray-900 dark:text-primary">Strict Rules</h3>
                       <p className="text-sm text-muted dark:text-slate-400 mt-1">If these rules are broken, you do not take the trade.</p>
                     </div>
                     <button 
@@ -597,7 +597,7 @@ export default function StrategiesPage() {
                           value={rule}
                           onChange={(e) => handleRuleChange(idx, e.target.value)}
                           placeholder="What must happen for this trade to be valid?"
-                          className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-medium transition-all shadow-sm"
+                          className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-gray-900 dark:text-primary placeholder:text-secondary dark:placeholder:text-slate-600 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 font-medium transition-all shadow-sm"
                         />
                         <button 
                           type="button"

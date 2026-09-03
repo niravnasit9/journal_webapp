@@ -94,7 +94,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: Accou
           <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
-          <h3 className="text-xl font-black text-white mb-2">Monte Carlo Simulator Locked</h3>
+          <h3 className="text-xl font-black text-primary mb-2">Monte Carlo Simulator Locked</h3>
           <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Elite to unlock 10,000-iteration Risk of Ruin simulations based on your unique edge.
           </p>
@@ -105,8 +105,8 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: Accou
         <div className="opacity-20 pointer-events-none blur-sm h-[400px]">
           {/* Mock UI to blur */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Risk of Ruin</h2>
-            <div className="text-3xl font-black text-white">X%</div>
+            <h2 className="text-xl font-bold text-primary">Risk of Ruin</h2>
+            <div className="text-3xl font-black text-primary">X%</div>
           </div>
           <div className="h-[300px] bg-neutral-900 rounded-lg"></div>
         </div>
@@ -118,7 +118,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: Accou
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-dice text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight">Monte Carlo Simulator</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight">Monte Carlo Simulator</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades to calculate your edge and run projections.</p>
       </div>
     );
@@ -129,10 +129,10 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: Accou
   };
 
   return (
-    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-4 md:p-6 shadow-xl w-full min-w-0 overflow-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
             <i className="las la-dice text-[#a855f7]"></i> Monte Carlo Simulator
           </h2>
           <p className="text-sm text-secondary mt-1">Projecting next 50 trades over 100 simulations.</p>

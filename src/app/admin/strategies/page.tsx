@@ -184,7 +184,7 @@ export default function AdminStrategiesPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="heading-page text-white">Global Strategy Directory</h1>
+          <h1 className="heading-page text-primary">Global Strategy Directory</h1>
           <p className="text-sm text-secondary mt-1">
             Track and evaluate the performance of system and user strategies globally.
           </p>
@@ -199,26 +199,26 @@ export default function AdminStrategiesPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-neutral-600"></div>
           <div className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">Total Strategies</div>
-          <div className="text-3xl font-bold text-white">{totalStrategies}</div>
+          <div className="text-3xl font-bold text-primary">{totalStrategies}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Top Global Win Rate</div>
-          <div className="text-3xl font-bold text-white">{topWinRate}%</div>
+          <div className="text-3xl font-bold text-primary">{topWinRate}%</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-purple-500"></div>
           <div className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-1">Most Utilized</div>
-          <div className="text-xl font-bold text-white truncate leading-tight pt-1">{mostUsed}</div>
+          <div className="text-xl font-bold text-primary truncate leading-tight pt-1">{mostUsed}</div>
         </div>
       </div>
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Strategy Leaderboard</h2>
+          <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Strategy Leaderboard</h2>
         </div>
         
         <div className="overflow-x-auto no-scrollbar">
@@ -249,7 +249,7 @@ export default function AdminStrategiesPage() {
                 strategies.map(strat => (
                   <tr key={strat.id} className="hover:bg-elevated/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
-                      <div className="font-bold text-white">{strat.name}</div>
+                      <div className="font-bold text-primary">{strat.name}</div>
                       <div className="text-[10px] text-muted font-mono mt-0.5">{strat.id}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -258,11 +258,11 @@ export default function AdminStrategiesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-bold text-white">{strat.totalTrades.toLocaleString()}</span>
+                      <span className="font-bold text-primary">{strat.totalTrades.toLocaleString()}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-white w-8">{strat.winRate}%</span>
+                        <span className="font-bold text-primary w-8">{strat.winRate}%</span>
                         <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-blue-500 rounded-full" 
@@ -303,14 +303,14 @@ export default function AdminStrategiesPage() {
           <div className="premium-card w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
             
             {modalMode === "delete" ? (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-4 flex items-center gap-2">
                   <i className="las la-exclamation-triangle text-amber-500"></i> Delete Strategy
                 </h2>
                 <div className="premium-inner-box p-4 text-center border-amber-500/20 bg-amber-500/5">
@@ -330,7 +330,7 @@ export default function AdminStrategiesPage() {
               </>
             ) : (
               <>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-6">
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-6">
                   {modalMode === "add" ? "Create New Strategy" : "Edit Strategy"}
                 </h2>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">

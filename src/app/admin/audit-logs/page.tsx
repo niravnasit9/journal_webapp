@@ -68,7 +68,7 @@ export default function AdminAuditLogsPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Security Audit Logs</h1>
+        <h1 className="heading-page text-primary">Security Audit Logs</h1>
         <p className="text-sm text-secondary mt-1">High-density tracking ledger for compliance and monitoring.</p>
       </div>
 
@@ -77,19 +77,19 @@ export default function AdminAuditLogsPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Events Logged (24h)</div>
-          <div className="text-3xl font-bold text-white font-mono">{total24h}</div>
+          <div className="text-3xl font-bold text-primary font-mono">{total24h}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
           <div className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1">Failed Auth Attempts</div>
-          <div className="text-3xl font-bold text-white font-mono">{failedCount}</div>
+          <div className="text-3xl font-bold text-primary font-mono">{failedCount}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
           <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Admin Actions</div>
-          <div className="text-3xl font-bold text-white font-mono">{adminActions}</div>
+          <div className="text-3xl font-bold text-primary font-mono">{adminActions}</div>
         </div>
       </div>
 

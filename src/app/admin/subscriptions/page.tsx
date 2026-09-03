@@ -135,7 +135,7 @@ export default function AdminSubscriptionsPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Global Subscriptions</h1>
+        <h1 className="heading-page text-primary">Global Subscriptions</h1>
         <p className="text-sm text-secondary mt-1">
           Monitor user plan lifecycles, manage access tiers, and track expirations.
         </p>
@@ -146,26 +146,26 @@ export default function AdminSubscriptionsPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
           <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Active Subscriptions</div>
-          <div className="text-3xl font-bold text-white">{activeSubs}</div>
+          <div className="text-3xl font-bold text-primary">{activeSubs}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
           <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Expiring Soon (≤ 7 Days)</div>
-          <div className="text-3xl font-bold text-white">{expiringSoon}</div>
+          <div className="text-3xl font-bold text-primary">{expiringSoon}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
           <div className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1">Expired Accounts</div>
-          <div className="text-3xl font-bold text-white">{expiredSubs}</div>
+          <div className="text-3xl font-bold text-primary">{expiredSubs}</div>
         </div>
       </div>
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Subscription Directory</h2>
+          <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Subscription Directory</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input 
               type="text"
@@ -226,7 +226,7 @@ export default function AdminSubscriptionsPage() {
                             )}
                           </div>
                           <div>
-                            <div className="text-white font-bold">{user.name || "Unknown"}</div>
+                            <div className="text-primary font-bold">{user.name || "Unknown"}</div>
                             <div className="text-xs text-muted">{user.email}</div>
                           </div>
                         </div>
@@ -277,12 +277,12 @@ export default function AdminSubscriptionsPage() {
           <div className="premium-card w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200 relative border border-default">
             <button 
               onClick={() => setIsModalOpen(false)} 
-              className="absolute top-4 right-4 text-muted hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
             >
               <i className="las la-times text-2xl"></i>
             </button>
             
-            <h2 className="text-xl font-bold text-white tracking-tight mb-2 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-primary tracking-tight mb-2 flex items-center gap-2">
               <i className="las la-key text-blue-500"></i> Manage Access
             </h2>
             <p className="text-xs text-secondary mb-6">Modify the plan tier and expiration logic for <strong>{currentUser.email}</strong>.</p>

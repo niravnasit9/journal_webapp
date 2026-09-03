@@ -21,7 +21,7 @@ export const PlanStatusCard = () => {
           <i className="las la-gem text-xl"></i>
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white tracking-tight">Active Plan</h3>
+          <h3 className="text-sm font-bold text-primary tracking-tight">Active Plan</h3>
           <span className="text-[10px] text-secondary font-medium">
             {isLifetime ? 'One-time purchase' : 'Subscription billing'}
           </span>

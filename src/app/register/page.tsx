@@ -136,7 +136,7 @@ export default function RegisterPage() {
       {/* Brand */}
       <div className="mb-8 relative z-10 flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center shadow-xl">
-          <i className="las la-chart-bar text-2xl text-white dark:text-gray-900"></i>
+          <i className="las la-chart-bar text-2xl text-primary dark:text-gray-900"></i>
         </div>
         <h1 className="text-2xl font-black tracking-tighter">
           Profit<span className="text-indigo-600 dark:text-indigo-400">Pulse</span>
@@ -146,7 +146,7 @@ export default function RegisterPage() {
       <div className="bg-white/90 dark:bg-[#111318]/90 backdrop-blur-2xl p-8 sm:p-10 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)] w-full max-w-[440px] border border-gray-100 dark:border-slate-800/50 relative z-10">
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Create Account</h2>
+          <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-primary tracking-tight">Create Account</h2>
           <p className="text-muted dark:text-slate-400 text-sm font-medium">Start tracking your trades with ProfitPulse</p>
         </div>
 
@@ -266,7 +266,7 @@ export default function RegisterPage() {
             type="submit"
             id="register-submit"
             disabled={loading}
-            className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-black py-4 px-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
+            className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-primary dark:text-gray-900 font-black py-4 px-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><i className="las la-spinner la-spin text-xl"></i> Creating Account...</>
@@ -278,7 +278,7 @@ export default function RegisterPage() {
 
         <div className="mt-8 text-center text-sm font-semibold text-muted dark:text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
+          <Link href="/login" className="text-gray-900 dark:text-primary hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
             Sign in
           </Link>
         </div>

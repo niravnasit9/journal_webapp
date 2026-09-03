@@ -39,7 +39,7 @@ export default function TradingPsychology({ trades }: TradingPsychologyProps) {
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-default ml-2">
             <div>
-              <h3 className="font-bold text-white text-lg tracking-tight">{getHeader(t)}</h3>
+              <h3 className="font-bold text-primary text-lg tracking-tight">{getHeader(t)}</h3>
               <p className="text-xs text-muted font-mono mt-1 flex items-center gap-2">
                 <i className="las la-clock"></i> {formatDate(t.open_time)}
               </p>

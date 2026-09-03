@@ -49,7 +49,7 @@ export default function AdminSystemHealthPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="heading-page text-white">System Health & Node Status</h1>
+          <h1 className="heading-page text-primary">System Health & Node Status</h1>
           <p className="text-sm text-secondary mt-1">Live server infrastructure and external API monitor.</p>
         </div>
         <button 
@@ -75,7 +75,7 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.firestore.status}</span>
             </div>
           </div>
-          <h3 className="font-bold text-white text-lg">Firebase Firestore</h3>
+          <h3 className="font-bold text-primary text-lg">Firebase Firestore</h3>
           <p className="text-xs text-muted mt-1 mb-4">Primary database cluster</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
             <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
@@ -94,7 +94,7 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.auth.status}</span>
             </div>
           </div>
-          <h3 className="font-bold text-white text-lg">Firebase Auth</h3>
+          <h3 className="font-bold text-primary text-lg">Firebase Auth</h3>
           <p className="text-xs text-muted mt-1 mb-4">Token issuance & JWT verification</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
             <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
@@ -113,7 +113,7 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.visionAPI.status}</span>
             </div>
           </div>
-          <h3 className="font-bold text-white text-lg">AI Auto-Tagger</h3>
+          <h3 className="font-bold text-primary text-lg">AI Auto-Tagger</h3>
           <p className="text-xs text-muted mt-1 mb-4">Google Cloud Vision API inference</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
             <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>
@@ -132,7 +132,7 @@ export default function AdminSystemHealthPage() {
               <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">{nodes.cryptoWebhook.status}</span>
             </div>
           </div>
-          <h3 className="font-bold text-white text-lg">Payment Webhooks</h3>
+          <h3 className="font-bold text-primary text-lg">Payment Webhooks</h3>
           <p className="text-xs text-muted mt-1 mb-4">USDT network confirmation listeners</p>
           <div className="premium-inner-box p-3 flex justify-between items-center">
             <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Latency</span>

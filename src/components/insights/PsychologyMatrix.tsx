@@ -72,12 +72,12 @@ export const PsychologyMatrix: React.FC<PsychologyMatrixProps> = ({ trades, curr
           <div className="absolute inset-0 bg-neutral-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-2xl transition-all duration-300">
             <div className="flex flex-col items-center gap-3 group-hover:scale-105 transition-transform p-6 text-center">
               <div className="h-12 w-12 rounded-full bg-surface/50 border border-white/10 flex items-center justify-center shadow-2xl">
-                <i className="las la-lock text-2xl text-white/80"></i>
+                <i className="las la-lock text-2xl text-primary/80"></i>
               </div>
-              <span className="text-xs font-bold text-white/90 uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-primary/90 uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full">
                 {tierRequired} Tier Required
               </span>
-              <p className="text-xs text-white/60 max-w-[200px]">
+              <p className="text-xs text-primary/60 max-w-[200px]">
                 Upgrade to reveal your most profitable {title.toLowerCase()}s.
               </p>
             </div>

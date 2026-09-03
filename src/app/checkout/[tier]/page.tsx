@@ -301,7 +301,7 @@ export default function CheckoutPage() {
               <i className="las la-check text-4xl font-bold"></i>
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Payment Successful</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-primary tracking-tight mb-2">Payment Successful</h1>
             <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm sm:text-base">
               Your account has been upgraded and your features are now active.
             </p>
@@ -317,7 +317,7 @@ export default function CheckoutPage() {
               
               <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount Paid</span>
-                <span className="text-lg font-bold text-slate-900 dark:text-white">${amount.toFixed(2)}</span>
+                <span className="text-lg font-bold text-slate-900 dark:text-primary">${amount.toFixed(2)}</span>
               </div>
               
               {cryptoInvoiceActive && selectedCryptoId && (
@@ -332,13 +332,13 @@ export default function CheckoutPage() {
               <div className="flex justify-between items-center pt-2">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaction ID</span>
                 <div className="flex items-center gap-2 max-w-[60%]">
-                  <span className="font-mono text-sm text-slate-900 dark:text-white truncate">{txid}</span>
+                  <span className="font-mono text-sm text-slate-900 dark:text-primary truncate">{txid}</span>
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(txid);
                       toast.success("Transaction ID copied");
                     }}
-                    className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
+                    className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-primary transition-colors shrink-0"
                     title="Copy Transaction ID"
                   >
                     <i className="las la-copy"></i>
@@ -347,7 +347,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <Link href="/dashboard" className="w-full flex items-center justify-center py-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold rounded-xl transition-colors shadow-lg shadow-slate-900/20 dark:shadow-white/10 group">
+            <Link href="/dashboard" className="w-full flex items-center justify-center py-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-primary font-bold rounded-xl transition-colors shadow-lg shadow-slate-900/20 dark:shadow-white/10 group">
               Go to Dashboard
               <i className="las la-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
             </Link>
@@ -363,10 +363,10 @@ export default function CheckoutPage() {
       {/* Simple Header */}
       <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md flex items-center px-6">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
-          <Link href="/pricing" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-colors">
+          <Link href="/pricing" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-primary flex items-center gap-2 transition-colors">
             <i className="las la-arrow-left"></i> Back to Plans
           </Link>
-          <div className="font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="font-bold tracking-tight text-slate-900 dark:text-primary flex items-center gap-2">
             <i className="las la-lock text-emerald-500"></i> Secure Checkout
           </div>
         </div>
@@ -438,7 +438,7 @@ export default function CheckoutPage() {
                   <button 
                     onClick={handleApplyPromo}
                     disabled={!promoCodeInput || isApplyingPromo}
-                    className="h-10 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm rounded-lg transition-colors disabled:opacity-50 shrink-0"
+                    className="h-10 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-primary dark:text-slate-900 font-bold text-sm rounded-lg transition-colors disabled:opacity-50 shrink-0"
                   >
                     {isApplyingPromo ? "..." : "Apply"}
                   </button>
@@ -458,7 +458,7 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-              We currently process payments securely via Cryptocurrency. Send <strong className="text-slate-900 dark:text-white">${amount.toFixed(2)}</strong> to the wallet address below and provide your Transaction Hash.
+              We currently process payments securely via Cryptocurrency. Send <strong className="text-slate-900 dark:text-primary">${amount.toFixed(2)}</strong> to the wallet address below and provide your Transaction Hash.
             </p>
             
             {liveCryptoPrice && cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol && (
@@ -473,7 +473,7 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </div>
-                <div className="text-xl font-bold text-slate-900 dark:text-white">
+                <div className="text-xl font-bold text-slate-900 dark:text-primary">
                   {fetchingPrice ? "..." : `~ ${cryptoRequired.toFixed(cryptoDecimals)} ${cryptoOptions.find(c => c.id === selectedCryptoId)?.symbol}`}
                 </div>
                 <div className="text-xs text-slate-500 mt-2">
@@ -539,7 +539,7 @@ export default function CheckoutPage() {
                       <input 
                         readOnly 
                         value={cryptoOptions.find(c => c.id === selectedCryptoId)?.depositAddress} 
-                        className="w-full h-11 min-h-[44px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 text-xs font-mono text-center text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                        className="w-full h-11 min-h-[44px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 text-xs font-mono text-center text-slate-900 dark:text-primary focus:outline-none cursor-pointer"
                         onClick={() => {
                           const addr = cryptoOptions.find(c => c.id === selectedCryptoId)?.depositAddress;
                           if (addr) {

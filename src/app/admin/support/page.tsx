@@ -92,7 +92,7 @@ export default function AdminSupportPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Support & Tickets</h1>
+        <h1 className="heading-page text-primary">Support & Tickets</h1>
         <p className="text-sm text-secondary mt-1">Manage user inquiries and technical support requests.</p>
       </div>
 
@@ -101,26 +101,26 @@ export default function AdminSupportPage() {
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
           <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Open Tickets</div>
-          <div className="text-3xl font-bold text-white">{openTicketsCount}</div>
+          <div className="text-3xl font-bold text-primary">{openTicketsCount}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
           <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Resolved Today</div>
-          <div className="text-3xl font-bold text-white">{closedToday}</div>
+          <div className="text-3xl font-bold text-primary">{closedToday}</div>
         </div>
         
         <div className="premium-card p-6 shadow-xl relative overflow-hidden group border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
           <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Avg Response Time</div>
-          <div className="text-3xl font-bold text-white">&lt; 2 Hrs</div>
+          <div className="text-3xl font-bold text-primary">&lt; 2 Hrs</div>
         </div>
       </div>
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Active Inbox</h2>
+          <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Active Inbox</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input 
               type="text"
@@ -162,7 +162,7 @@ export default function AdminSupportPage() {
                 filteredTickets.map(t => (
                   <tr key={t.id} className="hover:bg-elevated/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-muted">#{t.id.substring(0,8)}</td>
-                    <td className="px-6 py-4 font-bold text-white">{t.user_email}</td>
+                    <td className="px-6 py-4 font-bold text-primary">{t.user_email}</td>
                     <td className="px-6 py-4 text-neutral-300 truncate max-w-[200px]">{t.subject}</td>
                     <td className="px-6 py-4">
                       {t.status === "open" 
@@ -197,13 +197,13 @@ export default function AdminSupportPage() {
             
             <div className="p-6 border-b border-default bg-elevated flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-bold text-white tracking-tight mb-1">{selectedTicket.subject}</h2>
+                <h2 className="text-xl font-bold text-primary tracking-tight mb-1">{selectedTicket.subject}</h2>
                 <div className="text-xs text-secondary flex items-center gap-3">
                   <span><i className="las la-user"></i> {selectedTicket.user_email}</span>
                   <span><i className="las la-clock"></i> {new Date(selectedTicket.created_at).toLocaleString()}</span>
                 </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-muted hover:text-white">
+              <button onClick={() => setIsModalOpen(false)} className="text-muted hover:text-primary">
                 <i className="las la-times text-2xl"></i>
               </button>
             </div>

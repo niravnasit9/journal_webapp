@@ -108,7 +108,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface font-sans text-white">
+    <div className="min-h-screen bg-surface font-sans text-primary">
       
       {/* Header */}
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-default">
@@ -255,7 +255,7 @@ export default function PricingPage() {
                 )}
 
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                  <h3 className="text-xl font-bold text-primary mb-2">{plan.name}</h3>
                   <p className="text-sm text-secondary h-10">{plan.description}</p>
                 </div>
 
@@ -355,19 +355,19 @@ export default function PricingPage() {
         {/* Promo Code Section */}
         <div className="max-w-md mx-auto mb-24">
           <div className="bg-elevated border border-default rounded-2xl p-6 shadow-lg">
-            <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="las la-ticket-alt text-blue-500"></i> Have a promo code?</h4>
+            <h4 className="text-primary font-bold mb-4 flex items-center gap-2"><i className="las la-ticket-alt text-blue-500"></i> Have a promo code?</h4>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={couponCodeInput}
                 onChange={e => setCouponCodeInput(e.target.value.toUpperCase())}
                 placeholder="Enter code" 
-                className="flex-1 bg-surface border border-default rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
+                className="flex-1 bg-surface border border-default rounded-lg px-4 py-2 text-sm text-primary focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
               />
               <button 
                 onClick={handleApplyCoupon}
                 disabled={isApplyingPromo}
-                className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+                className="bg-neutral-800 hover:bg-neutral-700 text-primary px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
               >
                 {isApplyingPromo ? "..." : "Apply"}
               </button>
@@ -380,7 +380,7 @@ export default function PricingPage() {
         {/* Feature Matrix Table */}
         <div className="max-w-5xl mx-auto mb-24">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white">Compare Plans</h2>
+            <h2 className="text-3xl font-bold text-primary">Compare Plans</h2>
             <p className="text-secondary mt-2">Find the right features for your trading workflow.</p>
           </div>
           
@@ -389,8 +389,8 @@ export default function PricingPage() {
               <thead>
                 <tr className="bg-surface border-b border-default">
                   <th className="py-5 px-6 font-semibold text-secondary uppercase tracking-wider text-sm w-1/4">Features</th>
-                  <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Free</th>
-                  <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Starter</th>
+                  <th className="py-5 px-6 font-bold text-primary text-center text-lg w-[18%]">Free</th>
+                  <th className="py-5 px-6 font-bold text-primary text-center text-lg w-[18%]">Starter</th>
                   <th className="py-5 px-6 font-bold text-blue-400 text-center text-lg w-[18%] relative">
                     Pro
                     <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
@@ -404,7 +404,7 @@ export default function PricingPage() {
                   <td className="py-4 px-6 text-center text-secondary text-sm font-bold">1</td>
                   <td className="py-4 px-6 text-center text-secondary text-sm font-bold">3</td>
                   <td className="py-4 px-6 text-center text-white text-sm font-bold bg-blue-500/5">Unlimited</td>
-                  <td className="py-4 px-6 text-center text-white text-sm font-bold">Unlimited</td>
+                  <td className="py-4 px-6 text-center text-primary text-sm font-bold">Unlimited</td>
                 </tr>
                 <tr className="hover:bg-white/5 transition-colors">
                   <td className="py-4 px-6 text-sm text-neutral-300">MFE / MAE Scatter Plots</td>

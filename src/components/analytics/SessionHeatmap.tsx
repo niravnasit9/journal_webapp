@@ -80,7 +80,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
           <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
-          <h3 className="text-xl font-black text-white mb-2">Algorithmic Session Heatmap Locked</h3>
+          <h3 className="text-xl font-black text-primary mb-2">Algorithmic Session Heatmap Locked</h3>
           <p className="text-sm text-secondary font-medium mb-6 max-w-sm">
             Upgrade to Elite to auto-detect your most profitable trading hours and days using institutional heatmaps.
           </p>
@@ -90,7 +90,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
         </div>
         <div className="opacity-20 pointer-events-none blur-sm w-full h-full">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Session Heatmap</h2>
+            <h2 className="text-xl font-bold text-primary">Session Heatmap</h2>
           </div>
           <div className="h-[250px] bg-neutral-900 rounded-lg grid grid-cols-5 gap-1 p-2">
              {Array.from({length: 20}).map((_, i) => <div key={i} className="bg-[#a855f7]/30 rounded"></div>)}
@@ -104,7 +104,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
     return (
       <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-th text-6xl text-neutral-800 mb-4"></i>
-        <h2 className="text-xl font-bold text-white tracking-tight">Session Heatmap</h2>
+        <h2 className="text-xl font-bold text-primary tracking-tight">Session Heatmap</h2>
         <p className="text-sm text-muted mt-2">Log at least 10 trades to map your most profitable time windows.</p>
       </div>
     );
@@ -113,14 +113,14 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
   const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
   return (
-    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-4 md:p-6 shadow-xl w-full min-w-0 overflow-hidden">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
           <i className="las la-th text-[#a855f7]"></i> Algorithmic Session Heatmap
         </h2>
         {bestSession && (
           <div className="mt-4 bg-[#a855f7]/10 border border-[#a855f7]/20 p-4 rounded-xl">
-            <p className="text-sm text-white font-medium">
+            <p className="text-sm text-primary font-medium">
               <span className="text-[#a855f7] font-bold">Optimal Window Detected:</span> {bestSession}
             </p>
           </div>
@@ -162,9 +162,9 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
                         key={idx} 
                         className={`${bgColor} rounded-md relative group flex items-center justify-center transition-colors hover:ring-2 hover:ring-white`}
                       >
-                        {cell.total > 0 && <span className="text-[10px] text-white/50 font-medium">{cell.total}</span>}
+                        {cell.total > 0 && <span className="text-[10px] text-primary/50 font-medium">{cell.total}</span>}
                         {cell.total > 0 && (
-                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-elevated border border-default text-white text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
+                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-elevated border border-default text-primary text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
                             <p className="font-bold">P&L: ${cell.pnl.toFixed(2)}</p>
                             <p className="text-secondary">Win Rate: {(cell.winRate * 100).toFixed(0)}%</p>
                             <p className="text-secondary">Trades: {cell.total}</p>

@@ -124,7 +124,7 @@ export default function CommandPalette() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Type a command or search users..."
-            className="w-full bg-transparent border-none text-white text-lg py-5 px-4 focus:outline-none focus:ring-0 placeholder-neutral-600 font-sans"
+            className="w-full bg-transparent border-none text-primary text-lg py-5 px-4 focus:outline-none focus:ring-0 placeholder-neutral-600 font-sans"
           />
           <div className="flex gap-1 text-[10px] font-bold text-muted uppercase tracking-widest bg-neutral-900 px-2 py-1 rounded">
             <span>ESC</span>

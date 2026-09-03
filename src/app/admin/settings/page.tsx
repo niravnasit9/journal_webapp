@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Global Platform Settings</h1>
+        <h1 className="heading-page text-primary">Global Platform Settings</h1>
         <p className="text-sm text-secondary mt-1">Comprehensive configuration panel for platform-wide toggles.</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function AdminSettingsPage() {
             
             {/* Section: Access & Operations */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
+              <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-shield-alt text-blue-500"></i> Access & Operations
               </h2>
               
@@ -91,7 +91,7 @@ export default function AdminSettingsPage() {
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
-                    <h3 className="text-sm font-bold text-white">Maintenance Mode</h3>
+                    <h3 className="text-sm font-bold text-primary">Maintenance Mode</h3>
                     <p className="text-xs text-muted mt-1">Disables login and shows maintenance page to all non-admin users.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -107,7 +107,7 @@ export default function AdminSettingsPage() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
-                    <h3 className="text-sm font-bold text-white">New User Registrations</h3>
+                    <h3 className="text-sm font-bold text-primary">New User Registrations</h3>
                     <p className="text-xs text-muted mt-1">Allow new users to sign up for the platform.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -123,7 +123,7 @@ export default function AdminSettingsPage() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-orange-500/10 bg-orange-500/5">
                   <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-primary flex items-center gap-2">
                       <i className="las la-globe-asia text-orange-400"></i> Enable Domestic Markets Module
                     </h3>
                     <p className="text-xs text-muted mt-1">Activates the dual-market infrastructure for Indian Equity/F&O metrics alongside Global markets.</p>
@@ -144,7 +144,7 @@ export default function AdminSettingsPage() {
 
             {/* Section: AI & Trading Engine */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
+              <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-brain text-purple-500"></i> AI & Trading Engine
               </h2>
               
@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div>
-                    <h3 className="text-sm font-bold text-white">Strict AI Enforcement</h3>
+                    <h3 className="text-sm font-bold text-primary">Strict AI Enforcement</h3>
                     <p className="text-xs text-muted mt-1">If enabled, AI rigidly flags trades that violate rules and decreases trust scores.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -168,7 +168,7 @@ export default function AdminSettingsPage() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
-                    <h3 className="text-sm font-bold text-white">AI Revenge Trading Gap (Mins)</h3>
+                    <h3 className="text-sm font-bold text-primary">AI Revenge Trading Gap (Mins)</h3>
                     <p className="text-xs text-muted mt-1">Minimum time gap between trades before AI flags it as revenge trading.</p>
                   </div>
                   <div className="md:w-1/3">
@@ -187,14 +187,14 @@ export default function AdminSettingsPage() {
 
             {/* Section: Integrations */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
+              <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-plug text-purple-500"></i> Integrations
               </h2>
               
               <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
-                    <h3 className="text-sm font-bold text-white">FMP API Key (Economic Calendar)</h3>
+                    <h3 className="text-sm font-bold text-primary">FMP API Key (Economic Calendar)</h3>
                     <p className="text-xs text-muted mt-1">Financial Modeling Prep API key for loading live macroeconomic news.</p>
                   </div>
                   <div className="md:w-1/3">
@@ -212,7 +212,7 @@ export default function AdminSettingsPage() {
 
             {/* Section: Account Defaults */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-default pb-3">
+              <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2 border-b border-default pb-3">
                 <i className="las la-user-cog text-emerald-500"></i> Account Defaults
               </h2>
               
@@ -220,7 +220,7 @@ export default function AdminSettingsPage() {
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
-                    <h3 className="text-sm font-bold text-white">Default Free Trial (Days)</h3>
+                    <h3 className="text-sm font-bold text-primary">Default Free Trial (Days)</h3>
                     <p className="text-xs text-muted mt-1">Number of days a newly registered user gets on the Free tier before expiry.</p>
                   </div>
                   <div className="md:w-1/3">
@@ -236,7 +236,7 @@ export default function AdminSettingsPage() {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
                   <div className="md:w-1/2">
-                    <h3 className="text-sm font-bold text-white">Support Email</h3>
+                    <h3 className="text-sm font-bold text-primary">Support Email</h3>
                     <p className="text-xs text-muted mt-1">The global email address for customer support inquiries.</p>
                   </div>
                   <div className="md:w-1/3">

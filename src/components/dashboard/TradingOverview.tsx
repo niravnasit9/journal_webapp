@@ -21,19 +21,19 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="premium-inner-box p-4">
           <p className="text-xs text-muted uppercase font-bold">Win Rate</p>
-          <p className="text-xl font-bold text-white mt-1">{winRate.toFixed(1)}%</p>
+          <p className="text-xl font-bold text-primary mt-1">{winRate.toFixed(1)}%</p>
         </div>
         <div className="premium-inner-box p-4">
           <p className="text-xs text-muted uppercase font-bold">Total Trades</p>
-          <p className="text-xl font-bold text-white mt-1">{totalTrades}</p>
+          <p className="text-xl font-bold text-primary mt-1">{totalTrades}</p>
         </div>
         <div className="premium-inner-box p-4">
           <p className="text-xs text-muted uppercase font-bold">{isDomestic ? "Total Quantity" : "Total Lots"}</p>
-          <p className="text-xl font-bold text-white mt-1">{totalVolume.toLocaleString()}</p>
+          <p className="text-xl font-bold text-primary mt-1">{totalVolume.toLocaleString()}</p>
         </div>
         <div className="premium-inner-box p-4">
           <p className="text-xs text-muted uppercase font-bold">{isDomestic ? "Total Points" : "Total Pips"}</p>
-          <p className="text-xl font-bold text-white mt-1">{totalPoints.toLocaleString()}</p>
+          <p className="text-xl font-bold text-primary mt-1">{totalPoints.toLocaleString()}</p>
         </div>
       </div>
 
@@ -45,15 +45,15 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total Brokerage</p>
-              <p className="text-sm font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
+              <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total STT</p>
-              <p className="text-sm font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
+              <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total GST</p>
-              <p className="text-sm font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
+              <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-[#1a1a1a] p-3 rounded-lg border border-rose-500/20">
               <p className="text-[10px] text-rose-400 uppercase font-bold mb-1">Total Tax Drag</p>

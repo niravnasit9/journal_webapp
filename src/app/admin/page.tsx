@@ -96,7 +96,7 @@ export default function AdminOverview() {
     <div className="space-y-8 animate-fade-in-up font-sans">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-3xl font-black text-gray-900 dark:text-primary tracking-tight flex items-center gap-3">
             <i className="las la-chart-pie text-4xl text-blue-500"></i>
             Platform Overview
           </h1>
@@ -145,7 +145,7 @@ export default function AdminOverview() {
             </div>
             <h3 className="text-sm font-bold text-muted dark:text-slate-400 uppercase tracking-widest">Total Users</h3>
           </div>
-          <p className="text-4xl font-black text-gray-900 dark:text-white">{stats.totalUsers}</p>
+          <p className="text-4xl font-black text-gray-900 dark:text-primary">{stats.totalUsers}</p>
         </div>
 
         {/* Elite Users */}
@@ -240,7 +240,7 @@ export default function AdminOverview() {
         {/* Recent Registrations Table */}
         <div className="w-full bg-white dark:bg-[#111318] rounded-3xl border border-gray-200 dark:border-white/5 shadow-xl overflow-hidden flex flex-col">
           <div className="p-6 md:p-8 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
-            <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+            <h2 className="text-xl font-black text-gray-900 dark:text-primary flex items-center gap-3">
               <i className="las la-user-clock text-2xl text-blue-500"></i>
               Recent Registrations
             </h2>
@@ -275,7 +275,7 @@ export default function AdminOverview() {
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-gray-900 dark:text-white">{u.name || "Unknown"}</p>
+                            <p className="font-bold text-gray-900 dark:text-primary">{u.name || "Unknown"}</p>
                             <p className="text-[10px] text-muted">{u.email}</p>
                           </div>
                         </div>

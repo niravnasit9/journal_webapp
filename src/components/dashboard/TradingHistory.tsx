@@ -30,7 +30,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
   return (
     <div className="premium-card p-0 overflow-hidden">
       <div className="bg-elevated border-b border-default p-5">
-        <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trading Ledger</h2>
+        <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Trading Ledger</h2>
       </div>
       <div className="overflow-x-auto no-scrollbar">
         <table className="w-full text-left text-sm whitespace-nowrap">
@@ -64,7 +64,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
                 <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time)}</td>
                 {isDomestic ? (
                   <>
-                    <td className="px-6 py-4 font-bold text-white">
+                    <td className="px-6 py-4 font-bold text-primary">
                       {t.domestic_segment === "FNO_OPTIONS" ? `${t.symbol} ${t.strike_price} ${t.option_type}` : t.symbol}
                     </td>
                     <td className="px-6 py-4">
@@ -82,7 +82,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
                   </>
                 ) : (
                   <>
-                    <td className="px-6 py-4 font-bold text-white">{t.symbol}</td>
+                    <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${t.direction === 'BUY' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
                         {t.direction}

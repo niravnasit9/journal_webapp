@@ -136,7 +136,7 @@ export default function LoginPage() {
       {/* Brand */}
       <div className="mb-8 relative z-10 flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center shadow-xl">
-          <i className="las la-chart-bar text-2xl text-white dark:text-gray-900"></i>
+          <i className="las la-chart-bar text-2xl text-primary dark:text-gray-900"></i>
         </div>
         <h1 className="text-2xl font-black tracking-tighter">
           Profit<span className="text-indigo-600 dark:text-indigo-400">Pulse</span>
@@ -148,7 +148,7 @@ export default function LoginPage() {
         {!resetMode ? (
           <>
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Welcome Back</h2>
+              <h2 className="text-3xl font-black mb-2 text-gray-900 dark:text-primary tracking-tight">Welcome Back</h2>
               <p className="text-muted dark:text-slate-400 text-sm font-medium">Sign in to your ProfitPulse account</p>
             </div>
 
@@ -215,7 +215,7 @@ export default function LoginPage() {
                 type="submit"
                 id="login-submit"
                 disabled={loading}
-                className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-black py-4 px-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
+                className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-primary dark:text-gray-900 font-black py-4 px-4 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <><i className="las la-spinner la-spin text-xl"></i> Signing in...</>
@@ -227,7 +227,7 @@ export default function LoginPage() {
 
             <div className="mt-8 text-center text-sm font-semibold text-muted dark:text-slate-400">
               Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
+              <Link href="/register" className="text-gray-900 dark:text-primary hover:text-indigo-600 dark:hover:text-indigo-400 font-black transition-colors underline decoration-2 underline-offset-4 decoration-indigo-500/30 hover:decoration-indigo-500">
                 Create one now
               </Link>
             </div>
@@ -238,7 +238,7 @@ export default function LoginPage() {
               <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <i className="las la-envelope text-3xl text-indigo-500"></i>
               </div>
-              <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white tracking-tight">Reset Password</h2>
+              <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-primary tracking-tight">Reset Password</h2>
               <p className="text-muted dark:text-slate-400 text-sm font-medium">Enter your email and we&apos;ll send you a reset link</p>
             </div>
 

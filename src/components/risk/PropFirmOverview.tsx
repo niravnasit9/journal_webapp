@@ -91,7 +91,7 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
         </div>
         <div className="premium-inner-box py-2 text-right">
           <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Reset In (EST)</span>
-          <span className="text-lg font-mono text-white font-black animate-pulse">{timeLeft || "00:00:00"}</span>
+          <span className="text-lg font-mono text-primary font-black animate-pulse">{timeLeft || "00:00:00"}</span>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
           <div className="flex justify-between items-end mb-4">
             <div>
               <span className="label-premium mb-1">Phase 1 Target (8%)</span>
-              <span className="text-2xl font-black text-white">{formatMoney(netGain)} <span className="text-sm font-medium text-muted">/ {formatMoney(targetGoal)}</span></span>
+              <span className="text-2xl font-black text-primary">{formatMoney(netGain)} <span className="text-sm font-medium text-muted">/ {formatMoney(targetGoal)}</span></span>
             </div>
             <span className="text-lg font-bold text-blue-500">{progressPct.toFixed(1)}%</span>
           </div>
@@ -116,7 +116,7 @@ export const PropFirmOverview: React.FC<{ account: AccountDoc, trades: TradeDoc[
           </div>
           <div className="mt-4 flex items-center justify-between text-sm">
             <span className="text-secondary">Projected Completion:</span>
-            <span className="font-bold text-white">
+            <span className="font-bold text-primary">
               {netGain >= targetGoal ? "Target Hit! 🎉" : (projectedDays ? `~${projectedDays} Trading Days` : "Need more data")}
             </span>
           </div>

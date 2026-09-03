@@ -80,7 +80,7 @@ export default function AdminNotificationsPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="heading-page text-white">Notifications & System Broadcasts</h1>
+        <h1 className="heading-page text-primary">Notifications & System Broadcasts</h1>
         <p className="text-sm text-secondary mt-1">Send immediate platform-wide alerts and announcements.</p>
       </div>
 
@@ -89,7 +89,7 @@ export default function AdminNotificationsPage() {
         {/* Left Section: Broadcast Form */}
         <div className="premium-card p-6 shadow-2xl relative overflow-hidden group border border-default">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
             <i className="las la-broadcast-tower text-blue-500"></i> New Broadcast
           </h2>
           
@@ -143,7 +143,7 @@ export default function AdminNotificationsPage() {
         {/* Right Section: Broadcast History */}
         <div className="premium-card p-0 shadow-2xl border border-default flex flex-col h-full">
           <div className="p-6 border-b border-default bg-elevated">
-            <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2">
               <i className="las la-history text-secondary"></i> Broadcast History
             </h2>
           </div>
@@ -159,7 +159,7 @@ export default function AdminNotificationsPage() {
               broadcasts.map(b => (
                 <div key={b.id} className="premium-inner-box p-4 border border-default hover:border-strong transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-white text-sm">{b.title}</h3>
+                    <h3 className="font-bold text-primary text-sm">{b.title}</h3>
                     <span className="text-[10px] text-muted uppercase tracking-widest font-mono">
                       {new Date(b.created_at).toLocaleString()}
                     </span>

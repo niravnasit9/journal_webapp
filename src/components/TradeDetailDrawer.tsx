@@ -61,11 +61,11 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
               <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest ${trade.direction === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
                 {trade.direction}
               </span>
-              <h2 className="text-xl font-bold text-white tracking-tight">{trade.symbol}</h2>
+              <h2 className="text-xl font-bold text-primary tracking-tight">{trade.symbol}</h2>
             </div>
             <p className="text-xs text-secondary font-mono">{new Date(trade.open_time).toLocaleString()}</p>
           </div>
-          <button onClick={onClose} className="p-2 text-muted hover:text-white bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors">
+          <button onClick={onClose} className="p-2 text-muted hover:text-primary bg-neutral-900 rounded-full hover:bg-neutral-800 transition-colors">
             <i className="las la-times text-xl"></i>
           </button>
         </div>
@@ -83,7 +83,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
             </div>
             <div className="text-right">
               <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Duration</span>
-              <span className="text-lg font-bold text-white">{durationStr}</span>
+              <span className="text-lg font-bold text-primary">{durationStr}</span>
             </div>
           </div>
 
@@ -95,11 +95,11 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-elevated border border-default p-4 rounded-lg">
                 <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Lot Size</span>
-                <span className="text-sm font-bold text-white">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</span>
+                <span className="text-sm font-bold text-primary">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</span>
               </div>
               <div className="bg-elevated border border-default p-4 rounded-lg">
                 <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Realized R:R</span>
-                <span className="text-sm font-bold text-white">{trade.risk_reward_ratio ? `1 : ${trade.risk_reward_ratio}` : 'N/A'}</span>
+                <span className="text-sm font-bold text-primary">{trade.risk_reward_ratio ? `1 : ${trade.risk_reward_ratio}` : 'N/A'}</span>
               </div>
               <div className="bg-elevated border border-default p-4 rounded-lg">
                 <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Entry Price</span>
@@ -134,11 +134,11 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
               </div>
               <div className="flex items-center justify-between bg-elevated border border-default p-3 rounded-lg">
                 <span className="text-sm font-semibold text-secondary">Emotion</span>
-                <span className="text-sm font-bold text-white">{trade.emotion || 'Neutral'}</span>
+                <span className="text-sm font-bold text-primary">{trade.emotion || 'Neutral'}</span>
               </div>
               <div className="flex items-center justify-between bg-elevated border border-default p-3 rounded-lg">
                 <span className="text-sm font-semibold text-secondary">Setup Grade</span>
-                <span className="text-sm font-bold text-white">{trade.setup_grade || 'None'}</span>
+                <span className="text-sm font-bold text-primary">{trade.setup_grade || 'None'}</span>
               </div>
             </div>
           </div>
@@ -153,7 +153,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
                 {trade.entry_chart_url && (
                   <a href={trade.entry_chart_url} target="_blank" rel="noopener noreferrer" className="block bg-elevated border border-default hover:border-blue-500/50 p-4 rounded-lg transition-colors group">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">Entry Chart</span>
+                      <span className="text-sm font-bold text-primary group-hover:text-blue-400 transition-colors">Entry Chart</span>
                       <i className="las la-external-link-alt text-muted group-hover:text-blue-400"></i>
                     </div>
                     {trade.entry_chart_url.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
@@ -169,7 +169,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
                 {trade.exit_chart_url && (
                   <a href={trade.exit_chart_url} target="_blank" rel="noopener noreferrer" className="block bg-elevated border border-default hover:border-blue-500/50 p-4 rounded-lg transition-colors group">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">Exit Chart</span>
+                      <span className="text-sm font-bold text-primary group-hover:text-blue-400 transition-colors">Exit Chart</span>
                       <i className="las la-external-link-alt text-muted group-hover:text-blue-400"></i>
                     </div>
                     {trade.exit_chart_url.match(/\.(jpeg|jpg|gif|png)$/) != null ? (

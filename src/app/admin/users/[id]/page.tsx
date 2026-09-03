@@ -123,7 +123,7 @@ export default function UserCRMProfile() {
             )}
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight leading-none mb-2">{(user as any).username || (user as any).name || "Unknown User"}</h1>
+            <h1 className="text-3xl font-bold text-primary tracking-tight leading-none mb-2">{(user as any).username || (user as any).name || "Unknown User"}</h1>
             <div className="flex items-center gap-3">
               <span className="text-sm font-mono text-secondary">{user.email}</span>
               <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-[0_0_10px_rgba(currentColor,0.1)] ${
@@ -149,13 +149,13 @@ export default function UserCRMProfile() {
         {/* Account Status Widget */}
         <div className="premium-card p-6 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
-          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
             <i className="las la-id-card text-emerald-500"></i> Account Status
           </h2>
           <div className="space-y-4">
             <div className="premium-inner-box p-4 flex justify-between items-center">
               <span className="text-xs font-bold text-muted uppercase tracking-widest">Plan Expiry</span>
-              <span className="font-mono text-white text-sm">
+              <span className="font-mono text-primary text-sm">
                 {user.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString() : "Lifetime"}
               </span>
             </div>
@@ -169,7 +169,7 @@ export default function UserCRMProfile() {
         {/* Financials Widget */}
         <div className="premium-card p-6 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
             <i className="las la-wallet text-blue-500"></i> Financials
           </h2>
           <div className="space-y-4">
@@ -183,18 +183,18 @@ export default function UserCRMProfile() {
         {/* Trading Snapshot */}
         <div className="premium-card p-6 shadow-xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
-          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
             <i className="las la-chart-bar text-amber-500"></i> Trading Snapshot
           </h2>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="premium-inner-box p-4 text-center">
                 <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Total Trades</div>
-                <div className="text-xl font-bold text-white font-mono">{tradesCount}</div>
+                <div className="text-xl font-bold text-primary font-mono">{tradesCount}</div>
               </div>
               <div className="premium-inner-box p-4 text-center">
                 <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Win Rate</div>
-                <div className="text-xl font-bold text-white font-mono">{winRate.toFixed(1)}%</div>
+                <div className="text-xl font-bold text-primary font-mono">{winRate.toFixed(1)}%</div>
               </div>
             </div>
             <div className="premium-inner-box p-4 flex justify-between items-center">
@@ -210,7 +210,7 @@ export default function UserCRMProfile() {
         {/* Admin Notes */}
         <div className="premium-card p-6 shadow-xl">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-primary flex items-center gap-2">
               <i className="las la-clipboard text-purple-500"></i> Admin Notes (Private)
             </h2>
             <button 
@@ -234,7 +234,7 @@ export default function UserCRMProfile() {
         <div className="premium-card p-6 shadow-xl border-rose-500/20 bg-rose-500/5 relative overflow-hidden flex flex-col justify-center items-center text-center">
           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500"></div>
           <i className="las la-exclamation-triangle text-4xl text-rose-500 mb-3 animate-pulse"></i>
-          <h2 className="text-lg font-bold text-white mb-2">Danger Zone</h2>
+          <h2 className="text-lg font-bold text-primary mb-2">Danger Zone</h2>
           <p className="text-xs text-secondary mb-6 max-w-xs">
             Permanently banning this user will instantly revoke their access and destroy their live sessions.
           </p>

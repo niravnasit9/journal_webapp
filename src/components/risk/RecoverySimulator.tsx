@@ -78,12 +78,12 @@ export const RecoverySimulator: React.FC<RecoverySimulatorProps> = ({ account, t
         <div className="absolute inset-0 bg-neutral-900/60 backdrop-blur-[3px] flex items-center justify-center z-10 transition-all duration-300">
           <div className="flex flex-col items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-surface/50 border border-white/10 flex items-center justify-center shadow-xl">
-              <i className="las la-lock text-2xl text-white/70"></i>
+              <i className="las la-lock text-2xl text-primary/70"></i>
             </div>
             <div className="bg-white/10 px-3 py-1 rounded-full">
-               <span className="text-xs font-bold text-white uppercase tracking-widest">Pro Tier</span>
+               <span className="text-xs font-bold text-primary uppercase tracking-widest">Pro Tier</span>
             </div>
-            <p className="text-sm text-white/70 max-w-xs">
+            <p className="text-sm text-primary/70 max-w-xs">
               Unlock the Drawdown Recovery Simulator to get a personalized mathematical path out of drawdown.
             </p>
           </div>

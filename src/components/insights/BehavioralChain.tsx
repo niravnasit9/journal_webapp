@@ -94,8 +94,8 @@ export const BehavioralChain: React.FC<BehavioralChainProps> = ({ trades, curren
             <div className="bg-[var(--plan-elite-bg)] px-3 py-1 rounded-full border border-[var(--plan-elite)]/20">
                <span className="text-xs font-bold text-[var(--plan-elite)] uppercase tracking-widest">Elite Tier Required</span>
             </div>
-            <h3 className="text-lg font-bold text-white mt-1">Post-Loss Behavioral Chain</h3>
-            <p className="text-sm text-white/70 max-w-sm">
+            <h3 className="text-lg font-bold text-primary mt-1">Post-Loss Behavioral Chain</h3>
+            <p className="text-sm text-primary/70 max-w-sm">
               Upgrade to Elite to mathematically track how your lot size and win rate collapse immediately after a losing trade.
             </p>
           </div>
