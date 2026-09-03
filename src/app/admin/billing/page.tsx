@@ -232,7 +232,7 @@ export default function AdminBillingPage() {
                       
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-[#121212] border border-default flex items-center justify-center text-xl text-secondary overflow-hidden">
+                          <div className="w-10 h-10 rounded-xl bg-elevated border border-default flex items-center justify-center text-xl text-secondary overflow-hidden">
                             {gw.logo ? (
                               <img src={gw.logo} alt={gw.name} className="w-full h-full object-contain p-1" />
                             ) : (
@@ -285,7 +285,7 @@ export default function AdminBillingPage() {
           {/* TAB 2: TRANSACTION LEDGER */}
           {activeTab === "ledger" && (
             <div className="premium-card p-0 overflow-hidden">
-              <div className="bg-[#121212] border-b border-default p-5">
+              <div className="bg-elevated border-b border-default p-5">
                 <h2 className="text-sm font-bold text-white uppercase tracking-widest">Global Transactions</h2>
               </div>
               <div className="overflow-x-auto no-scrollbar">
@@ -309,7 +309,7 @@ export default function AdminBillingPage() {
                         const txId = tx.transaction_id || tx.txid || "";
                         
                         return (
-                          <tr key={tx.id} className="hover:bg-[#121212]/50 transition-colors">
+                          <tr key={tx.id} className="hover:bg-elevated/50 transition-colors">
                             <td className="px-6 py-4 text-secondary">
                               {txDate.toLocaleString()}
                             </td>
@@ -371,7 +371,7 @@ export default function AdminBillingPage() {
                         <tr><td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">No active promotions.</td></tr>
                       ) : (
                         promotions.map(promo => (
-                          <tr key={promo.id} className="hover:bg-[#121212]/50 transition-colors">
+                          <tr key={promo.id} className="hover:bg-elevated/50 transition-colors">
                             <td className="px-6 py-4 font-mono font-bold text-xl text-white tracking-widest">{promo.code}</td>
                             <td className="px-6 py-4 font-bold text-emerald-400">{promo.discount_pct}% OFF</td>
                             <td className="px-6 py-4 text-secondary text-sm">{(promo.target_plans || []).join(', ')}</td>
@@ -436,7 +436,7 @@ export default function AdminBillingPage() {
                   type="text" 
                   value={gatewayModal.data?.name || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, name: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-default"
+                  className="input-premium w-full bg-elevated border-default"
                   placeholder="e.g. Tether (USDT)"
                 />
               </div>
@@ -447,7 +447,7 @@ export default function AdminBillingPage() {
                     type="text" 
                     value={gatewayModal.data?.symbol || ""}
                     onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, symbol: e.target.value.toUpperCase() } })}
-                    className="input-premium w-full bg-[#121212] border-default uppercase"
+                    className="input-premium w-full bg-elevated border-default uppercase"
                     placeholder="USDT"
                   />
                 </div>
@@ -457,7 +457,7 @@ export default function AdminBillingPage() {
                     type="text" 
                     value={gatewayModal.data?.network || ""}
                     onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, network: e.target.value } })}
-                    className="input-premium w-full bg-[#121212] border-default"
+                    className="input-premium w-full bg-elevated border-default"
                     placeholder="TRC20"
                   />
                 </div>
@@ -468,7 +468,7 @@ export default function AdminBillingPage() {
                   type="text" 
                   value={gatewayModal.data?.depositAddress || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, depositAddress: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-default font-mono text-sm"
+                  className="input-premium w-full bg-elevated border-default font-mono text-sm"
                   placeholder="T..."
                 />
               </div>
@@ -478,7 +478,7 @@ export default function AdminBillingPage() {
                   type="text" 
                   value={gatewayModal.data?.logo || ""}
                   onChange={e => setGatewayModal({ ...gatewayModal, data: { ...gatewayModal.data!, logo: e.target.value } })}
-                  className="input-premium w-full bg-[#121212] border-default text-sm"
+                  className="input-premium w-full bg-elevated border-default text-sm"
                   placeholder="https://example.com/usdt.png"
                 />
               </div>
@@ -505,7 +505,7 @@ export default function AdminBillingPage() {
                   type="text" 
                   value={promoModal.data?.code || ""}
                   onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, code: e.target.value.toUpperCase() } })}
-                  className="input-premium w-full bg-[#121212] border-default font-mono tracking-widest uppercase text-xl"
+                  className="input-premium w-full bg-elevated border-default font-mono tracking-widest uppercase text-xl"
                   placeholder="BLACKFRIDAY50"
                 />
               </div>
@@ -515,7 +515,7 @@ export default function AdminBillingPage() {
                   type="number" 
                   value={promoModal.data?.discount_pct || 0}
                   onChange={e => setPromoModal({ ...promoModal, data: { ...promoModal.data!, discount_pct: Number(e.target.value) } })}
-                  className="input-premium w-full bg-[#121212] border-default"
+                  className="input-premium w-full bg-elevated border-default"
                   min="1" max="100"
                 />
               </div>
@@ -534,7 +534,7 @@ export default function AdminBillingPage() {
                           else plans = plans.filter(p => p !== plan);
                           setPromoModal({...promoModal, data: { ...promoModal.data!, target_plans: plans }});
                         }}
-                        className="w-4 h-4 rounded border-neutral-600 bg-[#0a0a0a] text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                        className="w-4 h-4 rounded border-neutral-600 bg-surface text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
                       />
                       {plan}
                     </label>
@@ -547,7 +547,7 @@ export default function AdminBillingPage() {
                 <select 
                   value={promoModal.data?.target_users === "ALL" ? "ALL" : "SPECIFIC"}
                   onChange={e => setPromoModal({...promoModal, data: { ...promoModal.data!, target_users: e.target.value === "ALL" ? "ALL" : [] }})}
-                  className="input-premium w-full bg-[#121212] border-default font-bold text-secondary mb-2"
+                  className="input-premium w-full bg-elevated border-default font-bold text-secondary mb-2"
                 >
                   <option value="ALL">All Users</option>
                   <option value="SPECIFIC">Specific Users</option>
@@ -560,7 +560,7 @@ export default function AdminBillingPage() {
                       placeholder="Search user by username..." 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="input-premium w-full bg-[#0a0a0a] border-default text-sm" 
+                      className="input-premium w-full bg-surface border-default text-sm" 
                     />
                     {isSearching && <i className="las la-spinner la-spin absolute right-3 top-2.5 text-muted"></i>}
                     

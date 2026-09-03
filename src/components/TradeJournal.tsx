@@ -125,14 +125,14 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
     }).format(val);
   };
 
-  const filterSelectClass = "bg-[#121212] border border-default text-neutral-300 text-xs rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none";
+  const filterSelectClass = "bg-elevated border border-default text-neutral-300 text-xs rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none";
 
   return (
     <>
-      <Card className="flex flex-col font-sans overflow-hidden bg-[#0a0a0a] border-default">
+      <Card className="flex flex-col font-sans overflow-hidden bg-surface border-default">
         
         {/* Quick Stats Ribbon */}
-        <div className="bg-[#121212] border-b border-default p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-elevated border-b border-default p-4 grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider mb-1">Filtered P&L</span>
             <span className={`text-lg font-black ${quickStats.totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -158,7 +158,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
         </div>
 
         {/* Table Header / Filters */}
-        <div className="p-4 md:p-6 border-b border-default flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center bg-[#0a0a0a]">
+        <div className="p-4 md:p-6 border-b border-default flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center bg-surface">
           <div className="flex justify-between items-center w-full xl:w-auto">
             <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
               <i className="las la-history text-blue-500"></i> Trade History
@@ -179,7 +179,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
           <div className="hidden xl:flex flex-row gap-3 w-auto items-center flex-wrap">
             
             {/* Multi-Filters */}
-            <div className="flex items-center gap-2 bg-[#121212] p-1.5 rounded-xl border border-default">
+            <div className="flex items-center gap-2 bg-elevated p-1.5 rounded-xl border border-default">
               <select className={filterSelectClass} value={filterDirection} onChange={e => setFilterDirection(e.target.value as any)}>
                 <option value="ALL">All Dirs</option>
                 <option value="BUY">LONG</option>
@@ -264,7 +264,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-[#121212] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
+              <tr className="bg-elevated text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-4">Open Time</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
@@ -274,7 +274,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                 <th className="px-4 py-4 w-12 text-center"></th>
               </tr>
             </thead>
-            <tbody className="text-sm bg-[#0a0a0a]">
+            <tbody className="text-sm bg-surface">
               {filteredTrades.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-muted">
@@ -288,7 +288,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                 filteredTrades.map((trade) => (
                   <tr 
                     key={trade.id} 
-                    className="border-b border-default/50 hover:bg-[#121212] transition-colors group cursor-pointer"
+                    className="border-b border-default/50 hover:bg-elevated transition-colors group cursor-pointer"
                     onClick={() => setSelectedTrade(trade)}
                   >
                     <td className="px-6 py-4 text-secondary font-medium">
@@ -346,7 +346,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
               className="absolute inset-0"
               onClick={() => setIsFilterSheetOpen(false)}
             />
-            <div className={`relative w-full border-t border-default rounded-t-3xl shadow-2xl p-6 pb-10 bg-[#0a0a0a] animate-in slide-in-from-bottom-full duration-300 transition-all`}>
+            <div className={`relative w-full border-t border-default rounded-t-3xl shadow-2xl p-6 pb-10 bg-surface animate-in slide-in-from-bottom-full duration-300 transition-all`}>
               <div className="w-12 h-1.5 bg-neutral-800 rounded-full mx-auto mb-6"></div>
               
               <h3 className="text-xl font-bold text-white mb-6">Filter Trades</h3>

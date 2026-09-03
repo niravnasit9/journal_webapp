@@ -75,9 +75,9 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
 
   if (!isElite) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
-        <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
+        <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
+          <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Algorithmic Session Heatmap Locked</h3>
@@ -102,7 +102,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
 
   if (trades.length < 10) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-th text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Session Heatmap</h2>
         <p className="text-sm text-muted mt-2">Log at least 10 trades to map your most profitable time windows.</p>
@@ -113,7 +113,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
   const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
   return (
-    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
           <i className="las la-th text-[#a855f7]"></i> Algorithmic Session Heatmap
@@ -148,7 +148,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
                 <div key={row.hour} className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr] gap-1 h-8">
                   <div className="text-right pr-2 text-xs text-muted flex items-center justify-end">{`${h12}${ampm}`}</div>
                   {row.days.map((cell, idx) => {
-                    let bgColor = 'bg-[#121212]';
+                    let bgColor = 'bg-elevated';
                     if (cell.total > 0) {
                       if (cell.pnl > 0) {
                         bgColor = cell.pnl > 500 ? 'bg-emerald-500' : 'bg-emerald-500/50';
@@ -164,7 +164,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
                       >
                         {cell.total > 0 && <span className="text-[10px] text-white/50 font-medium">{cell.total}</span>}
                         {cell.total > 0 && (
-                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#121212] border border-default text-white text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
+                          <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-elevated border border-default text-white text-xs p-2 rounded shadow-xl z-20 pointer-events-none whitespace-nowrap">
                             <p className="font-bold">P&L: ${cell.pnl.toFixed(2)}</p>
                             <p className="text-secondary">Win Rate: {(cell.winRate * 100).toFixed(0)}%</p>
                             <p className="text-secondary">Trades: {cell.total}</p>

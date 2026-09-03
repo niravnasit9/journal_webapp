@@ -217,7 +217,7 @@ export default function AdminStrategiesPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Strategy Leaderboard</h2>
         </div>
         
@@ -247,7 +247,7 @@ export default function AdminStrategiesPage() {
                 </tr>
               ) : (
                 strategies.map(strat => (
-                  <tr key={strat.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
+                  <tr key={strat.id} className="hover:bg-elevated/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <div className="font-bold text-white">{strat.name}</div>
                       <div className="text-[10px] text-muted font-mono mt-0.5">{strat.id}</div>
@@ -341,7 +341,7 @@ export default function AdminStrategiesPage() {
                         type="text" 
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="e.g. ICT Silver Bullet"
                       />
                     </div>
@@ -351,7 +351,7 @@ export default function AdminStrategiesPage() {
                         type="text" 
                         value={formData.owner_uid}
                         onChange={e => setFormData({...formData, owner_uid: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       />
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function AdminStrategiesPage() {
                     <textarea 
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-default h-24 resize-none"
+                      className="input-premium w-full bg-elevated border-default h-24 resize-none"
                       placeholder="Strategy details..."
                     />
                   </div>
@@ -385,7 +385,7 @@ export default function AdminStrategiesPage() {
                               newRules[idx] = e.target.value;
                               setFormData({...formData, rules: newRules});
                             }}
-                            className="input-premium w-full bg-[#121212] border-default"
+                            className="input-premium w-full bg-elevated border-default"
                             placeholder={`Rule ${idx + 1}`}
                           />
                           <button 
@@ -414,7 +414,7 @@ export default function AdminStrategiesPage() {
                         type="text" 
                         value={formData.owner_name}
                         onChange={e => setFormData({...formData, owner_name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       />
                     </div>
                     <div>
@@ -423,7 +423,7 @@ export default function AdminStrategiesPage() {
                         type="text" 
                         value={formData.owner_email}
                         onChange={e => setFormData({...formData, owner_email: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       />
                     </div>
                   </div>
@@ -433,7 +433,7 @@ export default function AdminStrategiesPage() {
                       type="text" 
                       value={formData.image_url}
                       onChange={e => setFormData({...formData, image_url: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-default"
+                      className="input-premium w-full bg-elevated border-default"
                     />
                   </div>
                   <div className="flex items-center gap-6 pt-2">

@@ -95,7 +95,7 @@ export default function AdminAuditLogsPage() {
 
       {/* Table */}
       <div className="premium-card p-0 overflow-hidden border border-default">
-        <div className="bg-[#121212] border-b border-default p-4">
+        <div className="bg-elevated border-b border-default p-4">
           <input 
             type="text"
             placeholder="Search by IP, Email, or Action Type..."
@@ -108,7 +108,7 @@ export default function AdminAuditLogsPage() {
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left font-mono text-xs text-secondary whitespace-nowrap">
             <thead>
-              <tr className="bg-[#0a0a0a] text-secondary font-bold uppercase tracking-widest border-b border-default">
+              <tr className="bg-surface text-secondary font-bold uppercase tracking-widest border-b border-default">
                 <th className="px-6 py-3">Timestamp</th>
                 <th className="px-6 py-3">Actor / Email</th>
                 <th className="px-6 py-3">Action Type</th>
@@ -123,7 +123,7 @@ export default function AdminAuditLogsPage() {
                 <tr><td colSpan={5} className="px-6 py-12 text-center text-secondary font-bold">No logs found.</td></tr>
               ) : (
                 filteredLogs.map(log => (
-                  <tr key={log.id} className="hover:bg-[#121212] transition-colors">
+                  <tr key={log.id} className="hover:bg-elevated transition-colors">
                     <td className="px-6 py-3">{new Date(log.created_at).toISOString().replace('T', ' ').substring(0,19)}</td>
                     <td className="px-6 py-3 text-neutral-300 font-bold">{log.admin_email}</td>
                     <td className="px-6 py-3">

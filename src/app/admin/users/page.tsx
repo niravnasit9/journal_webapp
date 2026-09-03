@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.uid} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
+                  <tr key={u.uid} className="hover:bg-elevated/50 transition-colors border-b border-default">
                     <td className="px-4 md:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-elevated flex items-center justify-center shrink-0 border border-default hidden sm:flex">
@@ -307,7 +307,7 @@ export default function AdminUsersPage() {
                       className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                         selectedTier === plan.id 
                           ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
-                          : 'border-default bg-[#121212] hover:bg-neutral-800/50'
+                          : 'border-default bg-elevated hover:bg-neutral-800/50'
                       }`}
                     >
                       <span className={`text-sm font-bold uppercase tracking-widest ${selectedTier === plan.id ? 'text-blue-400' : 'text-secondary'}`}>

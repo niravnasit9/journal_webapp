@@ -55,9 +55,9 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
 
   if (!isPremium) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
-        <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden h-[400px]">
+        <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
+          <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Drawdown Profile Locked</h3>
@@ -81,7 +81,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
 
   if (trades.length < 5) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-water text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Drawdown Profile</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades to calculate High Water Marks and underwater depth.</p>
@@ -92,7 +92,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#121212] border border-default p-3 rounded-lg shadow-xl">
+        <div className="bg-elevated border border-default p-3 rounded-lg shadow-xl">
           <p className="text-xs text-secondary mb-1">{label}</p>
           <p className="text-sm font-bold text-rose-500 flex items-center gap-2">
             Drawdown: ${Math.abs(payload[0].value).toFixed(2)}
@@ -104,7 +104,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -113,7 +113,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
           <p className="text-sm text-secondary mt-1">Equity depth below the High Water Mark.</p>
         </div>
         
-        <div className="bg-[#121212] border border-default px-4 py-2 rounded-xl text-right flex items-center gap-6">
+        <div className="bg-elevated border border-default px-4 py-2 rounded-xl text-right flex items-center gap-6">
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Max Depth</span>
             <span className="text-lg font-black text-rose-500">-${maxDrawdown.toFixed(2)}</span>

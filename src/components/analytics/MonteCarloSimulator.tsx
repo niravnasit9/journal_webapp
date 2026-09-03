@@ -6,7 +6,7 @@ import { TradeDoc, AccountDoc } from '@/lib/firebase/schema';
 import { useAuth } from '@/lib/firebase/authContext';
 import Link from 'next/link';
 
-export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: AccountDoc }> = ({ trades, account }) => {
+export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: AccountDoc }> = ({ trades, account }) => {
   const { tier } = useAuth();
   const isElite = tier === 'elite';
 
@@ -36,7 +36,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
 
     const iterations = 100;
     const nextTrades = 50;
-    const currentBalance = account.current_balance || account.initial_balance || 10000;
+    const currentBalance = account?.current_balance || account?.initial_balance || 10000;
     const ruinThreshold = currentBalance * 0.90; // 10% drop
 
     let ruinCount = 0;
@@ -89,9 +89,9 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
 
   if (!isElite) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden">
-        <div className="absolute inset-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-[#121212] rounded-full flex items-center justify-center border border-default mb-4">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full relative overflow-hidden">
+        <div className="absolute inset-0 bg-surface/80 backdrop-blur-md z-10 flex flex-col items-center justify-center text-center p-6">
+          <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center border border-default mb-4">
             <i className="las la-lock text-3xl text-secondary"></i>
           </div>
           <h3 className="text-xl font-black text-white mb-2">Monte Carlo Simulator Locked</h3>
@@ -116,7 +116,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
 
   if (trades.length < 5) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-dice text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">Monte Carlo Simulator</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades to calculate your edge and run projections.</p>
@@ -125,11 +125,11 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
   }
 
   const formatMoney = (val: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: account.currency || 'USD', minimumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: account?.currency || 'USD', minimumFractionDigits: 0 }).format(val);
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -138,7 +138,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account: Accoun
           <p className="text-sm text-secondary mt-1">Projecting next 50 trades over 100 simulations.</p>
         </div>
         
-        <div className="bg-[#121212] border border-default px-5 py-3 rounded-xl text-right flex items-center gap-4">
+        <div className="bg-elevated border border-default px-5 py-3 rounded-xl text-right flex items-center gap-4">
           <div>
             <span className="block text-[10px] uppercase font-bold text-muted tracking-wider">Risk of Ruin</span>
             <span className="block text-[9px] text-secondary">(10% Drawdown)</span>

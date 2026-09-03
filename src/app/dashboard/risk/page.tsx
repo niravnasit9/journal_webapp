@@ -176,7 +176,7 @@ export default function RiskCenterPage() {
         </div>
       </div>
 
-      {accounts.length === 0 ? (
+      {workspaceAccounts.length === 0 ? (
         <Card className="p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-elevated flex items-center justify-center mb-4 border border-default">
             <i className="las la-shield-alt text-3xl text-muted"></i>

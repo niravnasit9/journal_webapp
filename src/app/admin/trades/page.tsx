@@ -176,7 +176,7 @@ export default function AdminTradesPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trade Activity</h2>
           <select
             value={marketFilter}
@@ -217,7 +217,7 @@ export default function AdminTradesPage() {
                 </tr>
               ) : (
                 filteredTrades.map(trade => (
-                  <tr key={trade.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
+                  <tr key={trade.id} className="hover:bg-elevated/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <span className="text-neutral-300 font-medium">{new Date(trade.open_time).toLocaleString()}</span>
                     </td>
@@ -382,7 +382,7 @@ export default function AdminTradesPage() {
                         type="text" 
                         value={formData.symbol || ""}
                         onChange={e => setFormData({...formData, symbol: e.target.value.toUpperCase()})}
-                        className="input-premium w-full bg-[#121212] border-default uppercase"
+                        className="input-premium w-full bg-elevated border-default uppercase"
                       />
                     </div>
                     <div>
@@ -390,7 +390,7 @@ export default function AdminTradesPage() {
                       <select 
                         value={formData.direction || "BUY"}
                         onChange={e => setFormData({...formData, direction: e.target.value as "BUY" | "SELL"})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       >
                         <option value="BUY">BUY (Long)</option>
                         <option value="SELL">SELL (Short)</option>
@@ -405,7 +405,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.lot_size || 0}
                         onChange={e => setFormData({...formData, lot_size: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.01"
                       />
                     </div>
@@ -415,7 +415,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.profit_loss || 0}
                         onChange={e => setFormData({...formData, profit_loss: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.01"
                       />
                     </div>
@@ -428,7 +428,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.open_price || 0}
                         onChange={e => setFormData({...formData, open_price: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.00001"
                       />
                     </div>
@@ -438,7 +438,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.close_price || 0}
                         onChange={e => setFormData({...formData, close_price: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.00001"
                       />
                     </div>
@@ -451,7 +451,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.pips || 0}
                         onChange={e => setFormData({...formData, pips: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.1"
                       />
                     </div>
@@ -461,7 +461,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.commission || 0}
                         onChange={e => setFormData({...formData, commission: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.01"
                       />
                     </div>
@@ -471,7 +471,7 @@ export default function AdminTradesPage() {
                         type="number" 
                         value={formData.swap || 0}
                         onChange={e => setFormData({...formData, swap: parseFloat(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         step="0.01"
                       />
                     </div>
@@ -483,7 +483,7 @@ export default function AdminTradesPage() {
                       <select 
                         value={formData.emotion || "Neutral"}
                         onChange={e => setFormData({...formData, emotion: e.target.value as any})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       >
                         <option value="Neutral">Neutral</option>
                         <option value="FOMO">FOMO</option>
@@ -498,7 +498,7 @@ export default function AdminTradesPage() {
                       <select 
                         value={formData.execution_score || "None"}
                         onChange={e => setFormData({...formData, execution_score: e.target.value as any})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       >
                         <option value="None">None</option>
                         <option value="Perfect">Perfect</option>

@@ -41,7 +41,7 @@ export const MaeMfeScatter: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
 
   if (trades.length < 5) {
     return (
-      <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full h-[400px] flex flex-col items-center justify-center text-center">
         <i className="las la-braille text-6xl text-neutral-800 mb-4"></i>
         <h2 className="text-xl font-bold text-white tracking-tight">MFE / MAE Inefficiency</h2>
         <p className="text-sm text-muted mt-2">Log at least 5 trades with MFE/MAE data to unlock this scatter plot.</p>
@@ -53,7 +53,7 @@ export const MaeMfeScatter: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-[#121212] border border-default p-3 rounded-lg shadow-xl">
+        <div className="bg-elevated border border-default p-3 rounded-lg shadow-xl">
           <p className="text-sm font-bold text-white mb-1">{data.symbol}</p>
           <div className="space-y-1 text-xs">
             <p className="text-emerald-400">MFE: +${data.mfe.toFixed(2)}</p>
@@ -67,7 +67,7 @@ export const MaeMfeScatter: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
   };
 
   return (
-    <div className="bg-[#0a0a0a] border border-default rounded-2xl p-6 shadow-xl w-full">
+    <div className="bg-surface border border-default rounded-2xl p-6 shadow-xl w-full">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
           <i className="las la-braille text-[#a855f7]"></i> Trade Excursion (MFE / MAE)

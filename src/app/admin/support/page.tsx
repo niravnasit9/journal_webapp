@@ -119,7 +119,7 @@ export default function AdminSupportPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Active Inbox</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input 
@@ -160,7 +160,7 @@ export default function AdminSupportPage() {
                 <tr><td colSpan={6} className="px-6 py-12 text-center text-muted font-bold">No tickets match your criteria.</td></tr>
               ) : (
                 filteredTickets.map(t => (
-                  <tr key={t.id} className="hover:bg-[#121212]/50 transition-colors">
+                  <tr key={t.id} className="hover:bg-elevated/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-muted">#{t.id.substring(0,8)}</td>
                     <td className="px-6 py-4 font-bold text-white">{t.user_email}</td>
                     <td className="px-6 py-4 text-neutral-300 truncate max-w-[200px]">{t.subject}</td>
@@ -195,7 +195,7 @@ export default function AdminSupportPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="premium-card w-full max-w-2xl p-0 shadow-2xl animate-in zoom-in-95 border border-default overflow-hidden flex flex-col max-h-[85vh]">
             
-            <div className="p-6 border-b border-default bg-[#121212] flex justify-between items-start">
+            <div className="p-6 border-b border-default bg-elevated flex justify-between items-start">
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight mb-1">{selectedTicket.subject}</h2>
                 <div className="text-xs text-secondary flex items-center gap-3">
@@ -229,7 +229,7 @@ export default function AdminSupportPage() {
               )}
             </div>
 
-            <div className="p-6 border-t border-default bg-[#121212]">
+            <div className="p-6 border-t border-default bg-elevated">
               {selectedTicket.status === "open" ? (
                 <div className="space-y-4">
                   <textarea 

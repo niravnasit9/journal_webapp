@@ -34,7 +34,7 @@ export default function ReportsPage() {
   
   useEffect(() => {
     if (user) fetchData();
-  }, [user, role, isDemoMode]);
+  }, [user, role, isDemoMode, isDomestic]);
 
   const fetchData = async () => {
     if (!user) return;

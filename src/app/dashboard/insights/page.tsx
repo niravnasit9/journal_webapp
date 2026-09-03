@@ -26,7 +26,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     if (user) fetchTrades();
-  }, [user, role, isDemoMode]);
+  }, [user, role, isDemoMode, isDomestic]);
 
   const fetchTrades = async () => {
     if (!user) return;

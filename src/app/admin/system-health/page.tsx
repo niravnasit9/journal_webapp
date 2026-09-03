@@ -55,7 +55,7 @@ export default function AdminSystemHealthPage() {
         <button 
           onClick={runDiagnostics} 
           disabled={isPinging}
-          className="btn-ghost border border-strong font-bold bg-[#121212] flex items-center gap-2"
+          className="btn-ghost border border-strong font-bold bg-elevated flex items-center gap-2"
         >
           {isPinging ? <LoadingSpinner className="w-5 h-5 border-blue-500" /> : <i className="las la-sync-alt"></i>}
           Run Diagnostics

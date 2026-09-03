@@ -29,7 +29,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
 
   return (
     <div className="premium-card p-0 overflow-hidden">
-      <div className="bg-[#121212] border-b border-default p-5">
+      <div className="bg-elevated border-b border-default p-5">
         <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trading Ledger</h2>
       </div>
       <div className="overflow-x-auto no-scrollbar">
@@ -59,7 +59,7 @@ export default function TradingHistory({ trades }: TradingHistoryProps) {
           </thead>
           <tbody className="divide-y divide-neutral-800">
             {trades.map(t => (
-              <tr key={t.id} className="hover:bg-[#121212]/50 transition-colors">
+              <tr key={t.id} className="hover:bg-elevated/50 transition-colors">
                 <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.open_time)}</td>
                 <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time)}</td>
                 {isDomestic ? (

@@ -164,7 +164,7 @@ export default function AdminSubscriptionsPage() {
 
       {/* The Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Subscription Directory</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <input 
@@ -215,7 +215,7 @@ export default function AdminSubscriptionsPage() {
                 filteredUsers.map(user => {
                   const status = getStatus(user);
                   return (
-                    <tr key={user.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
+                    <tr key={user.id} className="hover:bg-elevated/50 transition-colors border-b border-default">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden border border-strong">
@@ -302,7 +302,7 @@ export default function AdminSubscriptionsPage() {
                           : tier === "STARTER" ? "bg-blue-500/20 text-blue-400 border-blue-500" 
                           : tier === "PRO" ? "bg-purple-500/20 text-purple-400 border-purple-500" 
                           : "bg-amber-500/20 text-amber-400 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-                          : "bg-[#121212] text-muted border-default hover:border-strong"
+                          : "bg-elevated text-muted border-default hover:border-strong"
                       }`}
                     >
                       {tier}
@@ -323,7 +323,7 @@ export default function AdminSubscriptionsPage() {
                         className={`py-2 px-1 text-center rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${
                           selectedDuration === dur 
                             ? "bg-white/10 text-white border-white/20" 
-                            : "bg-[#121212] text-muted border-default hover:border-strong"
+                            : "bg-elevated text-muted border-default hover:border-strong"
                         }`}
                       >
                         {dur.replace("_", " ")}
@@ -338,7 +338,7 @@ export default function AdminSubscriptionsPage() {
                         type="date" 
                         value={customExpiry}
                         onChange={e => setCustomExpiry(e.target.value)}
-                        className="input-premium w-full bg-[#121212] border-default text-sm"
+                        className="input-premium w-full bg-elevated border-default text-sm"
                       />
                     </div>
                   )}

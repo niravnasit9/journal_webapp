@@ -111,7 +111,7 @@ export default function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[15vh]">
       <div 
-        className="premium-inner-box w-full max-w-2xl bg-[#0a0a0a] border border-default rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95"
+        className="premium-inner-box w-full max-w-2xl bg-surface border border-default rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -148,7 +148,7 @@ export default function CommandPalette() {
                   className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-colors ${
                     isSelected 
                       ? "bg-blue-600/10 text-blue-400" 
-                      : "text-neutral-300 hover:bg-[#121212]"
+                      : "text-neutral-300 hover:bg-elevated"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ export default function CommandPalette() {
         </div>
         
         {/* Footer */}
-        <div className="bg-[#121212] px-4 py-2 border-t border-default flex items-center justify-between text-[10px] font-bold text-muted uppercase tracking-widest font-sans">
+        <div className="bg-elevated px-4 py-2 border-t border-default flex items-center justify-between text-[10px] font-bold text-muted uppercase tracking-widest font-sans">
           <div className="flex gap-4">
             <span className="flex items-center gap-1"><kbd className="bg-neutral-800 px-1.5 py-0.5 rounded">↑↓</kbd> to navigate</span>
             <span className="flex items-center gap-1"><kbd className="bg-neutral-800 px-1.5 py-0.5 rounded">↵</kbd> to select</span>

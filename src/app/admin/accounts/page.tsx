@@ -150,7 +150,7 @@ export default function AdminAccountsPage() {
 
       {/* Data Table */}
       <div className="premium-card p-0 overflow-hidden">
-        <div className="bg-[#121212] border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
+        <div className="bg-elevated border-b border-default flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Platform Accounts</h2>
           <select
             value={marketFilter}
@@ -190,7 +190,7 @@ export default function AdminAccountsPage() {
                 </tr>
               ) : (
                 filteredAccounts.map(acc => (
-                  <tr key={acc.id} className="hover:bg-[#121212]/50 transition-colors border-b border-default">
+                  <tr key={acc.id} className="hover:bg-elevated/50 transition-colors border-b border-default">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div>

@@ -55,7 +55,7 @@ export default function PricingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <LoadingSpinner className="w-12 h-12 border-[4px]" />
       </div>
     );
@@ -108,10 +108,10 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] font-sans text-white">
+    <div className="min-h-screen bg-surface font-sans text-white">
       
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-default">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-default">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
@@ -242,7 +242,7 @@ export default function PricingPage() {
             return (
               <div 
                 key={plan.id}
-                className={`relative flex flex-col bg-[#121212] rounded-2xl p-8 transition-all duration-200 border ${
+                className={`relative flex flex-col bg-elevated rounded-2xl p-8 transition-all duration-200 border ${
                   plan.isPopular 
                     ? 'border-blue-500/50 shadow-[0_0_30px_rgba(37,99,235,0.15)] z-10 scale-105' 
                     : 'border-default'
@@ -354,7 +354,7 @@ export default function PricingPage() {
 
         {/* Promo Code Section */}
         <div className="max-w-md mx-auto mb-24">
-          <div className="bg-[#121212] border border-default rounded-2xl p-6 shadow-lg">
+          <div className="bg-elevated border border-default rounded-2xl p-6 shadow-lg">
             <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="las la-ticket-alt text-blue-500"></i> Have a promo code?</h4>
             <div className="flex gap-2">
               <input 
@@ -362,7 +362,7 @@ export default function PricingPage() {
                 value={couponCodeInput}
                 onChange={e => setCouponCodeInput(e.target.value.toUpperCase())}
                 placeholder="Enter code" 
-                className="flex-1 bg-[#0a0a0a] border border-default rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
+                className="flex-1 bg-surface border border-default rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors uppercase font-mono"
               />
               <button 
                 onClick={handleApplyCoupon}
@@ -384,10 +384,10 @@ export default function PricingPage() {
             <p className="text-secondary mt-2">Find the right features for your trading workflow.</p>
           </div>
           
-          <div className="overflow-x-auto rounded-2xl border border-default bg-[#121212]">
+          <div className="overflow-x-auto rounded-2xl border border-default bg-elevated">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0a0a0a] border-b border-default">
+                <tr className="bg-surface border-b border-default">
                   <th className="py-5 px-6 font-semibold text-secondary uppercase tracking-wider text-sm w-1/4">Features</th>
                   <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Free</th>
                   <th className="py-5 px-6 font-bold text-white text-center text-lg w-[18%]">Starter</th>

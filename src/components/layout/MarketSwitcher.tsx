@@ -6,7 +6,7 @@ export default function MarketSwitcher() {
   const { activeWorkspace, setWorkspace } = useUiStore();
 
   return (
-    <div className="flex items-center bg-[#121212] rounded-full p-1 border border-default">
+    <div className="flex items-center bg-elevated rounded-full p-1 border border-default">
       <button
         onClick={() => setWorkspace("GLOBAL")}
         className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${

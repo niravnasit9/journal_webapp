@@ -101,7 +101,7 @@ export default function AdminNotificationsPage() {
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Scheduled Maintenance Notice"
-                className="input-premium w-full bg-[#121212] border-default text-sm"
+                className="input-premium w-full bg-elevated border-default text-sm"
               />
             </div>
             
@@ -111,7 +111,7 @@ export default function AdminNotificationsPage() {
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Write your alert here..."
-                className="input-premium w-full bg-[#121212] border-default h-32 resize-none text-sm"
+                className="input-premium w-full bg-elevated border-default h-32 resize-none text-sm"
               ></textarea>
             </div>
             
@@ -120,7 +120,7 @@ export default function AdminNotificationsPage() {
               <select 
                 value={target}
                 onChange={e => setTarget(e.target.value as any)}
-                className="input-premium w-full bg-[#121212] border-default text-sm font-bold text-secondary"
+                className="input-premium w-full bg-elevated border-default text-sm font-bold text-secondary"
               >
                 <option value="ALL">All Users (Platform-Wide)</option>
                 <option value="PRO_ELITE">Pro & Elite Members Only</option>
@@ -142,7 +142,7 @@ export default function AdminNotificationsPage() {
 
         {/* Right Section: Broadcast History */}
         <div className="premium-card p-0 shadow-2xl border border-default flex flex-col h-full">
-          <div className="p-6 border-b border-default bg-[#121212]">
+          <div className="p-6 border-b border-default bg-elevated">
             <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
               <i className="las la-history text-secondary"></i> Broadcast History
             </h2>

@@ -225,7 +225,7 @@ export default function UserCRMProfile() {
             value={adminNotes}
             onChange={e => setAdminNotes(e.target.value)}
             placeholder="Add internal notes about this user's behavior, refunds, etc..."
-            className="input-premium w-full bg-[#121212] border-default h-32 resize-none text-sm"
+            className="input-premium w-full bg-elevated border-default h-32 resize-none text-sm"
           ></textarea>
           <p className="text-[10px] text-muted mt-2 font-bold uppercase tracking-widest">Visible only to admins</p>
         </div>

@@ -254,7 +254,7 @@ export default function AdminSettingsPage() {
 
           </div>
 
-          <div className="p-6 border-t border-default bg-[#121212] flex justify-end">
+          <div className="p-6 border-t border-default bg-elevated flex justify-end">
             <button 
               type="submit" 
               disabled={isSubmitting}

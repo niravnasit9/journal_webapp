@@ -319,7 +319,7 @@ export default function AdminPropFirmsPage() {
                         type="text" 
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="e.g. FTMO"
                       />
                     </div>
@@ -329,7 +329,7 @@ export default function AdminPropFirmsPage() {
                         type="text" 
                         value={formData.slug}
                         onChange={e => setFormData({...formData, slug: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="e.g. ftmo"
                       />
                     </div>
@@ -341,7 +341,7 @@ export default function AdminPropFirmsPage() {
                         type="text" 
                         value={formData.website_url}
                         onChange={e => setFormData({...formData, website_url: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="https://"
                       />
                     </div>
@@ -351,7 +351,7 @@ export default function AdminPropFirmsPage() {
                         type="text" 
                         value={formData.logo_url}
                         onChange={e => setFormData({...formData, logo_url: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="https://"
                       />
                     </div>
@@ -363,7 +363,7 @@ export default function AdminPropFirmsPage() {
                         type="text" 
                         value={formData.country}
                         onChange={e => setFormData({...formData, country: e.target.value})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                         placeholder="e.g. CZ"
                       />
                     </div>
@@ -373,7 +373,7 @@ export default function AdminPropFirmsPage() {
                         type="number" 
                         value={formData.display_order}
                         onChange={e => setFormData({...formData, display_order: Number(e.target.value)})}
-                        className="input-premium w-full bg-[#121212] border-default"
+                        className="input-premium w-full bg-elevated border-default"
                       />
                     </div>
                   </div>
@@ -382,7 +382,7 @@ export default function AdminPropFirmsPage() {
                     <textarea 
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="input-premium w-full bg-[#121212] border-default h-20 resize-none"
+                      className="input-premium w-full bg-elevated border-default h-20 resize-none"
                       placeholder="Firm details..."
                     />
                   </div>
