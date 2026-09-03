@@ -179,32 +179,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             ))}
           </nav>
-
-          <div className="mt-8 px-4">
-            <Card className="p-4 shadow-sm border-default">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-elevated border border-default flex items-center justify-center shrink-0">
-                  <span className="text-sm font-black text-info">
-                    {user?.email?.charAt(0).toUpperCase() || 'A'}
-                  </span>
-                </div>
-                <div className="overflow-hidden flex-1">
-                  <p className="text-sm font-bold text-primary truncate">{user?.email}</p>
-                  <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mt-0.5">{role}</p>
-                </div>
-              </div>
-              <div className="space-y-3 pt-4 border-t border-subtle">
-                <ThemeToggle />
-                <Button 
-                  variant="danger"
-                  className="w-full"
-                  onClick={handleLogout}
-                  leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            </Card>
+        </div>
+        <div className="mt-auto border-t border-neutral-800 bg-[#0a0a0a] p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-[#121212] border border-neutral-800 flex items-center justify-center shrink-0">
+              <span className="text-sm font-black text-blue-500">
+                {user?.email?.charAt(0).toUpperCase() || 'A'}
+              </span>
+            </div>
+            <div className="overflow-hidden flex-1">
+              <p className="text-sm font-bold text-white truncate">{user?.email}</p>
+              <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mt-0.5">{role}</p>
+            </div>
+          </div>
+          <div className="space-y-3 pt-4 border-t border-neutral-800">
+            <ThemeToggle />
+            <Button 
+              variant="danger"
+              className="w-full justify-start text-sm bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-colors"
+              onClick={handleLogout}
+              leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
       </aside>

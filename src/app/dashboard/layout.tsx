@@ -273,88 +273,86 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
 
-        <div className="mt-auto px-4 pb-6">
-          <Card className="p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <label className="relative w-10 h-10 rounded-full bg-elevated flex items-center justify-center text-primary font-bold text-sm shrink-0 cursor-pointer overflow-hidden group border border-default">
-                {uploadingImage ? (
-                  <LoadingSpinner className="w-4 h-4 border-[2px]" />
-                ) : user.photoURL ? (
-                  <>
-                    <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <i className="las la-camera text-white"></i>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <i className="las la-user"></i>
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <i className="las la-camera text-white"></i>
-                    </div>
-                  </>
-                )}
-                <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} disabled={uploadingImage} />
-              </label>
-              <div className="overflow-hidden flex-1">
-                {isEditingName ? (
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      value={newDisplayName}
-                      onChange={(e) => setNewDisplayName(e.target.value)}
-                      autoFocus
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                      className="px-2 py-1 text-xs"
-                    />
-                    <button onClick={handleSaveName} className="text-success">
-                      <i className="las la-check-circle text-lg"></i>
-                    </button>
-                    <button onClick={() => setIsEditingName(false)} className="text-muted hover:text-danger">
-                      <i className="las la-times-circle text-lg"></i>
-                    </button>
+        <div className="mt-auto border-t border-subtle bg-elevated/30 p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <label className="relative w-10 h-10 rounded-full bg-elevated flex items-center justify-center text-primary font-bold text-sm shrink-0 cursor-pointer overflow-hidden group border border-default">
+              {uploadingImage ? (
+                <LoadingSpinner className="w-4 h-4 border-[2px]" />
+              ) : user.photoURL ? (
+                <>
+                  <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i className="las la-camera text-white"></i>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between group/name cursor-pointer" onClick={() => { setNewDisplayName(user.displayName || user.email || ""); setIsEditingName(true); }}>
-                    <p className="text-sm font-bold text-primary truncate" title={user.displayName || user.email || ""}>
-                      {user.displayName || user.email}
-                    </p>
-                    <i className="las la-pen text-muted opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
+                </>
+              ) : (
+                <>
+                  <i className="las la-user"></i>
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i className="las la-camera text-white"></i>
                   </div>
-                )}
-                <div className={`text-xs font-bold truncate uppercase tracking-widest ${theme.textHighlight}`}>
-                  {tier ? tier : "FREE"} PLAN
+                </>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} disabled={uploadingImage} />
+            </label>
+            <div className="overflow-hidden flex-1">
+              {isEditingName ? (
+                <div className="flex items-center gap-2">
+                  <Input 
+                    value={newDisplayName}
+                    onChange={(e) => setNewDisplayName(e.target.value)}
+                    autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                    className="px-2 py-1 text-xs"
+                  />
+                  <button onClick={handleSaveName} className="text-success">
+                    <i className="las la-check-circle text-lg"></i>
+                  </button>
+                  <button onClick={() => setIsEditingName(false)} className="text-muted hover:text-danger">
+                    <i className="las la-times-circle text-lg"></i>
+                  </button>
                 </div>
+              ) : (
+                <div className="flex items-center justify-between group/name cursor-pointer" onClick={() => { setNewDisplayName(user.displayName || user.email || ""); setIsEditingName(true); }}>
+                  <p className="text-sm font-bold text-primary truncate" title={user.displayName || user.email || ""}>
+                    {user.displayName || user.email}
+                  </p>
+                  <i className="las la-pen text-muted opacity-0 group-hover/name:opacity-100 transition-opacity"></i>
+                </div>
+              )}
+              <div className={`text-xs font-bold truncate uppercase tracking-widest ${theme.textHighlight}`}>
+                {tier ? tier : "FREE"} PLAN
               </div>
             </div>
-            <div className="pt-4 border-t border-subtle space-y-3">
-              {role === "admin" && (
-                <Button 
-                  variant={isDemoMode ? "primary" : "secondary"}
-                  onClick={toggleDemoMode}
-                  className="w-full relative overflow-hidden group"
-                  leftIcon={<i className={`las text-lg ${isDemoMode ? 'la-toggle-on text-white' : 'la-toggle-off'}`}></i>}
-                >
-                  {isDemoMode ? (
-                    <span className="font-bold">Demo Mode Active</span>
-                  ) : (
-                    <span>Enable Demo Mode</span>
-                  )}
-                  {isDemoMode && (
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  )}
-                </Button>
-              )}
-              <ThemeToggle />
+          </div>
+          <div className="pt-4 border-t border-subtle space-y-3">
+            {role === "admin" && (
               <Button 
-                variant="danger" 
-                onClick={handleLogout}
-                className="w-full"
-                leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
+                variant={isDemoMode ? "primary" : "secondary"}
+                onClick={toggleDemoMode}
+                className="w-full relative overflow-hidden group justify-start"
+                leftIcon={<i className={`las text-lg ${isDemoMode ? 'la-toggle-on text-white' : 'la-toggle-off'}`}></i>}
               >
-                Sign Out
+                {isDemoMode ? (
+                  <span className="font-bold">Demo Mode Active</span>
+                ) : (
+                  <span>Enable Demo Mode</span>
+                )}
+                {isDemoMode && (
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                )}
               </Button>
-            </div>
-          </Card>
+            )}
+            <ThemeToggle />
+            <Button 
+              variant="danger" 
+              onClick={handleLogout}
+              className="w-full justify-start text-sm bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 transition-colors"
+              leftIcon={<i className="las la-sign-out-alt text-lg"></i>}
+            >
+              Sign Out
+            </Button>
+          </div>
         </div>
       </aside>
 
