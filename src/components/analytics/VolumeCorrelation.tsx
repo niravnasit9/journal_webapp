@@ -21,11 +21,12 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
     };
 
     trades.forEach(t => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = (t.profit_loss || t.net_pnl || 0) - (t.commission || 0);
+      const vol = t.lot_size || t.quantity || 0;
       let tierKey = "";
-      if (t.lot_size < 0.5) tierKey = "Micro (< 0.5)";
-      else if (t.lot_size <= 1) tierKey = "Small (0.5 - 1)";
-      else if (t.lot_size <= 3) tierKey = "Medium (1 - 3)";
+      if (vol < 0.5) tierKey = "Micro (< 0.5)";
+      else if (vol <= 1) tierKey = "Small (0.5 - 1)";
+      else if (vol <= 3) tierKey = "Medium (1 - 3)";
       else tierKey = "Large (3+)";
 
       tiers[tierKey as keyof typeof tiers].total++;

@@ -7,13 +7,20 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { DEMO_TRADES } from "@/lib/adminDemoData";
+import { DEMO_TRADES, DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 import { TiltAnalyzer } from "@/components/insights/TiltAnalyzer";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import { AccountDoc } from "@/lib/firebase/schema";
 
 export default function InsightsPage() {
   const { user, role } = useAuth();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
 
   useEffect(() => {
     if (user) fetchTrades();
@@ -34,9 +41,15 @@ export default function InsightsPage() {
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
       
+      const accDocs = accSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
+      const workspaceAccounts = accDocs.filter(a => 
+        (isDomestic && a.market_type === "DOMESTIC") || 
+        (!isDomestic && a.market_type !== "DOMESTIC")
+      );
+      
       let allTrades: TradeDoc[] = [];
-      for (const accDoc of accSnap.docs) {
-        const tQuery = query(collection(db, "trades"), where("account_id", "==", accDoc.id));
+      for (const acc of workspaceAccounts) {
+        const tQuery = query(collection(db, "trades"), where("account_id", "==", acc.id));
         const tSnap = await getDocs(tQuery);
         const tDocs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TradeDoc));
         allTrades = [...allTrades, ...tDocs];
@@ -56,12 +69,15 @@ export default function InsightsPage() {
   if (trades.length < 10) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto font-sans">
-        <div>
-          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <i className="las la-lightbulb text-3xl text-warning"></i>
-            Trading Insights
-          </h1>
-          <p className="text-secondary text-sm mt-1">Data-driven analysis of your trading habits.</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
+              <i className="las la-lightbulb text-3xl text-warning"></i>
+              {isDomestic ? 'Domestic' : 'Global'} Trading Insights
+            </h1>
+            <p className="text-secondary text-sm mt-1">Data-driven analysis of your {isDomestic ? 'domestic' : 'global'} trading habits.</p>
+          </div>
+          <MarketSwitcher />
         </div>
         <Card className="p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-elevated flex items-center justify-center mb-4 border border-default">
@@ -155,12 +171,15 @@ export default function InsightsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
-      <div>
-        <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-          <i className="las la-lightbulb text-3xl text-warning"></i>
-          Trading Insights
-        </h1>
-        <p className="text-secondary text-sm mt-1">Data-driven analysis of your trading habits across {trades.length} trades.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
+            <i className="las la-lightbulb text-3xl text-warning"></i>
+            {isDomestic ? 'Domestic' : 'Global'} Trading Insights
+          </h1>
+          <p className="text-secondary text-sm mt-1">Data-driven analysis of your trading habits across {trades.length} {isDomestic ? 'domestic' : 'global'} trades.</p>
+        </div>
+        <MarketSwitcher />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -178,14 +197,14 @@ export default function InsightsPage() {
               <div className="text-xs text-secondary font-medium mb-1">Best Performing</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{bestInst.key}</span>
-                <span className="text-success font-bold">+${bestInst.val.toFixed(2)}</span>
+                <span className="text-success font-bold">+{currencySymbol}{Math.abs(bestInst.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Worst Performing</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{worstInst.key}</span>
-                <span className="text-danger font-bold">-${Math.abs(worstInst.val).toFixed(2)}</span>
+                <span className="text-danger font-bold">-{currencySymbol}{Math.abs(worstInst.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
@@ -204,14 +223,14 @@ export default function InsightsPage() {
               <div className="text-xs text-secondary font-medium mb-1">Best Strategy</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{bestStrat.key}</span>
-                <span className="text-success font-bold">+${bestStrat.val.toFixed(2)}</span>
+                <span className="text-success font-bold">+{currencySymbol}{bestStrat.val.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Worst Strategy</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{worstStrat.key}</span>
-                <span className="text-danger font-bold">-${Math.abs(worstStrat.val).toFixed(2)}</span>
+                <span className="text-danger font-bold">-{currencySymbol}{Math.abs(worstStrat.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
@@ -230,14 +249,14 @@ export default function InsightsPage() {
               <div className="text-xs text-secondary font-medium mb-1">Most Profitable Session</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{bestSession.key}</span>
-                <span className="text-success font-bold">+${bestSession.val.toFixed(2)}</span>
+                <span className="text-success font-bold">+{currencySymbol}{bestSession.val.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Most Costly Session</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{worstSession.key}</span>
-                <span className="text-danger font-bold">-${Math.abs(worstSession.val).toFixed(2)}</span>
+                <span className="text-danger font-bold">-{currencySymbol}{Math.abs(worstSession.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
@@ -256,14 +275,14 @@ export default function InsightsPage() {
               <div className="text-xs text-secondary font-medium mb-1">Best Day</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{bestDay.key}</span>
-                <span className="text-success font-bold">+${bestDay.val.toFixed(2)}</span>
+                <span className="text-success font-bold">+{currencySymbol}{bestDay.val.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Worst Day</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary">{worstDay.key}</span>
-                <span className="text-danger font-bold">-${Math.abs(worstDay.val).toFixed(2)}</span>
+                <span className="text-danger font-bold">-{currencySymbol}{Math.abs(worstDay.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
@@ -281,13 +300,13 @@ export default function InsightsPage() {
             <div>
               <div className="text-xs text-secondary font-medium mb-1">Average Winner</div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-success">+${avgWin.toFixed(2)}</span>
+                <span className="font-bold text-success">+{currencySymbol}{avgWin.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Average Loser</div>
               <div className="flex justify-between items-center">
-                <span className="font-bold text-danger">-${avgLoss.toFixed(2)}</span>
+                <span className="font-bold text-danger">-{currencySymbol}{avgLoss.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
@@ -306,14 +325,14 @@ export default function InsightsPage() {
               <div className="text-xs text-secondary font-medium mb-1">Most Profitable Setup</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary truncate max-w-[150px]">{bestSetup.key}</span>
-                <span className="text-success font-bold">+${bestSetup.val.toFixed(2)}</span>
+                <span className="text-success font-bold">+{currencySymbol}{bestSetup.val.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
             <div className="pt-3 border-t border-subtle">
               <div className="text-xs text-secondary font-medium mb-1">Most Common Losing Setup</div>
               <div className="flex justify-between items-center">
                 <span className="font-bold text-primary truncate max-w-[150px]">{worstSetup.key}</span>
-                <span className="text-danger font-bold">-${Math.abs(worstSetup.val).toFixed(2)}</span>
+                <span className="text-danger font-bold">-{currencySymbol}{Math.abs(worstSetup.val).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>

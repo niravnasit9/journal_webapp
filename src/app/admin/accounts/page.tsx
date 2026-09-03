@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, getDocs, deleteDoc, doc, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { AccountDoc, UserDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -14,9 +14,11 @@ interface AccountWithUser extends AccountDoc {
 export default function AdminAccountsPage() {
   const [accounts, setAccounts] = useState<AccountWithUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marketFilter, setMarketFilter] = useState<"ALL" | "GLOBAL" | "DOMESTIC">("ALL");
   
   // Modal state
   const [manageAccountId, setManageAccountId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchAllAccounts();
@@ -60,6 +62,37 @@ export default function AdminAccountsPage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!manageAccountId) return;
+    
+    if (!window.confirm("Are you sure you want to permanently delete this account and all of its trades? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      
+      // 1. Delete all trades belonging to this account
+      const tradesQuery = query(collection(db, "trades"), where("account_id", "==", manageAccountId));
+      const tradesSnap = await getDocs(tradesQuery);
+      
+      const deletePromises = tradesSnap.docs.map(t => deleteDoc(doc(db, "trades", t.id)));
+      await Promise.all(deletePromises);
+
+      // 2. Delete the account itself
+      await deleteDoc(doc(db, "accounts", manageAccountId));
+      
+      toast.success("Account and its trades deleted successfully.");
+      setManageAccountId(null);
+      fetchAllAccounts();
+    } catch (error: any) {
+      console.error("Failed to delete account", error);
+      toast.error("Failed to delete account: " + error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getTypeBadge = (type: string) => {
     const t = type.toUpperCase();
     if (t.includes('REAL')) {
@@ -72,9 +105,16 @@ export default function AdminAccountsPage() {
     return <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">{type}</span>;
   };
 
-  const totalAccounts = accounts.length;
-  const activeFunded = accounts.filter(a => a.account_type?.toUpperCase().includes('FUNDED')).length;
-  const activeChallenge = accounts.filter(a => !a.account_type?.toUpperCase().includes('FUNDED') && !a.account_type?.toUpperCase().includes('REAL')).length;
+  const filteredAccounts = accounts.filter(a => {
+    if (marketFilter === "ALL") return true;
+    const isDomestic = a.market_type === "DOMESTIC" || a.currency === "INR";
+    if (marketFilter === "DOMESTIC") return isDomestic;
+    return !isDomestic;
+  });
+
+  const totalAccounts = filteredAccounts.length;
+  const activeFunded = filteredAccounts.filter(a => a.account_type?.toUpperCase().includes('FUNDED')).length;
+  const activeChallenge = filteredAccounts.filter(a => !a.account_type?.toUpperCase().includes('FUNDED') && !a.account_type?.toUpperCase().includes('REAL')).length;
 
   return (
     <div className="space-y-6 animate-in fade-in font-sans">
@@ -112,6 +152,15 @@ export default function AdminAccountsPage() {
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Platform Accounts</h2>
+          <select
+            value={marketFilter}
+            onChange={(e) => setMarketFilter(e.target.value as any)}
+            className="input-premium text-xs py-1.5 px-3 max-w-[200px]"
+          >
+            <option value="ALL">All Markets</option>
+            <option value="GLOBAL">Global Only</option>
+            <option value="DOMESTIC">Domestic Only</option>
+          </select>
         </div>
         
         <div className="overflow-x-auto no-scrollbar">
@@ -140,11 +189,20 @@ export default function AdminAccountsPage() {
                   </td>
                 </tr>
               ) : (
-                accounts.map(acc => (
+                filteredAccounts.map(acc => (
                   <tr key={acc.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
                     <td className="px-6 py-4">
-                      <div className="font-bold text-white">{acc.label}</div>
-                      <div className="text-xs text-neutral-500 font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <div className="font-bold text-white">{acc.label}</div>
+                          <div className="text-xs text-neutral-500 font-mono mt-0.5">ID: {acc.id.substring(0,8)}...</div>
+                        </div>
+                        {acc.market_type === 'DOMESTIC' || acc.currency === 'INR' ? (
+                          <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Domestic</span>
+                        ) : (
+                          <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">Global</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-neutral-300">{acc.userEmail}</div>
@@ -190,7 +248,25 @@ export default function AdminAccountsPage() {
               <i className="las la-tools text-4xl text-neutral-500 mb-2"></i>
               <p className="text-sm text-neutral-400">Settings and management options for account:<br/><span className="font-mono text-white font-bold mt-1 inline-block">{manageAccountId}</span></p>
             </div>
-            <div className="mt-6 flex justify-end">
+            
+            <div className="mt-6 border-t border-neutral-800 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-danger">Danger Zone</h3>
+                  <p className="text-xs text-neutral-500 mt-1">Permanently delete this account and all associated trades.</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="w-full py-2.5 bg-danger/10 hover:bg-danger/20 text-danger font-bold rounded-lg transition-colors border border-danger/20 flex justify-center items-center gap-2 text-sm"
+              >
+                {isDeleting ? <LoadingSpinner className="w-4 h-4" /> : <i className="las la-trash-alt text-lg"></i>}
+                {isDeleting ? "Deleting..." : "Delete Account"}
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
               <button onClick={() => setManageAccountId(null)} className="btn-ghost w-full">Close</button>
             </div>
           </div>

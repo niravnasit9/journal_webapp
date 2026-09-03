@@ -20,7 +20,9 @@ export default function AdminSettingsPage() {
     crypto_price_pro: 49.99,
     crypto_price_elite: 99.99,
     crypto_wallet_address: "",
-    crypto_network: "TRC20"
+    crypto_network: "TRC20",
+    enable_domestic_markets: false,
+    fmp_api_key: ""
   });
 
   // Additional mock settings for UI requested
@@ -115,7 +117,25 @@ export default function AdminSettingsPage() {
                       checked={newRegistrations} 
                       onChange={e => setNewRegistrations(e.target.checked)} 
                     />
-                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-neutral-400 peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                  </label>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-orange-500/10 bg-orange-500/5">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <i className="las la-globe-asia text-orange-400"></i> Enable Domestic Markets Module
+                    </h3>
+                    <p className="text-xs text-neutral-500 mt-1">Activates the dual-market infrastructure for Indian Equity/F&O metrics alongside Global markets.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={settings.enable_domestic_markets || false} 
+                      onChange={e => setSettings({...settings, enable_domestic_markets: e.target.checked})} 
+                    />
+                    <div className="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
                   </label>
                 </div>
 
@@ -162,6 +182,31 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
+              </div>
+            </div>
+
+            {/* Section: Integrations */}
+            <div>
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 border-b border-neutral-800 pb-3">
+                <i className="las la-plug text-purple-500"></i> Integrations
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                  <div className="md:w-1/2">
+                    <h3 className="text-sm font-bold text-white">FMP API Key (Economic Calendar)</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Financial Modeling Prep API key for loading live macroeconomic news.</p>
+                  </div>
+                  <div className="md:w-1/3">
+                    <input 
+                      type="password" 
+                      value={settings.fmp_api_key || ""}
+                      onChange={e => setSettings({...settings, fmp_api_key: e.target.value})}
+                      className="input-premium w-full bg-black border-neutral-800 text-sm"
+                      placeholder="Enter FMP API Key..."
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

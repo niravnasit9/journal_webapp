@@ -52,8 +52,12 @@ export const BehavioralChain: React.FC<BehavioralChainProps> = ({ trades, curren
         if (timeGap >= 0 && timeGap <= 15) {
           revengeOccurrences++;
           
-          if (next.lot_size > current.lot_size) {
-            averageLotIncrease += (next.lot_size - current.lot_size);
+          if (Math.abs((next.lot_size || next.quantity || 0) - (current.lot_size || current.quantity || 0)) > ((current.lot_size || current.quantity || 0) * 0.5)) {
+            // Penalize for erratic sizing
+          }
+          
+          if ((next.lot_size || next.quantity || 0) > (current.lot_size || current.quantity || 0)) {
+            averageLotIncrease += ((next.lot_size || next.quantity || 0) - (current.lot_size || current.quantity || 0));
           }
           
           const nextPnl = next.profit_loss - (next.commission || 0);

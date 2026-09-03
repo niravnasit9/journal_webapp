@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
@@ -16,6 +16,8 @@ import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 import { DrawdownGuardian } from "@/components/risk/DrawdownGuardian";
 import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
 import { getLocalJsDate } from "@/lib/dateUtils";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 
 export default function RiskCenterPage() {
   const { user, role } = useAuth();
@@ -26,6 +28,10 @@ export default function RiskCenterPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('all');
   const [dateFilter, setDateFilter] = useState<DateRange>({ preset: 'all', start: null, end: null });
+
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
 
   useEffect(() => {
     if (user) {
@@ -122,22 +128,30 @@ export default function RiskCenterPage() {
     };
   };
 
+  const workspaceAccounts = useMemo(() => {
+    return accounts.filter(a => 
+      (isDomestic && a.market_type === "DOMESTIC") || 
+      (!isDomestic && a.market_type !== "DOMESTIC")
+    );
+  }, [accounts, isDomestic]);
+
   const displayAccounts = selectedAccountId === "ALL" 
-    ? accounts 
-    : accounts.filter(a => a.id === selectedAccountId);
+    ? workspaceAccounts 
+    : workspaceAccounts.filter(a => a.id === selectedAccountId);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in font-sans">
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <i className="las la-shield-alt text-3xl text-indigo-500"></i>
-            Risk Center
+          <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight flex items-center gap-3">
+            <i className="las la-shield-alt text-danger"></i> {isDomestic ? 'Domestic' : 'Global'} Risk Center
           </h1>
-          <p className="text-secondary text-sm mt-1">Monitor drawdown limits and protect your capital.</p>
+          <p className="text-secondary mt-1">Monitor drawdown limits and rule violations for your {isDomestic ? 'domestic' : 'global'} accounts.</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+          <MarketSwitcher />
           <DateRangePicker 
             value={dateRangePreset}
             onChange={(range) => {
@@ -145,11 +159,11 @@ export default function RiskCenterPage() {
               setDateFilter(range);
             }}
           />
-          <CustomSelect
-            options={[
-              { value: "ALL", label: "All Accounts" },
-              ...accounts.map(a => ({ value: a.id, label: a.label }))
-            ]}
+            <CustomSelect 
+              options={[
+                { value: "ALL", label: `All ${isDomestic ? 'Domestic' : 'Global'} Accounts` },
+                ...workspaceAccounts.map(a => ({ value: a.id, label: a.label }))
+              ]}
             value={selectedAccountId}
             onChange={setSelectedAccountId}
             icon="las la-wallet"
@@ -203,7 +217,7 @@ export default function RiskCenterPage() {
                     <div className="text-right">
                       <div className="text-sm text-secondary font-medium">Current Balance</div>
                       <div className="text-lg font-bold text-primary">
-                        ${risk.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {currencySymbol}{risk.currentBalance.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                     </div>
                   </div>
@@ -228,7 +242,7 @@ export default function RiskCenterPage() {
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="text-sm font-bold text-primary uppercase tracking-widest">Daily Risk</h4>
                         <span className="text-xs font-bold text-secondary">
-                          Limit: -${risk.dailyLossLimitValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Limit: -{currencySymbol}{risk.dailyLossLimitValue.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                       
@@ -241,10 +255,10 @@ export default function RiskCenterPage() {
                       
                       <div className="flex justify-between text-xs font-medium mt-3">
                         <span className={risk.currentDailyPnL < 0 ? 'text-danger' : 'text-success'}>
-                          Today: ${risk.currentDailyPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Today: {risk.currentDailyPnL < 0 ? '-' : ''}{currencySymbol}{Math.abs(risk.currentDailyPnL).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <span className="text-secondary">
-                          Remaining: ${Math.max(0, risk.dailyDrawdownRemaining).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Remaining: {currencySymbol}{Math.max(0, risk.dailyDrawdownRemaining).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
@@ -254,7 +268,7 @@ export default function RiskCenterPage() {
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="text-sm font-bold text-primary uppercase tracking-widest">Overall Risk</h4>
                         <span className="text-xs font-bold text-secondary">
-                          Limit: ${risk.maxDrawdownThreshold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Limit: {currencySymbol}{risk.maxDrawdownThreshold.toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                       
@@ -270,7 +284,7 @@ export default function RiskCenterPage() {
                           Drawdown Type: <span className="font-bold text-primary capitalize">{acc.drawdown_type || 'Static'}</span>
                         </span>
                         <span className="text-secondary">
-                          Remaining: ${Math.max(0, risk.overallDrawdownRemaining).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          Remaining: {currencySymbol}{Math.max(0, risk.overallDrawdownRemaining).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>

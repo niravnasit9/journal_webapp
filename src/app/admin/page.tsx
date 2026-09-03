@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { collection, query, getDocs, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { UserDoc } from "@/lib/firebase/schema";
+import { UserDoc, AccountDoc } from "@/lib/firebase/schema";
 import CustomSelect from "@/components/ui/CustomSelect";
 
 export default function AdminOverview() {
@@ -21,7 +21,9 @@ export default function AdminOverview() {
   });
   const [recentUsers, setRecentUsers] = useState<UserDoc[]>([]);
   const [allUsers, setAllUsers] = useState<UserDoc[]>([]);
+  const [allAccounts, setAllAccounts] = useState<AccountDoc[]>([]);
   const [tierFilter, setTierFilter] = useState("ALL");
+  const [marketFilter, setMarketFilter] = useState<"GLOBAL" | "DOMESTIC">("GLOBAL");
 
   useEffect(() => {
     fetchStats();
@@ -39,6 +41,9 @@ export default function AdminOverview() {
       const tradeSnap = await getDocs(collection(db, "trades"));
       const accSnap = await getDocs(collection(db, "accounts"));
 
+      const accounts = accSnap.docs.map(d => d.data() as AccountDoc);
+      setAllAccounts(accounts);
+
       setStats({
         totalUsers: users.length,
         eliteUsers: users.filter(u => u.subscription_tier === "elite").length,
@@ -47,7 +52,7 @@ export default function AdminOverview() {
         freeUsers: users.filter(u => !u.subscription_tier || u.subscription_tier === "free").length,
         totalStrategies: stratSnap.size,
         totalTrades: tradeSnap.size,
-        totalAccounts: accSnap.size,
+        totalAccounts: accounts.length,
       });
 
       // Get all users sorted by date
@@ -68,6 +73,16 @@ export default function AdminOverview() {
   const estimatedMRR = useMemo(() => {
     return (stats.eliteUsers * 99) + (stats.proUsers * 49) + (stats.starterUsers * 19);
   }, [stats]);
+
+  const { marketAccounts, totalMarketAssets } = useMemo(() => {
+    const isDomestic = marketFilter === "DOMESTIC";
+    const filteredAccs = allAccounts.filter(a => 
+      (isDomestic && a.market_type === "DOMESTIC") || 
+      (!isDomestic && a.market_type !== "DOMESTIC")
+    );
+    const totalAssets = filteredAccs.reduce((sum, a) => sum + (a.current_balance || 0), 0);
+    return { marketAccounts: filteredAccs.length, totalMarketAssets: totalAssets };
+  }, [allAccounts, marketFilter]);
 
   if (loading) {
     return (
@@ -91,7 +106,19 @@ export default function AdminOverview() {
         </div>
         
         <div className="flex items-center gap-4 bg-white dark:bg-[#111318] p-2 rounded-xl border border-gray-200 dark:border-white/5 shadow-sm">
-          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 pl-3">Filter Table:</span>
+          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 pl-3">Market:</span>
+          <div className="w-32">
+            <CustomSelect 
+              options={[
+                { value: "GLOBAL", label: "Global" },
+                { value: "DOMESTIC", label: "Domestic" }
+              ]}
+              value={marketFilter}
+              onChange={val => setMarketFilter(val as "GLOBAL" | "DOMESTIC")}
+            />
+          </div>
+          <div className="w-px h-6 bg-gray-200 dark:bg-white/10 mx-1"></div>
+          <span className="text-sm font-bold text-gray-500 dark:text-slate-400">Users:</span>
           <div className="w-40">
             <CustomSelect 
               options={[
@@ -164,9 +191,24 @@ export default function AdminOverview() {
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
               <i className="las la-server text-xl"></i>
             </div>
-            <h3 className="text-sm font-bold text-blue-600 dark:text-blue-500 uppercase tracking-widest">Connected Accounts</h3>
+            <h3 className="text-sm font-bold text-blue-600 dark:text-blue-500 uppercase tracking-widest">{marketFilter} Accounts</h3>
           </div>
-          <p className="text-4xl font-black text-blue-600 dark:text-blue-400">{stats.totalAccounts}</p>
+          <p className="text-4xl font-black text-blue-600 dark:text-blue-400">{marketAccounts}</p>
+          <div className="text-xs font-medium text-gray-500 mt-2">Out of {stats.totalAccounts} total</div>
+        </div>
+
+        {/* Total Assets */}
+        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-emerald-200 dark:border-[#1c3026] shadow-sm flex flex-col justify-between">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <i className="las la-wallet text-xl"></i>
+            </div>
+            <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">{marketFilter} Assets</h3>
+          </div>
+          <p className="text-4xl font-black text-emerald-600 dark:text-emerald-400">
+            {marketFilter === "DOMESTIC" ? "₹" : "$"}
+            {totalMarketAssets.toLocaleString(marketFilter === "DOMESTIC" ? 'en-IN' : 'en-US', { maximumFractionDigits: 0 })}
+          </p>
         </div>
 
         {/* Total Trades */}
@@ -181,7 +223,7 @@ export default function AdminOverview() {
         </div>
 
         {/* Estimated MRR */}
-        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-emerald-200 dark:border-[#1c3026] shadow-sm flex flex-col justify-between lg:col-span-2">
+        <div className="bg-white dark:bg-[#111318] p-6 rounded-2xl border border-purple-200 dark:border-[#2a1b3d] shadow-sm flex flex-col justify-between">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
               <i className="las la-dollar-sign text-xl"></i>

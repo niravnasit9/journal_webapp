@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/firebase/authContext";
 import { useDemo } from "@/lib/demoContext";
 import { useAccountData } from "@/hooks/useAccountData";
 import { useTradeData } from "@/hooks/useTradeData";
+import { useUiStore } from "@/store/useUiStore";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { PlanStatusCard } from "@/components/subscription/PlanStatusCard";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 import dynamic from 'next/dynamic';
 
 // Lazy loading heavy components (if any are extracted in the future, e.g., Charts)
@@ -24,8 +26,21 @@ export default function UserDashboardCommandCenter() {
   // 1. Consume Account Logic Layer
   const { accounts, loading: accLoading } = useAccountData(user?.uid, isDemoMode, role);
   
+  // Get active workspace for filtering
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
+  
+  // Filter accounts by active workspace
+  const activeAccounts = useMemo(() => {
+    return accounts.filter((a: AccountDoc) => 
+      (isDomestic && a.market_type === "DOMESTIC") || 
+      (!isDomestic && a.market_type !== "DOMESTIC")
+    );
+  }, [accounts, isDomestic]);
+
   // 2. Consume Trade Logic Layer by passing mapped account IDs
-  const accountIds = useMemo(() => accounts.map((a: AccountDoc) => a.id), [accounts]);
+  const accountIds = useMemo(() => activeAccounts.map((a: AccountDoc) => a.id), [activeAccounts]);
   const { trades: recentTrades, loading: tradeLoading } = useTradeData(accountIds);
 
   const loading = accLoading || tradeLoading;
@@ -33,7 +48,7 @@ export default function UserDashboardCommandCenter() {
   // Memoized Metrics Calculations to prevent re-renders
   const metrics = useMemo(() => {
     let totalInitialBalance = 0;
-    accounts.forEach((acc: AccountDoc) => {
+    activeAccounts.forEach((acc: AccountDoc) => {
       totalInitialBalance += (acc.initial_balance || 0);
     });
 
@@ -59,7 +74,7 @@ export default function UserDashboardCommandCenter() {
     const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
 
     return { totalBalance, totalPnL, todaysPnL, winRate, totalTradesCount };
-  }, [accounts, recentTrades]);
+  }, [activeAccounts, recentTrades]);
 
   if (loading) {
     return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
@@ -75,15 +90,16 @@ export default function UserDashboardCommandCenter() {
             <i className="las la-home text-3xl text-info"></i>
             Command Center
           </h1>
-          <p className="text-secondary text-sm mt-1 font-medium">Welcome back, here's your global trading overview.</p>
+          <p className="text-secondary text-sm mt-1 font-medium">Welcome back, here's your {isDomestic ? 'domestic' : 'global'} trading overview.</p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
+        <div className="flex gap-3 w-full md:w-auto items-center">
+          <MarketSwitcher />
           <Link href="/dashboard/accounts">
             <Button variant="secondary" leftIcon={<i className="las la-wallet text-lg"></i>}>
               Accounts
             </Button>
           </Link>
-          <Link href="/dashboard/performance">
+          <Link href="/dashboard/analytics">
             <Button variant="primary" leftIcon={<i className="las la-chart-bar text-lg"></i>}>
               Analytics
             </Button>
@@ -97,12 +113,12 @@ export default function UserDashboardCommandCenter() {
             <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-white transition-colors">
               <i className="las la-dollar-sign text-xl"></i>
             </div>
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Global Balance</h3>
+            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
           </div>
           <p className="text-3xl font-extrabold text-primary tracking-tight">
-            ${metrics.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {currencySymbol}{metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <div className="text-xs font-medium text-secondary mt-2">Across {accounts.length} active accounts</div>
+          <div className="text-xs font-medium text-secondary mt-2">Across {activeAccounts.length} active {isDomestic ? 'Domestic' : 'Global'} accounts</div>
         </Card>
 
         <Card className="p-6 border-default shadow-sm hover:border-success transition-colors group">
@@ -113,7 +129,7 @@ export default function UserDashboardCommandCenter() {
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
           </div>
           <p className={`text-3xl font-extrabold tracking-tight ${metrics.totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-            {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {metrics.totalPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">All-time profit/loss</div>
         </Card>
@@ -126,9 +142,9 @@ export default function UserDashboardCommandCenter() {
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Today's P/L</h3>
           </div>
           <p className={`text-3xl font-extrabold tracking-tight ${metrics.todaysPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-            {metrics.todaysPnL >= 0 ? '+' : ''}${metrics.todaysPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {metrics.todaysPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <div className="text-xs font-medium text-secondary mt-2">Reset at midnight UTC</div>
+          <div className="text-xs font-medium text-secondary mt-2">Reset at midnight</div>
         </Card>
 
         <Card className="p-6 border-default shadow-sm hover:border-warning transition-colors group">

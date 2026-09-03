@@ -14,6 +14,7 @@ interface TradeWithUser extends TradeDoc {
 export default function AdminTradesPage() {
   const [loading, setLoading] = useState(true);
   const [trades, setTrades] = useState<TradeWithUser[]>([]);
+  const [marketFilter, setMarketFilter] = useState<"ALL" | "GLOBAL" | "DOMESTIC">("ALL");
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,9 +127,18 @@ export default function AdminTradesPage() {
     }
   };
 
-  const totalVolume = trades.reduce((acc, t) => acc + (t.lot_size || 0), 0);
-  const globalNetPnl = trades.reduce((acc, t) => acc + (t.profit_loss || 0), 0);
-  const activeOpenTrades = trades.filter(t => !t.close_time).length;
+  const filteredTrades = trades.filter(t => {
+    if (marketFilter === "ALL") return true;
+    const isDomestic = t.domestic_segment != null || t.option_type != null; // basic heuristic if market_type not directly on trade
+    // Wait, trade doc doesn't have market_type, but we added domestic_segment to schema!
+    // If it has domestic_segment, it's domestic.
+    if (marketFilter === "DOMESTIC") return isDomestic;
+    return !isDomestic;
+  });
+
+  const totalVolume = filteredTrades.reduce((acc, t) => acc + (t.lot_size || t.quantity || 0), 0);
+  const globalNetPnl = filteredTrades.reduce((acc, t) => acc + (t.profit_loss || 0), 0);
+  const activeOpenTrades = filteredTrades.filter(t => !t.close_time).length;
 
   return (
     <div className="space-y-6 animate-in fade-in font-sans">
@@ -168,6 +178,15 @@ export default function AdminTradesPage() {
       <div className="premium-card p-0 overflow-hidden">
         <div className="bg-[#121212] border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4 p-5">
           <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trade Activity</h2>
+          <select
+            value={marketFilter}
+            onChange={(e) => setMarketFilter(e.target.value as any)}
+            className="input-premium text-xs py-1.5 px-3 max-w-[200px]"
+          >
+            <option value="ALL">All Markets</option>
+            <option value="GLOBAL">Global Only</option>
+            <option value="DOMESTIC">Domestic Only</option>
+          </select>
         </div>
         
         <div className="overflow-x-auto no-scrollbar">
@@ -197,7 +216,7 @@ export default function AdminTradesPage() {
                   </td>
                 </tr>
               ) : (
-                trades.map(trade => (
+                filteredTrades.map(trade => (
                   <tr key={trade.id} className="hover:bg-[#121212]/50 transition-colors border-b border-neutral-800">
                     <td className="px-6 py-4">
                       <span className="text-neutral-300 font-medium">{new Date(trade.open_time).toLocaleString()}</span>
@@ -206,7 +225,11 @@ export default function AdminTradesPage() {
                       <span className="text-sm text-neutral-400">{trade.userEmail}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-bold text-white">{trade.symbol}</span>
+                      {trade.domestic_segment === "FNO_OPTIONS" ? (
+                        <span className="font-bold text-white">{trade.symbol} {trade.strike_price} {trade.option_type}</span>
+                      ) : (
+                        <span className="font-bold text-white">{trade.symbol}</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {trade.direction === "BUY" ? (
@@ -224,7 +247,7 @@ export default function AdminTradesPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {trade.profit_loss >= 0 ? '+' : ''}${trade.profit_loss.toFixed(2)}
+                        {trade.profit_loss >= 0 ? '+' : ''}{trade.domestic_segment ? '₹' : '$'}{trade.profit_loss.toFixed(2)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

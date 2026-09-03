@@ -95,7 +95,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-[#121212] border border-neutral-800 p-4 rounded-lg">
                 <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Lot Size</span>
-                <span className="text-sm font-bold text-white">{trade.lot_size.toFixed(2)}</span>
+                <span className="text-sm font-bold text-white">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</span>
               </div>
               <div className="bg-[#121212] border border-neutral-800 p-4 rounded-lg">
                 <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-1">Realized R:R</span>

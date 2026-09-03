@@ -22,6 +22,17 @@ export async function addManualTradeAction(accountId: string, data: {
   entry_chart_url?: string;
   exit_chart_url?: string;
   execution_score?: "Perfect" | "Early Entry" | "Late Exit" | "FOMO" | "None";
+  pips?: number;
+  
+  // Domestic fields
+  domestic_segment?: string;
+  option_type?: "CE" | "PE";
+  strike_price?: number;
+  quantity?: number;
+  gross_pnl?: number;
+  net_pnl?: number;
+  total_taxes?: number;
+  tax_breakdown?: any;
 }) {
   try {
     const batch = writeBatch(db);
@@ -33,15 +44,25 @@ export async function addManualTradeAction(accountId: string, data: {
       account_id: accountId,
       symbol: data.symbol.toUpperCase(),
       direction: data.direction,
-      lot_size: Number(data.lot_size),
+      lot_size: Number(data.lot_size) || undefined,
       open_price: Number(data.open_price),
       close_price: Number(data.close_price),
       open_time: data.open_time || new Date().toISOString(),
       close_time: data.close_time || new Date().toISOString(),
-      pips: 0,
+      pips: data.pips ? Number(data.pips) : undefined,
       profit_loss: Number(data.profit_loss),
       commission: Number(data.commission),
       swap: 0,
+      
+      // Domestic fields
+      domestic_segment: data.domestic_segment,
+      option_type: data.option_type,
+      strike_price: data.strike_price,
+      quantity: data.quantity,
+      gross_pnl: data.gross_pnl,
+      net_pnl: data.net_pnl,
+      total_taxes: data.total_taxes,
+      tax_breakdown: data.tax_breakdown,
       strategy_id: "",
       notes: "Manual Entry",
       screenshot_url: "",
@@ -55,7 +76,12 @@ export async function addManualTradeAction(accountId: string, data: {
       exit_chart_url: data.exit_chart_url,
       execution_score: data.execution_score,
     };
-    batch.set(newTradeRef, tradeData);
+    
+    const cleanTradeData = Object.fromEntries(
+      Object.entries(tradeData).filter(([_, v]) => v !== undefined)
+    ) as TradeDoc;
+
+    batch.set(newTradeRef, cleanTradeData);
 
     // 2. Fetch the account to update its balance
     const accountRef = doc(db, "accounts", accountId);
@@ -65,7 +91,7 @@ export async function addManualTradeAction(accountId: string, data: {
     }
     
     const accountData = accountSnap.data() as AccountDoc;
-    const netPnL = Number(data.profit_loss) - Number(data.commission);
+    const netPnL = data.net_pnl !== undefined ? Number(data.net_pnl) : (Number(data.profit_loss) - Number(data.commission));
     const newBalance = (accountData.current_balance || 0) + netPnL;
 
     batch.update(accountRef, {
@@ -139,6 +165,17 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
   entry_chart_url?: string;
   exit_chart_url?: string;
   execution_score?: "Perfect" | "Early Entry" | "Late Exit" | "FOMO" | "None";
+  pips?: number;
+  
+  // Domestic fields
+  domestic_segment?: string;
+  option_type?: "CE" | "PE";
+  strike_price?: number;
+  quantity?: number;
+  gross_pnl?: number;
+  net_pnl?: number;
+  total_taxes?: number;
+  tax_breakdown?: any;
 }) {
   try {
     const batch = writeBatch(db);
@@ -150,19 +187,27 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
       throw new Error("Trade not found");
     }
     const oldTradeData = tradeSnap.data() as TradeDoc;
-    const oldNetPnL = (oldTradeData.profit_loss || 0) - (oldTradeData.commission || 0);
+    const oldNetPnL = oldTradeData.net_pnl !== undefined ? oldTradeData.net_pnl : (oldTradeData.profit_loss || 0) - (oldTradeData.commission || 0);
 
-    // 2. Update trade document
-    batch.update(tradeRef, {
+    const updatePayload = {
       symbol: data.symbol.toUpperCase(),
       direction: data.direction,
-      lot_size: Number(data.lot_size),
-      open_price: Number(data.open_price),
-      close_price: Number(data.close_price),
-      profit_loss: Number(data.profit_loss),
-      commission: Number(data.commission),
+      lot_size: data.lot_size,
+      open_price: data.open_price,
+      close_price: data.close_price,
+      profit_loss: data.profit_loss,
+      commission: data.commission,
       emotion: data.emotion,
       setup_grade: data.setup_grade,
+      pips: data.pips,
+      domestic_segment: data.domestic_segment,
+      option_type: data.option_type,
+      strike_price: data.strike_price,
+      quantity: data.quantity,
+      gross_pnl: data.gross_pnl,
+      net_pnl: data.net_pnl,
+      total_taxes: data.total_taxes,
+      tax_breakdown: data.tax_breakdown,
       stop_loss_price: data.stop_loss_price,
       take_profit_price: data.take_profit_price,
       risk_reward_ratio: data.risk_reward_ratio,
@@ -171,7 +216,13 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
       execution_score: data.execution_score,
       ...(data.open_time && { open_time: data.open_time }),
       ...(data.close_time && { close_time: data.close_time }),
-    });
+    };
+
+    const cleanUpdateData = Object.fromEntries(
+      Object.entries(updatePayload).filter(([_, v]) => v !== undefined)
+    );
+
+    batch.update(tradeRef, cleanUpdateData);
 
     // 3. Fetch account and adjust balance
     const accountRef = doc(db, "accounts", accountId);
@@ -181,7 +232,7 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
     }
     
     const accountData = accountSnap.data() as AccountDoc;
-    const newNetPnL = Number(data.profit_loss) - Number(data.commission);
+    const newNetPnL = data.net_pnl !== undefined ? Number(data.net_pnl) : (Number(data.profit_loss) - Number(data.commission));
     // Reverse old, apply new
     const newBalance = (accountData.current_balance || 0) - oldNetPnL + newNetPnL;
 

@@ -22,7 +22,10 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
   const [formData, setFormData] = useState({
     label: "",
-    prop_firm: ""
+    prop_firm: "",
+    account_type: "Real",
+    market_type: "GLOBAL" as "GLOBAL" | "DOMESTIC",
+    currency: "USD" as "USD" | "INR"
   });
 
   useEffect(() => {
@@ -30,6 +33,9 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
       setFormData({
         label: account.label,
         prop_firm: account.prop_firm || "",
+        account_type: account.account_type || "Real",
+        market_type: account.market_type || "GLOBAL",
+        currency: account.currency || "USD"
       });
       
       if (account.prop_firm && account.prop_plan_name && propFirms.length > 0) {
@@ -70,6 +76,17 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
     }
   }, [formData.prop_firm, account]);
 
+  // Handle market type changes
+  useEffect(() => {
+    if (formData.market_type === "DOMESTIC") {
+      setFormData(prev => ({
+        ...prev,
+        currency: "INR",
+        prop_firm: ""
+      }));
+    }
+  }, [formData.market_type]);
+
   useEffect(() => {
     if (selectedProgramId !== "none" && (!account || (account && selectedProgramId !== account.prop_plan_name))) {
       setSelectedSize("none");
@@ -108,6 +125,9 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
       
       let updateData: Partial<AccountDoc> = {
         label: formData.label.trim(),
+        account_type: formData.account_type,
+        market_type: formData.market_type,
+        currency: formData.currency
       };
 
       if (formData.prop_firm && selectedPlanObj) {
@@ -134,7 +154,11 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
         updateData.max_drawdown_pct = 10;
       }
 
-      await updateDoc(accRef, updateData);
+      const cleanUpdateData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, v]) => v !== undefined)
+      );
+
+      await updateDoc(accRef, cleanUpdateData);
       
       toast.success("Account updated successfully");
       onUpdated();
@@ -170,6 +194,52 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
             />
           </div>
 
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+                Account Type
+              </label>
+              <select 
+                value={formData.account_type} 
+                onChange={e => setFormData({...formData, account_type: e.target.value})}
+                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+              >
+                <option value="Real">Real</option>
+                {formData.market_type === "GLOBAL" && <option value="Funded">Funded</option>}
+                <option value="Demo">Demo</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+                Market Type
+              </label>
+              <select 
+                value={formData.market_type} 
+                onChange={e => setFormData({...formData, market_type: e.target.value as "GLOBAL" | "DOMESTIC"})}
+                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+              >
+                <option value="GLOBAL">Global</option>
+                <option value="DOMESTIC">Domestic</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
+                Currency
+              </label>
+              <select 
+                value={formData.currency} 
+                onChange={e => setFormData({...formData, currency: e.target.value as "USD" | "INR"})}
+                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="INR">INR (₹)</option>
+              </select>
+            </div>
+          </div>
+
+          {formData.market_type === "GLOBAL" && (
           <div className="space-y-2">
             <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1">
               Prop Firm Tracker
@@ -308,8 +378,9 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
               );
             })()}
           </div>
+          )}
 
-          <div className="pt-4 flex gap-3">
+          <div className="pt-2 flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-slate-300 font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
               Cancel
             </button>

@@ -4,9 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 import { editManualTradeAction } from "@/app/actions/tradeActions";
 import toast from "react-hot-toast";
 import { calculatePnL } from "@/utils/pnlCalculator";
+import { calculateDomesticTaxes, DomesticSegment } from "@/utils/brokerageMath";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { useAuth } from "@/lib/firebase/authContext";
 import { PremiumDateTimePicker } from "@/components/ui/PremiumDateTimePicker";
+import { useUiStore } from "@/store/useUiStore";
 
 export default function EditTradeModal({ 
   accountId, 
@@ -26,6 +28,8 @@ export default function EditTradeModal({
   const [loading, setLoading] = useState(false);
   const [usdInrRate] = useState(83.50);
   const { tier } = useAuth();
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
   const isProOrElite = tier === 'pro' || tier === 'elite';
 
   const [formData, setFormData] = useState({
@@ -44,28 +48,44 @@ export default function EditTradeModal({
     entry_chart_url: "",
     exit_chart_url: "",
     open_time: new Date().toISOString(),
-    close_time: new Date().toISOString()
+    close_time: new Date().toISOString(),
+    // Domestic specific
+    domestic_segment: "FNO_OPTIONS" as DomesticSegment,
+    option_type: "CE" as "CE" | "PE",
+    strike_price: "",
+    quantity: "",
+    total_taxes: "",
+    net_pnl: "",
+    tax_breakdown: {} as any
   });
 
   useEffect(() => {
     if (trade) {
       setFormData({
-        symbol: trade.symbol,
+        symbol: trade.symbol || "",
         direction: trade.direction,
-        lot_size: trade.lot_size.toString(),
+        lot_size: trade.lot_size?.toString() || "",
         open_price: trade.open_price.toString(),
         close_price: trade.close_price.toString(),
         stop_loss_price: trade.stop_loss_price ? trade.stop_loss_price.toString() : "",
         take_profit_price: trade.take_profit_price ? trade.take_profit_price.toString() : "",
         profit_loss: trade.profit_loss.toString(),
-        commission: trade.commission.toString(),
+        commission: (trade.commission || 0).toString(),
         emotion: trade.emotion || "Neutral",
         setup_grade: trade.setup_grade || "B",
         execution_score: trade.execution_score || "None",
         entry_chart_url: trade.entry_chart_url || "",
         exit_chart_url: trade.exit_chart_url || "",
         open_time: trade.open_time,
-        close_time: trade.close_time
+        close_time: trade.close_time,
+        // Domestic specific
+        domestic_segment: trade.domestic_segment as DomesticSegment || "FNO_OPTIONS",
+        option_type: trade.option_type as "CE" | "PE" || "CE",
+        strike_price: trade.strike_price?.toString() || "",
+        quantity: trade.quantity?.toString() || "",
+        total_taxes: trade.total_taxes?.toString() || "",
+        net_pnl: trade.net_pnl?.toString() || "",
+        tax_breakdown: trade.tax_breakdown || {}
       });
     }
   }, [trade]);
@@ -75,9 +95,9 @@ export default function EditTradeModal({
     setFormData(prev => ({ ...prev, [field]: date.toISOString() }));
   };
 
-  // Auto-calculate P&L whenever inputs change
+  // GLOBAL P&L CALC
   useEffect(() => {
-    if (formData.symbol && formData.open_price && formData.close_price && formData.lot_size) {
+    if (!isDomestic && formData.symbol && formData.open_price && formData.close_price && formData.lot_size) {
       const pnl = calculatePnL({
         symbol: formData.symbol,
         direction: formData.direction,
@@ -87,14 +107,36 @@ export default function EditTradeModal({
         accountCurrency,
         usdInrRate
       });
-      
       if (!isNaN(pnl)) {
         setFormData(prev => ({ ...prev, profit_loss: pnl.toFixed(2) }));
       }
     }
-  }, [formData.symbol, formData.direction, formData.open_price, formData.close_price, formData.lot_size, accountCurrency, usdInrRate]);
+  }, [!isDomestic, formData.symbol, formData.direction, formData.open_price, formData.close_price, formData.lot_size]);
 
-  // Auto-calculate R:R
+  // DOMESTIC P&L & TAX CALC
+  useEffect(() => {
+    if (isDomestic && formData.open_price && formData.close_price && formData.quantity) {
+      const buyPrice = formData.direction === "BUY" ? Number(formData.open_price) : Number(formData.close_price);
+      const sellPrice = formData.direction === "BUY" ? Number(formData.close_price) : Number(formData.open_price);
+      
+      const taxResult = calculateDomesticTaxes(
+        formData.domestic_segment,
+        buyPrice,
+        sellPrice,
+        Number(formData.quantity)
+      );
+
+      setFormData(prev => ({
+        ...prev,
+        profit_loss: taxResult.grossPnl.toString(), // gross
+        net_pnl: taxResult.netPnl.toString(),
+        total_taxes: taxResult.totalTaxes.toString(),
+        tax_breakdown: taxResult.breakdown
+      }));
+    }
+  }, [isDomestic, formData.domestic_segment, formData.direction, formData.open_price, formData.close_price, formData.quantity]);
+
+
   const riskRewardRatio = useMemo(() => {
     const op = Number(formData.open_price);
     const sl = Number(formData.stop_loss_price);
@@ -105,318 +147,245 @@ export default function EditTradeModal({
     const risk = Math.abs(op - sl);
     const reward = Math.abs(tp - op);
     
-    if (risk === 0) return null;
-    const rr = reward / risk;
-    return Number(rr.toFixed(2));
+    return risk > 0 ? reward / risk : null;
   }, [formData.open_price, formData.stop_loss_price, formData.take_profit_price]);
-
-  if (!isOpen || !trade) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.symbol.trim()) {
-      toast.error("Please enter a symbol.");
-      return;
-    }
-
-    if (new Date(formData.close_time) <= new Date(formData.open_time)) {
-      toast.error("Close time cannot be before or equal to open time.");
-      return;
-    }
-
+    if (!trade) return;
     setLoading(true);
-    
-    const res = await editManualTradeAction(trade.id, accountId, {
-      symbol: formData.symbol.toUpperCase(),
-      direction: formData.direction,
-      lot_size: Number(formData.lot_size),
-      open_price: Number(formData.open_price),
-      close_price: Number(formData.close_price),
-      stop_loss_price: formData.stop_loss_price ? Number(formData.stop_loss_price) : undefined,
-      take_profit_price: formData.take_profit_price ? Number(formData.take_profit_price) : undefined,
-      risk_reward_ratio: riskRewardRatio || undefined,
-      profit_loss: Number(formData.profit_loss),
-      commission: Number(formData.commission) || 0,
-      emotion: isProOrElite ? formData.emotion : undefined,
-      setup_grade: isProOrElite ? formData.setup_grade : undefined,
-      execution_score: isProOrElite && formData.execution_score !== "None" ? formData.execution_score : undefined,
-      entry_chart_url: isProOrElite ? formData.entry_chart_url : undefined,
-      exit_chart_url: isProOrElite ? formData.exit_chart_url : undefined,
-      open_time: formData.open_time,
-      close_time: formData.close_time,
-    });
 
-    setLoading(false);
-    
-    if (res.success) {
-      onUpdated();
-      onClose();
-    } else {
-      toast.error("Failed to update trade: " + res.error);
+    try {
+      const payload: any = {
+        symbol: formData.symbol,
+        direction: formData.direction,
+        open_price: Number(formData.open_price),
+        close_price: Number(formData.close_price),
+        open_time: formData.open_time,
+        close_time: formData.close_time,
+        profit_loss: Number(formData.profit_loss),
+        commission: Number(formData.commission) || 0,
+        stop_loss_price: formData.stop_loss_price ? Number(formData.stop_loss_price) : undefined,
+        take_profit_price: formData.take_profit_price ? Number(formData.take_profit_price) : undefined,
+        risk_reward_ratio: riskRewardRatio,
+        emotion: formData.emotion,
+        setup_grade: formData.setup_grade,
+        execution_score: formData.execution_score,
+        entry_chart_url: formData.entry_chart_url || "",
+        exit_chart_url: formData.exit_chart_url || "",
+      };
+
+      if (isDomestic) {
+        payload.domestic_segment = formData.domestic_segment;
+        payload.quantity = Number(formData.quantity);
+        payload.total_taxes = Number(formData.total_taxes);
+        payload.net_pnl = Number(formData.net_pnl);
+        payload.tax_breakdown = formData.tax_breakdown;
+        payload.gross_pnl = Number(formData.profit_loss);
+        if (formData.domestic_segment === "FNO_OPTIONS") {
+          payload.strike_price = Number(formData.strike_price);
+          payload.option_type = formData.option_type;
+        }
+      } else {
+        payload.lot_size = Number(formData.lot_size);
+        payload.pips = Math.abs(Number(formData.close_price) - Number(formData.open_price)) * 10000;
+      }
+
+      // Remove undefined values
+      const cleanPayload = Object.fromEntries(Object.entries(payload).filter(([_, v]) => v !== undefined));
+
+      const res = await editManualTradeAction(trade.id, accountId, cleanPayload as any);
+      if (res.success) {
+        toast.success("Trade updated successfully");
+        onUpdated();
+        onClose();
+      } else {
+        toast.error(res.error || "Failed to update trade");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const inputClass = "w-full bg-[#121212] border border-neutral-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-neutral-100 rounded-lg px-3 py-2 text-sm transition-colors";
-  const labelClass = "block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1";
+  if (!isOpen || !trade) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" 
-        onClick={onClose}
-      />
-      <div className={`relative bg-[#0a0a0a] border border-neutral-800 rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden animate-in zoom-in-95 fade-in duration-300`}>
-        
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-neutral-800">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-white tracking-tight">Edit Trade</h2>
-            {riskRewardRatio !== null && (
-              <span className="bg-blue-900/30 text-blue-400 border border-blue-900/50 px-2 py-0.5 rounded text-xs font-bold">
-                Calculated R:R — 1:{riskRewardRatio}
-              </span>
-            )}
-          </div>
-          <button onClick={onClose} className="text-neutral-500 hover:text-white transition-colors">
-            <i className="las la-times text-xl"></i>
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+          <i className="las la-times text-2xl"></i>
+        </button>
+        <h2 className="text-xl font-bold text-white mb-6">
+          Edit {isDomestic ? 'Domestic' : 'Global'} Trade
+        </h2>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Direction</label>
-              <div className="flex bg-[#121212] border border-neutral-800 rounded-lg p-1 overflow-hidden">
-                <button
-                  type="button"
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-colors ${formData.direction === 'BUY' ? 'bg-emerald-600 text-white' : 'text-neutral-400 hover:text-white'}`}
-                  onClick={() => setFormData({ ...formData, direction: "BUY" })}
-                >
-                  LONG
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-colors ${formData.direction === 'SELL' ? 'bg-rose-600 text-white' : 'text-neutral-400 hover:text-white'}`}
-                  onClick={() => setFormData({ ...formData, direction: "SELL" })}
-                >
-                  SHORT
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>Symbol</label>
-              <input
-                type="text"
-                required
-                className={inputClass}
-                value={formData.symbol}
-                onChange={(e) => setFormData({ ...formData, symbol: e.target.value.toUpperCase() })}
-                placeholder="e.g. AAPL"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Open Date & Time</label>
-              <PremiumDateTimePicker
-                value={new Date(formData.open_time)}
-                onChange={(d) => handleDateChange('open_time', d)}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Close Date & Time</label>
-              <PremiumDateTimePicker
-                value={new Date(formData.close_time)}
-                onChange={(d) => handleDateChange('close_time', d)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <label className={labelClass}>Lot Size</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                className={inputClass}
-                value={formData.lot_size}
-                onChange={(e) => setFormData({ ...formData, lot_size: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Open Price</label>
-              <input
-                type="number"
-                step="any"
-                required
-                className={inputClass}
-                value={formData.open_price}
-                onChange={(e) => setFormData({ ...formData, open_price: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Stop Loss</label>
-              <input
-                type="number"
-                step="any"
-                className={inputClass}
-                placeholder="Optional"
-                value={formData.stop_loss_price}
-                onChange={(e) => setFormData({ ...formData, stop_loss_price: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Take Profit</label>
-              <input
-                type="number"
-                step="any"
-                className={inputClass}
-                placeholder="Optional"
-                value={formData.take_profit_price}
-                onChange={(e) => setFormData({ ...formData, take_profit_price: e.target.value })}
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Close Price</label>
-              <input
-                type="number"
-                step="any"
-                required
-                className={inputClass}
-                value={formData.close_price}
-                onChange={(e) => setFormData({ ...formData, close_price: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Net P&L</label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-neutral-500">{accountCurrency === "INR" ? "₹" : "$"}</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  className={`${inputClass} pl-7`}
-                  value={formData.profit_loss}
-                  onChange={(e) => setFormData({ ...formData, profit_loss: e.target.value })}
-                />
-              </div>
-            </div>
-            <div>
-              <label className={labelClass}>Commission</label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-neutral-500">{accountCurrency === "INR" ? "₹" : "$"}</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  className={`${inputClass} pl-7`}
-                  value={formData.commission}
-                  onChange={(e) => setFormData({ ...formData, commission: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {isProOrElite && (
-            <div className="border-t border-neutral-800 pt-5 space-y-4">
-              <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-                <i className="las la-brain text-blue-500"></i> Smart AI Fields
-              </h3>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Left Column */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Execution Details</h3>
               
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className={labelClass}>Emotion</label>
-                  <select
-                    className={inputClass}
-                    value={formData.emotion}
-                    onChange={(e) => setFormData({ ...formData, emotion: e.target.value as any })}
-                  >
-                    <option value="Neutral">Neutral</option>
-                    <option value="Confident">Confident</option>
-                    <option value="FOMO">FOMO</option>
-                    <option value="Revenge">Revenge</option>
-                    <option value="Bored">Bored</option>
-                    <option value="Tilted">Tilted</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={labelClass}>Setup Grade</label>
-                  <select
-                    className={inputClass}
-                    value={formData.setup_grade}
-                    onChange={(e) => setFormData({ ...formData, setup_grade: e.target.value as any })}
-                  >
-                    <option value="A+">A+ (Perfect)</option>
-                    <option value="A">A (Great)</option>
-                    <option value="B">B (Good)</option>
-                    <option value="C">C (Poor)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={labelClass}>Execution</label>
-                  <select
-                    className={inputClass}
-                    value={formData.execution_score}
-                    onChange={(e) => setFormData({ ...formData, execution_score: e.target.value as any })}
-                  >
-                    <option value="None">Not Graded</option>
-                    <option value="Perfect">Perfect Execution</option>
-                    <option value="Early Entry">Early Entry</option>
-                    <option value="Late Exit">Late Exit</option>
-                    <option value="FOMO">FOMO Entry</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Entry Chart URL</label>
-                  <input
-                    type="url"
-                    className={inputClass}
-                    placeholder="https://tradingview.com/..."
-                    value={formData.entry_chart_url}
-                    onChange={(e) => setFormData({ ...formData, entry_chart_url: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Exit Chart URL</label>
-                  <input
-                    type="url"
-                    className={inputClass}
-                    placeholder="https://tradingview.com/..."
-                    value={formData.exit_chart_url}
-                    onChange={(e) => setFormData({ ...formData, exit_chart_url: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-4 border-t border-neutral-800">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading ? (
+              {isDomestic ? (
                 <>
-                  <i className="las la-spinner la-spin text-xl"></i> Processing...
+                  <div>
+                    <label className="label-premium block mb-2">Segment</label>
+                    <select 
+                      className="input-premium w-full"
+                      value={formData.domestic_segment}
+                      onChange={e => setFormData({...formData, domestic_segment: e.target.value as DomesticSegment})}
+                    >
+                      <option value="FNO_OPTIONS">F&O Options</option>
+                      <option value="FNO_FUTURES">F&O Futures</option>
+                      <option value="EQUITY_INTRADAY">Equity Intraday</option>
+                      <option value="EQUITY_DELIVERY">Equity Delivery</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="label-premium block mb-2">Asset Symbol</label>
+                      <input type="text" className="input-premium w-full uppercase" value={formData.symbol} onChange={e => setFormData({...formData, symbol: e.target.value.toUpperCase()})} placeholder="e.g. RELIANCE" required />
+                    </div>
+                    {formData.domestic_segment === "FNO_OPTIONS" && (
+                      <div>
+                        <label className="label-premium block mb-2">Strike & Type</label>
+                        <div className="flex gap-2">
+                          <input type="number" className="input-premium w-2/3" placeholder="Strike" value={formData.strike_price} onChange={e => setFormData({...formData, strike_price: e.target.value})} required />
+                          <select className="input-premium w-1/3 p-1" value={formData.option_type} onChange={e => setFormData({...formData, option_type: e.target.value as "CE"|"PE"})}>
+                            <option value="CE">CE</option>
+                            <option value="PE">PE</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="label-premium block mb-2">Direction</label>
+                      <select className="input-premium w-full" value={formData.direction} onChange={e => setFormData({...formData, direction: e.target.value as "BUY"|"SELL"})}>
+                        <option value="BUY">Long / Buy</option>
+                        <option value="SELL">Short / Sell</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label-premium block mb-2">Quantity</label>
+                      <input type="number" step="1" className="input-premium w-full" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required />
+                    </div>
+                  </div>
                 </>
               ) : (
-                "Update Trade"
+                <>
+                  <div>
+                    <label className="label-premium block mb-2">Asset Symbol</label>
+                    <input type="text" className="input-premium w-full uppercase" value={formData.symbol} onChange={e => setFormData({...formData, symbol: e.target.value.toUpperCase()})} placeholder="e.g. GBPJPY" required />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="label-premium block mb-2">Direction</label>
+                      <select className="input-premium w-full" value={formData.direction} onChange={e => setFormData({...formData, direction: e.target.value as "BUY"|"SELL"})}>
+                        <option value="BUY">Long / Buy</option>
+                        <option value="SELL">Short / Sell</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label-premium block mb-2">Lot Size</label>
+                      <input type="number" step="0.01" className="input-premium w-full" value={formData.lot_size} onChange={e => setFormData({...formData, lot_size: e.target.value})} required />
+                    </div>
+                  </div>
+                </>
               )}
-            </button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-premium block mb-2">Entry Price</label>
+                  <input type="number" step="0.00001" className="input-premium w-full" value={formData.open_price} onChange={e => setFormData({...formData, open_price: e.target.value})} required />
+                </div>
+                <div>
+                  <label className="label-premium block mb-2">Exit Price</label>
+                  <input type="number" step="0.00001" className="input-premium w-full" value={formData.close_price} onChange={e => setFormData({...formData, close_price: e.target.value})} required />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-premium block mb-2">Open Time</label>
+                  <PremiumDateTimePicker value={new Date(formData.open_time)} onChange={(d) => handleDateChange('open_time', d)} />
+                </div>
+                <div>
+                  <label className="label-premium block mb-2">Close Time</label>
+                  <PremiumDateTimePicker value={new Date(formData.close_time)} onChange={(d) => handleDateChange('close_time', d)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest border-b border-neutral-800 pb-2">Analytics</h3>
+              
+              {isDomestic && formData.net_pnl ? (
+                <div className="premium-inner-box p-4 border border-orange-500/20 bg-orange-500/5">
+                  <h4 className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">Live Tax Receipt</h4>
+                  <div className="space-y-2 text-sm font-mono">
+                    <div className="flex justify-between text-neutral-300"><span>Gross PnL</span><span>₹{Number(formData.profit_loss).toFixed(2)}</span></div>
+                    <div className="flex justify-between text-rose-400"><span>Brokerage</span><span>-₹{formData.tax_breakdown?.brokerage?.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-rose-400"><span>STT</span><span>-₹{formData.tax_breakdown?.stt?.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-rose-400"><span>Other Taxes</span><span>-₹{(Number(formData.total_taxes) - formData.tax_breakdown?.brokerage - formData.tax_breakdown?.stt).toFixed(2)}</span></div>
+                    <div className="border-t border-orange-500/20 my-2 pt-2 flex justify-between font-bold text-white">
+                      <span>Net PnL</span>
+                      <span className={Number(formData.net_pnl) >= 0 ? "text-emerald-400" : "text-rose-400"}>₹{Number(formData.net_pnl).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="premium-inner-box p-3">
+                    <label className="label-premium block mb-1">Gross P&L ($)</label>
+                    <input type="number" step="0.01" className="bg-transparent text-white font-bold text-lg w-full outline-none" value={formData.profit_loss} onChange={e => setFormData({...formData, profit_loss: e.target.value})} placeholder="0.00" />
+                  </div>
+                  <div className="premium-inner-box p-3">
+                    <label className="label-premium block mb-1">Commission</label>
+                    <input type="number" step="0.01" className="bg-transparent text-white font-bold text-lg w-full outline-none" value={formData.commission} onChange={e => setFormData({...formData, commission: e.target.value})} placeholder="0.00" />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-premium block mb-2">Stop Loss</label>
+                  <input type="number" step="0.00001" className="input-premium w-full" value={formData.stop_loss_price} onChange={e => setFormData({...formData, stop_loss_price: e.target.value})} />
+                </div>
+                <div>
+                  <label className="label-premium block mb-2">Take Profit</label>
+                  <input type="number" step="0.00001" className="input-premium w-full" value={formData.take_profit_price} onChange={e => setFormData({...formData, take_profit_price: e.target.value})} />
+                </div>
+              </div>
+
+              {riskRewardRatio !== null && (
+                <div className="premium-inner-box p-3 flex justify-between items-center">
+                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Risk/Reward</span>
+                  <span className="text-white font-bold font-mono">1 : {riskRewardRatio.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="label-premium block mb-2">Emotion / State</label>
+                <select className="input-premium w-full" value={formData.emotion} onChange={e => setFormData({...formData, emotion: e.target.value})}>
+                  <option value="Neutral">Neutral</option>
+                  <option value="Confident">Confident</option>
+                  <option value="FOMO">FOMO</option>
+                  <option value="Revenge">Revenge</option>
+                  <option value="Bored">Bored</option>
+                  <option value="Tilted">Tilted</option>
+                </select>
+              </div>
+            </div>
           </div>
+
+          <button type="submit" disabled={loading} className="w-full btn-primary py-4 text-lg">
+            {loading ? "Updating Trade..." : "Save Changes"}
+          </button>
         </form>
       </div>
     </div>

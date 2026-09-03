@@ -16,6 +16,8 @@ import { MonteCarloSimulator } from "@/components/analytics/MonteCarloSimulator"
 import { DrawdownProfile } from "@/components/analytics/DrawdownProfile";
 import { SessionHeatmap } from "@/components/analytics/SessionHeatmap";
 import { VolumeCorrelation } from "@/components/analytics/VolumeCorrelation";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 
 export default function AnalyticsOverview() {
   const { user } = useAuth();
@@ -26,6 +28,9 @@ export default function AnalyticsOverview() {
   const [allTrades, setAllTrades] = useState<TradeDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("ALL");
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
 
   useEffect(() => {
     if (!user) {
@@ -76,19 +81,26 @@ export default function AnalyticsOverview() {
     return allTrades.filter(t => t.account_id === selectedAccountId);
   }, [allTrades, selectedAccountId]);
 
+  const workspaceAccounts = useMemo(() => {
+    return accounts.filter(a => 
+      (isDomestic && a.market_type === "DOMESTIC") || 
+      (!isDomestic && a.market_type !== "DOMESTIC")
+    );
+  }, [accounts, isDomestic]);
+
   const activeAccount = useMemo(() => {
     if (selectedAccountId !== "ALL") {
-      return accounts.find(a => a.id === selectedAccountId) || accounts[0];
+      return workspaceAccounts.find(a => a.id === selectedAccountId) || workspaceAccounts[0];
     }
     // Mock aggregated account for Monte Carlo base balance if "ALL" is selected
-    const totalBalance = accounts.reduce((sum, a) => sum + (a.initial_balance || 0), 0);
+    const totalBalance = workspaceAccounts.reduce((sum, a) => sum + (a.initial_balance || 0), 0);
     return {
       id: "ALL",
       owner_uid: user?.uid || "",
-      label: "All Accounts",
+      label: `All ${isDomestic ? 'Domestic' : 'Global'} Accounts`,
       broker: "Aggregated",
       account_type: "Aggregated",
-      currency: "USD",
+      currency: isDomestic ? "INR" : "USD",
       initial_balance: totalBalance,
       current_balance: totalBalance,
       created_at: new Date()
@@ -127,7 +139,11 @@ export default function AnalyticsOverview() {
   }, [activeTrades]);
 
   const formatMoney = (val: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: activeAccount?.currency || 'USD', minimumFractionDigits: 2 }).format(val);
+    return new Intl.NumberFormat(isDomestic ? 'en-IN' : 'en-US', { 
+      style: 'currency', 
+      currency: isDomestic ? 'INR' : 'USD', 
+      minimumFractionDigits: 2 
+    }).format(Math.abs(val));
   };
 
   if (loading) {
@@ -143,17 +159,18 @@ export default function AnalyticsOverview() {
           <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <i className="las la-chart-bar text-[#a855f7]"></i> Analytics Overview
           </h1>
-          <p className="text-neutral-400 mt-1">Deep institutional-grade analysis of your trading edge.</p>
+          <p className="text-neutral-400 mt-1">Deep institutional-grade analysis of your {isDomestic ? 'domestic' : 'global'} trading edge.</p>
         </div>
         
-        <div>
+        <div className="flex items-center gap-4">
+          <MarketSwitcher />
           <select 
             className="bg-[#121212] border border-neutral-800 text-white font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
           >
-            <option value="ALL">All Accounts</option>
-            {accounts.map(acc => (
+            <option value="ALL">All {isDomestic ? 'Domestic' : 'Global'} Accounts</option>
+            {workspaceAccounts.map(acc => (
               <option key={acc.id} value={acc.id}>{acc.label}</option>
             ))}
           </select>
@@ -165,7 +182,7 @@ export default function AnalyticsOverview() {
         <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
           <span className="block text-[10px] uppercase font-bold text-neutral-500 tracking-wider mb-2">Total P&L</span>
           <span className={`text-2xl md:text-3xl font-black ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
-            {totalPnl >= 0 ? '+' : ''}{formatMoney(totalPnl)}
+            {totalPnl >= 0 ? '+' : '-'}{formatMoney(totalPnl)}
           </span>
         </div>
         <div className="bg-[#0a0a0a] border border-neutral-800 p-5 rounded-2xl shadow-xl">
@@ -190,7 +207,7 @@ export default function AnalyticsOverview() {
 
       {/* Equity Curve & Advanced Metrics */}
       <div>
-        <InteractiveEquityCurve trades={activeTrades} currency={activeAccount?.currency || "USD"} />
+        <InteractiveEquityCurve trades={activeTrades} currency={isDomestic ? "INR" : "USD"} />
         <AdvancedMetrics trades={activeTrades} />
       </div>
 

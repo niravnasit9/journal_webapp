@@ -98,8 +98,9 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
     let longs = 0;
     let shorts = 0;
     filteredTrades.forEach(t => {
+      const tLotSize = t.lot_size || t.quantity || 0;
       totalPnl += (t.profit_loss - (t.commission || 0));
-      totalVolume += t.lot_size;
+      totalVolume += tLotSize;
       totalCommission += (t.commission || 0);
       if (t.direction === 'BUY') longs++;
       if (t.direction === 'SELL') shorts++;
@@ -304,7 +305,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                         {trade.direction}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 font-medium">{trade.lot_size.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-neutral-400 font-medium">{(trade.lot_size || trade.quantity || 0).toFixed(2)}</td>
                     <td className="px-6 py-4 text-neutral-500 font-mono">{trade.open_price}</td>
                     <td className={`px-6 py-4 text-right font-bold ${trade.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {trade.profit_loss >= 0 ? '+' : ''}{formatMoney(trade.profit_loss - (trade.commission || 0))}

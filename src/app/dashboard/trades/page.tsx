@@ -15,8 +15,10 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import { useDemo } from "@/lib/demoContext";
 import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 
-export default function GlobalTradesPage() {
+export default function TradesPage() {
   const { user, tier, role } = useAuth();
   const { isDemoMode } = useDemo();
   const theme = useTierTheme();
@@ -25,6 +27,9 @@ export default function GlobalTradesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
 
   useEffect(() => {
     if (user || isDemoMode) {
@@ -89,10 +94,26 @@ export default function GlobalTradesPage() {
   };
 
   const filteredTrades = trades.filter(t => {
+    // 1. Filter by workspace accounts
+    const account = accounts.find(a => a.id === t.account_id);
+    if (!account) return false;
+    const isAccDomestic = account.market_type === "DOMESTIC";
+    if (isDomestic && !isAccDomestic) return false;
+    if (!isDomestic && isAccDomestic) return false;
+
+    // 2. Filter by search term
     const matchesSearch = t.symbol.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // 3. Filter by selected account ID
     const matchesAccount = selectedAccountId === "ALL" || t.account_id === selectedAccountId;
+    
     return matchesSearch && matchesAccount;
   });
+
+  const workspaceAccounts = accounts.filter(a => 
+    (isDomestic && a.market_type === "DOMESTIC") || 
+    (!isDomestic && a.market_type !== "DOMESTIC")
+  );
 
   const isProOrElite = tier === 'pro' || tier === 'elite';
 
@@ -134,12 +155,13 @@ export default function GlobalTradesPage() {
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
             <i className={`las la-book-open text-3xl ${theme.icon}`}></i>
-            Global Trade Journal
+            {isDomestic ? 'Domestic' : 'Global'} Trade Journal
           </h1>
-          <p className="text-secondary text-sm mt-1">View and analyze all your trades across every connected account.</p>
+          <p className="text-secondary text-sm mt-1">View and analyze all your trades across {isDomestic ? 'Domestic' : 'Global'} connected accounts.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <MarketSwitcher />
           <div title={!isProOrElite ? "Exporting is available on Pro/Elite tiers" : "Export your trade history"}>
             <Button 
               variant="outline"
@@ -163,8 +185,8 @@ export default function GlobalTradesPage() {
           <div className="w-full md:w-48">
             <Select
               options={[
-                { value: "ALL", label: "All Accounts" },
-                ...accounts.map(acc => ({ value: acc.id, label: acc.label }))
+                { value: "ALL", label: `All ${isDomestic ? 'Domestic' : 'Global'} Accounts` },
+                ...workspaceAccounts.map(a => ({ value: a.id, label: a.label }))
               ]}
               value={selectedAccountId}
               onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -184,7 +206,7 @@ export default function GlobalTradesPage() {
                 <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4 text-right">Lots</th>
+                <th className="px-6 py-4 text-right">{isDomestic ? 'Qty' : 'Lots'}</th>
                 <th className="px-6 py-4 text-right">Open / Close</th>
                 <th className="px-6 py-4 text-right">Net PnL</th>
               </tr>
@@ -192,15 +214,15 @@ export default function GlobalTradesPage() {
             <tbody className="divide-y divide-subtle">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12"><LoadingSpinner /></td>
+                  <td colSpan={9} className="px-6 py-12"><LoadingSpinner /></td>
                 </tr>
               ) : filteredTrades.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-secondary font-medium">No trades found.</td>
+                  <td colSpan={9} className="px-6 py-12 text-center text-secondary font-medium">No trades found.</td>
                 </tr>
               ) : (
                 filteredTrades.map((trade) => {
-                  const isProfit = trade.profit_loss > 0;
+                  const netPnL = trade.profit_loss;
                   const account = accounts.find(a => a.id === trade.account_id);
                   return (
                     <tr key={trade.id} className="hover:bg-elevated transition-colors group">
@@ -229,15 +251,15 @@ export default function GlobalTradesPage() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-primary font-semibold">
-                        {trade.lot_size.toFixed(2)}
+                        {isDomestic ? (trade.quantity || 0) : (trade.lot_size || 0).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right font-mono">
-                        <div className="text-primary font-semibold">{trade.open_price.toFixed(5)}</div>
-                        <div className="text-xs text-muted">→ {trade.close_price.toFixed(5)}</div>
+                        <div className="text-primary font-semibold">{isDomestic ? trade.open_price.toFixed(2) : trade.open_price.toFixed(5)}</div>
+                        <div className="text-xs text-muted">→ {isDomestic ? trade.close_price.toFixed(2) : trade.close_price.toFixed(5)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <span className={`text-base font-bold tracking-tight ${isProfit ? 'text-success' : 'text-danger'}`}>
-                          {isProfit ? '+' : ''}{trade.profit_loss.toFixed(2)}
+                        <span className={`text-base font-bold tracking-tight ${netPnL > 0 ? 'text-success' : 'text-danger'}`}>
+                          {netPnL > 0 ? '+' : ''}{currencySymbol}{Math.abs(netPnL).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </td>
                     </tr>

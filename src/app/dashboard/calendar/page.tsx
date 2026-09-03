@@ -7,14 +7,116 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTierTheme } from "@/hooks/useTierTheme";
-import { DEMO_TRADES } from "@/lib/adminDemoData";
+import { DEMO_TRADES, DEMO_ACCOUNTS } from "@/lib/adminDemoData";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import { AccountDoc } from "@/lib/firebase/schema";
+import { useRef, memo } from "react";
 
-export default function GlobalCalendarPage() {
+const CustomEconomicNews = () => {
+  const [news, setNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { activeWorkspace } = useUiStore();
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await fetch(`/api/news?market=${activeWorkspace}`);
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to load news");
+        }
+        
+        setNews(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNews();
+  }, [activeWorkspace]);
+
+  const getImpactIcon = (impact: string) => {
+    const imp = impact?.toLowerCase() || "";
+    if (imp === "high") return <div className="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" title="High Impact" />;
+    if (imp === "medium") return <div className="w-3 h-3 rounded-full bg-yellow-500" title="Medium Impact" />;
+    return <div className="w-3 h-3 rounded-full bg-emerald-500" title="Low Impact" />;
+  };
+
+  if (loading) {
+    return <div className="w-full h-[300px] rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] flex items-center justify-center mt-6">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="w-full rounded-2xl border border-red-500/20 bg-red-500/5 mt-6 p-6 text-center">
+      <p className="text-red-400 font-bold mb-2">Could not load economic calendar</p>
+      <p className="text-sm text-neutral-400">{error}</p>
+      <p className="text-xs text-neutral-500 mt-4">Make sure the FMP API Key is set in Admin Settings.</p>
+    </div>;
+  }
+
+  if (news.length === 0) {
+    return <div className="w-full rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] mt-6 p-12 text-center">
+      <p className="text-neutral-400">No upcoming news events found for this market.</p>
+    </div>;
+  }
+
+  return (
+    <div className="w-full rounded-2xl border border-gray-200 dark:border-white/5 bg-white dark:bg-[#111318] mt-6 overflow-hidden">
+      <div className="overflow-x-auto no-scrollbar">
+        <table className="w-full text-left text-sm whitespace-nowrap">
+          <thead>
+            <tr className="bg-neutral-50 dark:bg-neutral-800/50 text-neutral-500 dark:text-neutral-400 text-xs font-bold uppercase tracking-widest border-b border-gray-200 dark:border-white/5">
+              <th className="px-6 py-4">Time</th>
+              <th className="px-6 py-4">Country / Cur</th>
+              <th className="px-6 py-4">Event</th>
+              <th className="px-6 py-4">Impact</th>
+              <th className="px-6 py-4 text-right">Actual</th>
+              <th className="px-6 py-4 text-right">Estimate</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 dark:divide-white/5">
+            {news.map((n, i) => (
+              <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+                <td className="px-6 py-4 font-mono text-xs">
+                  {new Date(n.date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </td>
+                <td className="px-6 py-4 font-bold flex items-center gap-2">
+                  <span className="text-xs bg-neutral-200 dark:bg-neutral-800 px-2 py-1 rounded">{n.country}</span>
+                  <span>{n.currency}</span>
+                </td>
+                <td className="px-6 py-4 font-medium max-w-[200px] truncate" title={n.event}>{n.event}</td>
+                <td className="px-6 py-4">{getImpactIcon(n.impact)}</td>
+                <td className="px-6 py-4 text-right font-mono">{n.actual || "-"}</td>
+                <td className="px-6 py-4 text-right font-mono text-neutral-400">{n.estimate || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default function CalendarPage() {
   const { user, tier, role } = useAuth();
   const theme = useTierTheme();
   const [trades, setTrades] = useState<TradeDoc[]>([]);
+  const [accounts, setAccounts] = useState<AccountDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
 
   useEffect(() => {
     if (user) {
@@ -29,13 +131,16 @@ export default function GlobalCalendarPage() {
 
       if (role === "admin") {
         setTrades(DEMO_TRADES);
+        setAccounts(DEMO_ACCOUNTS);
         setLoading(false);
         return;
       }
 
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
-      const accountIds = accSnap.docs.map(doc => doc.id);
+      const accList = accSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
+      setAccounts(accList);
+      const accountIds = accList.map(a => a.id);
 
       if (accountIds.length === 0) {
         setTrades([]);
@@ -86,37 +191,54 @@ export default function GlobalCalendarPage() {
   let monthlyTotalTrades = 0;
   let monthlyWins = 0;
 
-  trades.forEach(trade => {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const filteredTrades = trades.filter(t => {
+    const account = accounts.find(a => a.id === t.account_id);
+    if (!account) return false;
+    const isAccDomestic = account.market_type === "DOMESTIC";
+    if (isDomestic && !isAccDomestic) return false;
+    if (!isDomestic && isAccDomestic) return false;
+    
+    const tradeDate = new Date(t.close_time);
+    return tradeDate.getFullYear() === year && tradeDate.getMonth() === month;
+  });
+
+  filteredTrades.forEach(trade => {
     const d = new Date(trade.close_time);
-    if (d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear()) {
-      const day = d.getDate();
-      const net = trade.profit_loss - trade.commission;
-      
-      if (!dailyData[day]) dailyData[day] = { pnl: 0, trades: 0, wins: 0 };
-      
-      dailyData[day].pnl += net;
-      dailyData[day].trades += 1;
-      monthlyTotalTrades += 1;
-      monthlyTotalPnL += net;
-      
-      if (net > 0) {
-        dailyData[day].wins += 1;
-        monthlyWins += 1;
-      }
+    const day = d.getDate();
+    const net = trade.profit_loss - trade.commission;
+    
+    if (!dailyData[day]) dailyData[day] = { pnl: 0, trades: 0, wins: 0 };
+    
+    dailyData[day].pnl += net;
+    dailyData[day].trades += 1;
+    monthlyTotalTrades += 1;
+    monthlyTotalPnL += net;
+    
+    if (net > 0) {
+      dailyData[day].wins += 1;
+      monthlyWins += 1;
     }
   });
 
   const monthlyWinRate = monthlyTotalTrades > 0 ? (monthlyWins / monthlyTotalTrades) * 100 : 0;
 
-  return (
+return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto font-sans">
       
-      <div>
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-          <CalendarIcon className="w-6 h-6 text-yellow-500" />
-          Global Calendar Heatmap
-        </h1>
-        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Visualize your combined trading performance across all accounts day by day.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
+            <CalendarIcon className="w-8 h-8 text-warning" />
+            Heatmap & News
+          </h1>
+          <p className="text-secondary text-sm mt-1">Review your trading performance calendar and upcoming macroeconomic events.</p>
+        </div>
+        <div className="w-full md:w-auto">
+          <MarketSwitcher />
+        </div>
       </div>
 
       <div className={`rounded-[24px] border p-8 shadow-2xl transition-all ${theme.card}`}>
@@ -138,9 +260,9 @@ export default function GlobalCalendarPage() {
 
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Total PnL</p>
-              <p className={`text-2xl font-extrabold tracking-tight ${monthlyTotalPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {monthlyTotalPnL >= 0 ? '+' : ''}${monthlyTotalPnL.toFixed(2)}
+              <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Monthly P/L</p>
+              <p className={`text-xl font-black ${monthlyTotalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {monthlyTotalPnL >= 0 ? '+' : ''}{currencySymbol}{Math.abs(monthlyTotalPnL).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div className="w-px h-10 bg-[#e5e7eb] dark:bg-slate-800"></div>
@@ -198,7 +320,7 @@ export default function GlobalCalendarPage() {
                 {pnl !== undefined && (
                   <div className="flex flex-col items-end">
                     <span className={`text-base md:text-lg font-black tracking-tight ${textClass}`}>
-                      {pnl > 0 ? '+' : ''}{pnl.toFixed(2)}
+                      {pnl > 0 ? '+' : ''}{currencySymbol}{Math.abs(pnl).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 )}
@@ -206,6 +328,17 @@ export default function GlobalCalendarPage() {
             );
           })}
         </div>
+      </div>
+      
+      {/* Economic Calendar Section */}
+      {/* Custom Economic News API Component */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-primary tracking-tight flex items-center gap-2 mb-2">
+          <i className="las la-globe text-2xl text-blue-500"></i>
+          {isDomestic ? 'Indian' : 'Global'} Economic Events
+        </h2>
+        <p className="text-secondary text-sm mb-4">Live macroeconomic data (Upcoming Only)</p>
+        <CustomEconomicNews />
       </div>
     </div>
   );

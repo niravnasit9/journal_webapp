@@ -23,6 +23,7 @@ export interface AccountDoc {
   label: string;
   broker: string;
   account_type: string;
+  market_type?: "GLOBAL" | "DOMESTIC";
   currency: "USD" | "INR";
   initial_balance: number;
   current_balance: number;
@@ -52,14 +53,25 @@ export interface TradeDoc {
   account_id: string;
   symbol: string;
   direction: "BUY" | "SELL";
-  lot_size: number;
+  lot_size?: number; // Optional for domestic
   open_price: number;
   close_price: number;
   open_time: string;
   close_time: string;
-  pips: number;
+  pips?: number; // Optional for domestic
   profit_loss: number;
   commission: number;
+  
+  // Domestic Specific Fields
+  domestic_segment?: string;
+  option_type?: "CE" | "PE";
+  strike_price?: number;
+  quantity?: number;
+  gross_pnl?: number;
+  net_pnl?: number;
+  total_taxes?: number;
+  tax_breakdown?: any;
+
   swap?: number;
   magic_number?: string;
   comment?: string;
@@ -227,6 +239,7 @@ export interface GlobalSettings {
   ai_bad_session_threshold: number;
   maintenance_mode: boolean;
   global_announcement: string;
+  enable_domestic_markets?: boolean;
   max_free_accounts: number;
   
   // NEW: Crypto Billing Configuration
@@ -235,6 +248,9 @@ export interface GlobalSettings {
   crypto_price_elite: number;
   crypto_wallet_address: string; // The wallet where users send funds
   crypto_network: string; // e.g., "TRC20", "ERC20", "Solana"
+  
+  // NEW: Integrations
+  fmp_api_key?: string;
 }
 
 export interface AutoDiscount {

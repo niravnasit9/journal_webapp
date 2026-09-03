@@ -23,7 +23,15 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
   const [label, setLabel] = useState("");
   const [broker, setBroker] = useState("");
   const [accountType, setAccountType] = useState("Real");
+  const [marketType, setMarketType] = useState<"GLOBAL" | "DOMESTIC">("GLOBAL");
   const [currency, setCurrency] = useState<"USD" | "INR">("USD");
+
+  useEffect(() => {
+    if (marketType === "DOMESTIC") {
+      setCurrency("INR");
+      setSelectedFirm("none");
+    }
+  }, [marketType]);
   const [initialBalance, setInitialBalance] = useState("");
   const [selectedFirm, setSelectedFirm] = useState("none");
   const [selectedProgramId, setSelectedProgramId] = useState<string>("none");
@@ -108,6 +116,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
         label: label.trim(),
         broker: broker.trim() || "Manual",
         account_type: accountType,
+        market_type: marketType,
         currency,
         initial_balance: Number(initialBalance),
         prop_firm: activeFirm?.name,
@@ -152,7 +161,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           <div>
             <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Name</label>
             <input
-              required type="text" placeholder="e.g. Main Funded $50k"
+              required type="text" placeholder={marketType === "DOMESTIC" ? "e.g. Main Demat, Zerodha F&O" : "e.g. Main Funded $50k"}
               value={label} onChange={e => setLabel(e.target.value)}
               className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold"
             />
@@ -161,19 +170,29 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           <div>
             <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Broker / Platform</label>
             <input
-              type="text" placeholder="e.g. Exness, FTMO, GoatFunded"
+              type="text" placeholder={marketType === "DOMESTIC" ? "e.g. Zerodha, Upstox, Groww" : "e.g. Exness, FTMO, GoatFunded"}
               value={broker} onChange={e => setBroker(e.target.value)}
               className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Account Type</label>
               <CustomSelect
-                options={availableTypes.map(t => ({ value: t, label: t }))}
+                options={marketType === "DOMESTIC" 
+                  ? [{ value: "Real", label: "Real" }, { value: "Demo", label: "Demo" }]
+                  : availableTypes.map(t => ({ value: t, label: t }))}
                 value={accountType}
                 onChange={setAccountType}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Market Type</label>
+              <CustomSelect
+                options={[{ value: "GLOBAL", label: "Global" }, { value: "DOMESTIC", label: "Domestic" }]}
+                value={marketType}
+                onChange={val => setMarketType(val as "GLOBAL" | "DOMESTIC")}
               />
             </div>
             <div>
@@ -189,13 +208,14 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
           <div>
             <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">Starting Balance</label>
             <input
-              required type="number" step="any" placeholder="5000"
+              required type="number" step="any" placeholder={marketType === "DOMESTIC" ? "100000" : "5000"}
               value={initialBalance} onChange={e => setInitialBalance(e.target.value)}
               className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold font-mono"
             />
           </div>
 
-          <div>
+          {marketType === "GLOBAL" && (
+            <div>
             <label className="block text-xs font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest pl-1 mb-2">
               Prop Firm Challenge Tracker
               <span className="ml-2 text-purple-500 font-bold normal-case">(Optional)</span>
@@ -334,6 +354,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
               );
             })()}
           </div>
+          )}
 
           <div className="pt-2 flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-slate-300 font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-all">

@@ -12,6 +12,8 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
 import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
+import { useUiStore } from "@/store/useUiStore";
+import MarketSwitcher from "@/components/layout/MarketSwitcher";
 
 export default function ReportsPage() {
   const { user, role } = useAuth();
@@ -23,6 +25,10 @@ export default function ReportsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  
+  const { activeWorkspace } = useUiStore();
+  const isDomestic = activeWorkspace === "DOMESTIC";
+  const currencySymbol = isDomestic ? "₹" : "$";
   
   useEffect(() => {
     if (user) fetchData();
@@ -43,10 +49,14 @@ export default function ReportsPage() {
       const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
       const accSnap = await getDocs(accQuery);
       const accDocs = accSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
-      setAccounts(accDocs);
+      const workspaceAccounts = accDocs.filter(a => 
+        (isDomestic && a.market_type === "DOMESTIC") || 
+        (!isDomestic && a.market_type !== "DOMESTIC")
+      );
+      setAccounts(workspaceAccounts);
       
       let allTrades: TradeDoc[] = [];
-      for (const acc of accDocs) {
+      for (const acc of workspaceAccounts) {
         const tQuery = query(collection(db, "trades"), where("account_id", "==", acc.id));
         const tSnap = await getDocs(tQuery);
         const tDocs = tSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TradeDoc));
@@ -130,14 +140,15 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-2">
-            <i className="las la-file-download text-3xl text-info"></i>
-            Reports
+            <i className="las la-file-alt text-3xl text-info"></i>
+            {isDomestic ? 'Domestic' : 'Global'} Reports
           </h1>
-          <p className="text-secondary text-sm mt-1">Generate and export your trading performance reports.</p>
+          <p className="text-secondary text-sm mt-1">Export customized statements for taxes or funding verification.</p>
         </div>
+        <MarketSwitcher />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -153,7 +164,7 @@ export default function ReportsPage() {
               <label className="block text-[11px] font-bold text-secondary uppercase tracking-widest mb-2">Account</label>
               <CustomSelect 
                 options={[
-                  { value: "ALL", label: "All Accounts" },
+                  { value: "ALL", label: `All ${isDomestic ? 'Domestic' : 'Global'} Accounts` },
                   ...accounts.map(acc => ({ value: acc.id, label: acc.label }))
                 ]}
                 value={selectedAccountId}
@@ -209,7 +220,7 @@ export default function ReportsPage() {
                 <div className="p-4 rounded-xl border border-subtle bg-surface">
                   <div className="text-xs text-secondary font-bold uppercase tracking-widest mb-1">Net P/L</div>
                   <div className={`text-2xl font-bold ${netPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-                    ${netPnL.toFixed(2)}
+                    {netPnL >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netPnL).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
                 <div className="p-4 rounded-xl border border-subtle bg-surface">
@@ -238,7 +249,7 @@ export default function ReportsPage() {
                           <td className="px-4 py-3 text-secondary">{new Date(t.close_time).toLocaleDateString()}</td>
                           <td className="px-4 py-3 font-bold text-primary">{t.symbol}</td>
                           <td className={`px-4 py-3 text-right font-bold ${t.profit_loss >= 0 ? 'text-success' : 'text-danger'}`}>
-                            ${t.profit_loss.toFixed(2)}
+                            {t.profit_loss >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(t.profit_loss).toLocaleString(isDomestic ? 'en-IN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       ))}

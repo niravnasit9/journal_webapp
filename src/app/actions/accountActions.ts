@@ -8,6 +8,7 @@ export async function createManualAccountAction(uid: string, data: {
   label: string;
   broker: string;
   account_type: string;
+  market_type?: "GLOBAL" | "DOMESTIC";
   currency: "USD" | "INR";
   initial_balance: number;
   prop_firm?: string;
@@ -28,6 +29,7 @@ export async function createManualAccountAction(uid: string, data: {
       label: data.label,
       broker: data.broker,
       account_type: data.account_type,
+      market_type: data.market_type || "GLOBAL",
       currency: data.currency,
       initial_balance: Number(data.initial_balance),
       current_balance: Number(data.initial_balance),
@@ -43,7 +45,11 @@ export async function createManualAccountAction(uid: string, data: {
       max_drawdown_pct: data.max_drawdown_pct ? Number(data.max_drawdown_pct) : undefined,
     };
 
-    await setDoc(newAccountRef, accountData);
+    const cleanAccountData = Object.fromEntries(
+      Object.entries(accountData).filter(([_, v]) => v !== undefined)
+    ) as AccountDoc;
+
+    await setDoc(newAccountRef, cleanAccountData);
 
     return { success: true, accountId: newAccountRef.id };
   } catch (error: any) {
