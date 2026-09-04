@@ -76,23 +76,42 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
   };
 
   const handleTimeChange = (type: 'h' | 'm', val: string) => {
-    let numeric = parseInt(val.replace(/\D/g, '')) || 0;
+    const raw = val.replace(/\D/g, '');
+    
     if (type === 'h') {
+      if (raw === '') {
+        setHours('');
+        return;
+      }
+      let numeric = parseInt(raw);
       if (numeric > 23) numeric = 23;
-      const str = numeric.toString().padStart(2, '0');
-      setHours(str);
+      setHours(numeric.toString());
       const newDate = new Date(selectedDate);
       newDate.setHours(numeric);
       setSelectedDate(newDate);
       onChange(newDate);
     } else {
+      if (raw === '') {
+        setMinutes('');
+        return;
+      }
+      let numeric = parseInt(raw);
       if (numeric > 59) numeric = 59;
-      const str = numeric.toString().padStart(2, '0');
-      setMinutes(str);
+      setMinutes(numeric.toString());
       const newDate = new Date(selectedDate);
       newDate.setMinutes(numeric);
       setSelectedDate(newDate);
       onChange(newDate);
+    }
+  };
+
+  const handleBlur = (type: 'h' | 'm') => {
+    if (type === 'h') {
+      if (hours === '') setHours('00');
+      else setHours(hours.padStart(2, '0'));
+    } else {
+      if (minutes === '') setMinutes('00');
+      else setMinutes(minutes.padStart(2, '0'));
     }
   };
 
@@ -200,6 +219,7 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
                   type="text" 
                   value={hours}
                   onChange={(e) => handleTimeChange('h', e.target.value)}
+                  onBlur={() => handleBlur('h')}
                   className="w-7 text-center bg-transparent border-b border-transparent focus:border-info outline-none transition-colors"
                   maxLength={2}
                 />
@@ -208,6 +228,7 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
                   type="text" 
                   value={minutes}
                   onChange={(e) => handleTimeChange('m', e.target.value)}
+                  onBlur={() => handleBlur('m')}
                   className="w-7 text-center bg-transparent border-b border-transparent focus:border-info outline-none transition-colors"
                   maxLength={2}
                 />
