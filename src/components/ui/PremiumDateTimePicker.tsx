@@ -35,10 +35,18 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
       setSelectedDate(d);
       setViewMonth(d.getMonth());
       setViewYear(d.getFullYear());
-      setHours(d.getHours().toString().padStart(2, '0'));
-      setMinutes(d.getMinutes().toString().padStart(2, '0'));
+      
+      const newH = d.getHours();
+      const newM = d.getMinutes();
+      
+      if (parseInt(hours) !== newH && !(hours === '' && newH === 0)) {
+        setHours(newH.toString().padStart(2, '0'));
+      }
+      if (parseInt(minutes) !== newM && !(minutes === '' && newM === 0)) {
+        setMinutes(newM.toString().padStart(2, '0'));
+      }
     }
-  }, [value]);
+  }, [value, hours, minutes]);
 
   // Click outside to close
   useEffect(() => {
@@ -107,11 +115,25 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
 
   const handleBlur = (type: 'h' | 'm') => {
     if (type === 'h') {
-      if (hours === '') setHours('00');
-      else setHours(hours.padStart(2, '0'));
+      if (hours === '') {
+        setHours('00');
+        const newDate = new Date(selectedDate);
+        newDate.setHours(0);
+        setSelectedDate(newDate);
+        onChange(newDate);
+      } else {
+        setHours(hours.padStart(2, '0'));
+      }
     } else {
-      if (minutes === '') setMinutes('00');
-      else setMinutes(minutes.padStart(2, '0'));
+      if (minutes === '') {
+        setMinutes('00');
+        const newDate = new Date(selectedDate);
+        newDate.setMinutes(0);
+        setSelectedDate(newDate);
+        onChange(newDate);
+      } else {
+        setMinutes(minutes.padStart(2, '0'));
+      }
     }
   };
 
@@ -220,6 +242,7 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
                   value={hours}
                   onChange={(e) => handleTimeChange('h', e.target.value)}
                   onBlur={() => handleBlur('h')}
+                  onFocus={(e) => e.target.select()}
                   className="w-7 text-center bg-transparent border-b border-transparent focus:border-info outline-none transition-colors"
                   maxLength={2}
                 />
@@ -229,6 +252,7 @@ export const PremiumDateTimePicker: React.FC<PremiumDateTimePickerProps> = ({ va
                   value={minutes}
                   onChange={(e) => handleTimeChange('m', e.target.value)}
                   onBlur={() => handleBlur('m')}
+                  onFocus={(e) => e.target.select()}
                   className="w-7 text-center bg-transparent border-b border-transparent focus:border-info outline-none transition-colors"
                   maxLength={2}
                 />
