@@ -10,8 +10,10 @@ import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AddTradeModal from "@/components/AddTradeModal";
+import EditTradeModal from "@/components/EditTradeModal";
 import toast from "react-hot-toast";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import { deleteManualTradeAction } from "@/app/actions/tradeActions";
 
 // Dashboard Components
 import AccountOverview from "@/components/dashboard/AccountOverview";
@@ -34,6 +36,33 @@ export default function AccountDetailView() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("Account Overview");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEditTrade, setSelectedEditTrade] = useState<TradeDoc | null>(null);
+
+  const handleDeleteTrade = async (tradeId: string) => {
+    if (!window.confirm("Are you sure you want to delete this trade? This cannot be undone.")) return;
+    
+    if (isDemoMode) {
+      setTrades(trades.filter(t => t.id !== tradeId));
+      toast.success("Trade deleted (Demo)");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await deleteManualTradeAction(tradeId, accountId);
+      if (res.success) {
+        toast.success("Trade deleted successfully");
+        await fetchData(); // refresh data
+      } else {
+        toast.error("Failed to delete trade: " + res.error);
+        setLoading(false); // revert loading on error, success stays loading until fetch completes
+      }
+    } catch (e: any) {
+      toast.error("Failed to delete trade");
+      setLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     if (!accountId) return;
@@ -94,7 +123,7 @@ export default function AccountDetailView() {
       case "Trading Overview":
         return <TradingOverview trades={trades} />;
       case "Trading History":
-        return <TradingHistory trades={trades} />;
+        return <TradingHistory trades={trades} onEditTrade={(t) => { setSelectedEditTrade(t); setIsEditModalOpen(true); }} onDeleteTrade={handleDeleteTrade} />;
       case "Psychology":
         return <TradingPsychology trades={trades} />;
       default:
@@ -153,10 +182,28 @@ export default function AccountDetailView() {
       <AddTradeModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        accountId={account.id}
-        accountCurrency={account.currency}
+        accountId={account!.id}
+        accountCurrency={account!.currency}
         onAdded={fetchData}
       />
+
+      {selectedEditTrade && (
+        <EditTradeModal 
+          accountId={account!.id}
+          accountCurrency={account!.currency}
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedEditTrade(null);
+          }}
+          trade={selectedEditTrade}
+          onUpdated={() => {
+            setIsEditModalOpen(false);
+            setSelectedEditTrade(null);
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 }

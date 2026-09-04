@@ -43,19 +43,19 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
             <i className="las la-receipt text-lg"></i> Statutory Tax Deductions
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
+            <div className="bg-elevated p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total Brokerage</p>
               <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
             </div>
-            <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
+            <div className="bg-elevated p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total STT</p>
               <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
             </div>
-            <div className="bg-[#1a1a1a] p-3 rounded-lg border border-default">
+            <div className="bg-elevated p-3 rounded-lg border border-default">
               <p className="text-[10px] text-muted uppercase font-bold mb-1">Total GST</p>
               <p className="text-sm font-bold text-primary">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
             </div>
-            <div className="bg-[#1a1a1a] p-3 rounded-lg border border-rose-500/20">
+            <div className="bg-elevated p-3 rounded-lg border border-rose-500/20">
               <p className="text-[10px] text-rose-400 uppercase font-bold mb-1">Total Tax Drag</p>
               <p className="text-sm font-bold text-rose-400">₹{trades.reduce((s, t) => s + (t.total_taxes || 0), 0).toLocaleString()}</p>
             </div>
