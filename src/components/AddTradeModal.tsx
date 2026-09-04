@@ -90,8 +90,18 @@ export default function AddTradeModal({
   // DOMESTIC P&L & TAX CALC
   useEffect(() => {
     if (isDomestic && formData.open_price && formData.close_price && formData.quantity) {
-      const buyPrice = formData.direction === "BUY" ? Number(formData.open_price) : Number(formData.close_price);
-      const sellPrice = formData.direction === "BUY" ? Number(formData.close_price) : Number(formData.open_price);
+      let buyPrice: number;
+      let sellPrice: number;
+      
+      if (formData.domestic_segment === "FNO_OPTIONS") {
+        // Option buyers use direction to mean sentiment (CE=BUY, PE=SELL)
+        // But execution is always buy to open, sell to close
+        buyPrice = Number(formData.open_price);
+        sellPrice = Number(formData.close_price);
+      } else {
+        buyPrice = formData.direction === "BUY" ? Number(formData.open_price) : Number(formData.close_price);
+        sellPrice = formData.direction === "BUY" ? Number(formData.close_price) : Number(formData.open_price);
+      }
       
       const taxResult = calculateDomesticTaxes(
         formData.domestic_segment,
@@ -227,7 +237,14 @@ export default function AddTradeModal({
                         <label className="label-premium block mb-2">Strike & Type</label>
                         <div className="flex gap-2">
                           <input type="number" className="input-premium w-2/3" placeholder="Strike" value={formData.strike_price} onChange={e => setFormData({...formData, strike_price: e.target.value})} required />
-                          <select className="input-premium w-1/3 p-1" value={formData.option_type} onChange={e => setFormData({...formData, option_type: e.target.value as "CE"|"PE"})}>
+                          <select className="input-premium w-1/3 p-1" value={formData.option_type} onChange={e => {
+                            const type = e.target.value as "CE"|"PE";
+                            setFormData({
+                              ...formData, 
+                              option_type: type,
+                              direction: type === "CE" ? "BUY" : "SELL"
+                            });
+                          }}>
                             <option value="CE">CE</option>
                             <option value="PE">PE</option>
                           </select>
