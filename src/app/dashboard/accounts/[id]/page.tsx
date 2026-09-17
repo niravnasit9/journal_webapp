@@ -11,6 +11,7 @@ import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import AddTradeModal from "@/components/AddTradeModal";
 import EditTradeModal from "@/components/EditTradeModal";
+import ImportTradesModal from "@/components/ImportTradesModal";
 import toast from "react-hot-toast";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
 import { deleteManualTradeAction } from "@/app/actions/tradeActions";
@@ -36,6 +37,7 @@ export default function AccountDetailView() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("Account Overview");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEditTrade, setSelectedEditTrade] = useState<TradeDoc | null>(null);
 
@@ -145,7 +147,14 @@ export default function AccountDetailView() {
             {account.broker} • {account.account_type}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="px-4 py-2 bg-elevated hover:bg-white/5 border border-default rounded-lg font-bold transition-colors flex items-center gap-2"
+          >
+            <i className="las la-file-import text-lg"></i>
+            Import Trades
+          </button>
           <button 
             onClick={() => setIsAddModalOpen(true)}
             className="btn-primary flex items-center gap-2"
@@ -179,6 +188,13 @@ export default function AccountDetailView() {
       </div>
 
       {/* Modals */}
+      <ImportTradesModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        accountId={account!.id}
+        onSuccess={fetchData}
+      />
+
       <AddTradeModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
