@@ -21,6 +21,11 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
   // API Sync State
   const [clientId, setClientId] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  
+  // Date Range State
+  const [dateRangeType, setDateRangeType] = useState<"today" | "custom">("today");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const handleApiSync = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +33,20 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
       toast.error("Please provide both Client ID and Access Token.");
       return;
     }
+    if (dateRangeType === "custom" && (!fromDate || !toDate)) {
+      toast.error("Please provide both From and To dates.");
+      return;
+    }
 
     try {
       setLoading(true);
-      const res = await syncDhanApiAction(clientId, accessToken, accountId);
+      const res = await syncDhanApiAction(
+        clientId, 
+        accessToken, 
+        accountId, 
+        dateRangeType === "custom" ? fromDate : undefined, 
+        dateRangeType === "custom" ? toDate : undefined
+      );
       if (res.success) {
         toast.success(`Successfully imported ${res.count} trades!`);
         onSuccess();
@@ -99,6 +114,51 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
               onChange={e => setAccessToken(e.target.value)}
               required
             />
+
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-3">Sync Date Range</label>
+              <div className="flex gap-4 mb-4">
+                <label className="flex items-center gap-2 text-sm text-secondary cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="dateRange" 
+                    checked={dateRangeType === "today"}
+                    onChange={() => setDateRangeType("today")}
+                    className="text-blue-500 bg-elevated border-default"
+                  />
+                  Today Only
+                </label>
+                <label className="flex items-center gap-2 text-sm text-secondary cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="dateRange" 
+                    checked={dateRangeType === "custom"}
+                    onChange={() => setDateRangeType("custom")}
+                    className="text-blue-500 bg-elevated border-default"
+                  />
+                  Historical Dates
+                </label>
+              </div>
+
+              {dateRangeType === "custom" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <Input 
+                    label="From Date"
+                    type="date"
+                    value={fromDate}
+                    onChange={e => setFromDate(e.target.value)}
+                    required
+                  />
+                  <Input 
+                    label="To Date"
+                    type="date"
+                    value={toDate}
+                    onChange={e => setToDate(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="flex justify-end pt-4">
               <button 

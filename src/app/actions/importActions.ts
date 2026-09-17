@@ -6,26 +6,61 @@ import { TradeDoc, AccountDoc } from "@/lib/firebase/schema";
 import { calculateDomesticTaxes } from "@/utils/brokerageMath";
 
 // Helper to calculate PnL based on Dhan trade format
-export async function syncDhanApiAction(clientId: string, accessToken: string, accountId: string) {
+export async function syncDhanApiAction(clientId: string, accessToken: string, accountId: string, fromDate?: string, toDate?: string) {
   try {
-    // 1. Fetch from Dhan API
-    const res = await fetch('https://api.dhan.co/v2/trades', {
-      headers: {
-        'access-token': accessToken,
-        'client-id': clientId,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Dhan API Error: ${res.status} - ${errorText}`);
-    }
-
-    const data = await res.json();
+    let allTrades: any[] = [];
     
-    if (!Array.isArray(data) || data.length === 0) {
-      return { success: true, count: 0, message: "No trades found for today." };
+    // 1. Fetch from Dhan API
+    if (fromDate && toDate) {
+      // Fetch historical trades with pagination
+      let page = 1;
+      let hasMore = true;
+      while (hasMore) {
+        const res = await fetch(`https://api.dhan.co/v2/trades/${fromDate}/${toDate}/${page}`, {
+          headers: {
+            'access-token': accessToken,
+            'client-id': clientId,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Dhan API Error: ${res.status} - ${errorText}`);
+        }
+        
+        const data = await res.json();
+        
+        if (!Array.isArray(data) || data.length === 0) {
+          hasMore = false;
+        } else {
+          allTrades = allTrades.concat(data);
+          page++;
+        }
+      }
+    } else {
+      // Fetch today's trades
+      const res = await fetch('https://api.dhan.co/v2/trades', {
+        headers: {
+          'access-token': accessToken,
+          'client-id': clientId,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Dhan API Error: ${res.status} - ${errorText}`);
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        allTrades = data;
+      }
+    }
+    
+    if (allTrades.length === 0) {
+      return { success: true, count: 0, message: "No trades found." };
     }
 
     // 2. Fetch Account info
@@ -37,11 +72,13 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
     const accountData = accountSnap.data() as AccountDoc;
 
     // 3. Process Executions into Round-Trip Trades
-    // Group by tradingSymbol
+    // Group by tradingSymbol and date (since intraday grouping is per day)
     const groups: Record<string, any[]> = {};
-    for (const t of data) {
-      if (!groups[t.tradingSymbol]) groups[t.tradingSymbol] = [];
-      groups[t.tradingSymbol].push(t);
+    for (const t of allTrades) {
+      const tradeDate = t.createTime.split(" ")[0]; // YYYY-MM-DD
+      const groupKey = `${t.tradingSymbol}_${tradeDate}`;
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(t);
     }
 
     const batch = writeBatch(db);
