@@ -3,7 +3,10 @@
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
+import * as xlsx from 'xlsx';
+import { syncCsvTradesAction } from "../app/actions/csvActions";
 import { syncDhanApiAction } from "@/app/actions/importActions";
+import Portal from "@/components/ui/Portal";
 
 interface ImportTradesModalProps {
   isOpen: boolean;
@@ -59,11 +62,106 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target?.result;
+          const wb = xlsx.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          const data: any[] = xlsx.utils.sheet_to_json(ws, { raw: false });
+          
+          const parsedTrades = [];
+          
+          let tradeDateStr = new Date().toISOString().split("T")[0]; // default today
+          // Try to extract date from the sheet header (e.g. "Executed Orders on 18-09-2026")
+          for (const row of data) {
+            for (const key in row) {
+              if (typeof row[key] === 'string' && row[key].includes("Executed Orders on")) {
+                const datePart = row[key].replace("Executed Orders on", "").trim();
+                if (datePart) {
+                  const parts = datePart.split("-");
+                  if (parts.length === 3) {
+                    tradeDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
+                  }
+                }
+              }
+            }
+          }
+          
+          for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            if (!row['__EMPTY_1'] || !['B', 'S'].includes(row['__EMPTY_1'])) continue; // skip non-trade rows
+            
+            const symbol = row['__EMPTY_2'];
+            const status = row['__EMPTY_8'];
+            if (status !== 'Success') continue; // only successful trades
+            
+            let qty = 0;
+            const qtyStr = row['__EMPTY_4'];
+            if (qtyStr) {
+               qty = Number(qtyStr.split('/')[0]) || Number(qtyStr.split('/')[1]);
+            }
+            if (qty === 0) continue; // safety check
+            
+            let exchSegment = "EQUITY";
+            if (symbol.includes("CRUDEOIL") || symbol.includes("NATURALGAS") || symbol.includes("GOLD") || symbol.includes("SILVER")) {
+               exchSegment = "COMMODITY";
+            } else if (symbol.includes("CE") || symbol.includes("PE") || symbol.includes("CALL") || symbol.includes("PUT")) {
+               exchSegment = "FNO_OPTIONS";
+            }
+            
+            parsedTrades.push({
+               tradingSymbol: symbol,
+               transactionType: row['__EMPTY_1'] === 'B' ? 'BUY' : 'SELL',
+               quantity: qty,
+               tradedQuantity: qty,
+               tradedPrice: Number(row['__EMPTY_6']),
+               price: Number(row['__EMPTY_6']),
+               tradeTime: `${tradeDateStr}T${row['__EMPTY']}`,
+               exchangeSegment: exchSegment
+            });
+          }
+          
+          if (parsedTrades.length === 0) {
+            toast.error("No successful trades found in file.");
+            setLoading(false);
+            return;
+          }
+          
+          const res = await syncCsvTradesAction(accountId, parsedTrades);
+          if (res.success) {
+             toast.success(`Successfully uploaded ${res.count} trades from file!`);
+             onSuccess();
+             onClose();
+          } else {
+             toast.error("Import failed: " + res.error);
+          }
+        } catch (err: any) {
+           toast.error(err.message || "Failed to process Excel file");
+        } finally {
+           setLoading(false);
+        }
+      };
+      reader.readAsBinaryString(file);
+    } catch (error: any) {
+      toast.error(error.message);
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="premium-card w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <Portal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="premium-card w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
@@ -86,7 +184,7 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
               activeTab === "csv" ? "border-blue-500 text-blue-400" : "border-transparent text-muted hover:text-secondary"
             }`}
           >
-            CSV Upload
+            Excel/CSV Upload
           </button>
         </div>
 
@@ -198,11 +296,26 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
             <div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center mx-auto mb-4 border border-default">
               <i className="las la-file-csv text-3xl text-secondary"></i>
             </div>
-            <h3 className="text-primary font-bold mb-2">CSV Upload Coming Soon</h3>
-            <p className="text-secondary text-sm">We are finalizing the exact column mappings for Dhan CSV exports. Please use the API Sync option in the meantime!</p>
+            <h3 className="text-primary font-bold mb-2">Upload Trades CSV/Excel</h3>
+            <p className="text-secondary text-sm mb-6">Upload the trades file you downloaded directly from Dhan's web platform.</p>
+            
+            {loading ? (
+               <div className="flex justify-center p-4"><LoadingSpinner className="w-8 h-8 border-blue-500" /></div>
+            ) : (
+              <label className="btn-primary inline-flex items-center justify-center gap-2 cursor-pointer">
+                <i className="las la-upload"></i> Browse File
+                <input 
+                  type="file" 
+                  accept=".csv,.xlsx,.xls" 
+                  className="hidden"
+                  onChange={handleFileUpload} 
+                />
+              </label>
+            )}
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }

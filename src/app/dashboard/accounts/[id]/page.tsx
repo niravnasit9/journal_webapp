@@ -15,15 +15,17 @@ import ImportTradesModal from "@/components/ImportTradesModal";
 import toast from "react-hot-toast";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
 import { deleteManualTradeAction } from "@/app/actions/tradeActions";
+import DeleteTradesModal from "@/components/DeleteTradesModal";
 
 // Dashboard Components
 import AccountOverview from "@/components/dashboard/AccountOverview";
 import TradingHistory from "@/components/dashboard/TradingHistory";
 import TradingOverview from "@/components/dashboard/TradingOverview";
 import TradingPsychology from "@/components/dashboard/TradingPsychology";
+import PositionsTable from "@/components/dashboard/PositionsTable";
 import { useUiStore } from "@/store/useUiStore";
 
-type TabType = "Account Overview" | "Trading Overview" | "Trading History" | "Psychology";
+type TabType = "Account Overview" | "Trading Overview" | "Daily Positions" | "Trading History" | "Psychology";
 
 export default function AccountDetailView() {
   const { id } = useParams();
@@ -33,12 +35,14 @@ export default function AccountDetailView() {
   const { setWorkspace } = useUiStore();
   
   const [account, setAccount] = useState<AccountDoc | null>(null);
-  const [trades, setTrades] = useState<TradeDoc[]>([]);
+  const [trades, setTrades] = useState<TradeDoc[]>([]); // Grouped positions powering charts
+  const [rawExecutions, setRawExecutions] = useState<any[]>([]); // Raw ledger for history
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("Account Overview");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEditTrade, setSelectedEditTrade] = useState<TradeDoc | null>(null);
 
   const handleDeleteTrade = async (tradeId: string) => {
@@ -58,12 +62,19 @@ export default function AccountDetailView() {
         await fetchData(); // refresh data
       } else {
         toast.error("Failed to delete trade: " + res.error);
-        setLoading(false); // revert loading on error, success stays loading until fetch completes
+        setLoading(false);
       }
     } catch (e: any) {
       toast.error("Failed to delete trade");
       setLoading(false);
     }
+  };
+
+  const handleDemoDeleteAll = () => {
+    if (!window.confirm("Clear all demo trades?")) return;
+    setTrades([]);
+    setRawExecutions([]);
+    toast.success("All trades cleared (Demo)");
   };
 
   const fetchData = async () => {
@@ -77,6 +88,7 @@ export default function AccountDetailView() {
           const demoTrades = generateTradesForAccount(accountId, 0, 30, 0.55, 1.0);
           demoTrades.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
           setTrades(demoTrades);
+          setRawExecutions([]); 
         } else {
           toast.error("Demo account not found");
           router.push("/dashboard/accounts");
@@ -94,6 +106,12 @@ export default function AccountDetailView() {
           const tList = tSnap.docs.map(d => ({ ...d.data(), id: d.id } as TradeDoc));
           tList.sort((a, b) => new Date(b.close_time).getTime() - new Date(a.close_time).getTime());
           setTrades(tList);
+
+          const pq = query(collection(db, "raw_executions"), where("account_id", "==", accountId));
+          const pSnap = await getDocs(pq);
+          const pList = pSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+          pList.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime());
+          setRawExecutions(pList);
         } else {
           toast.error("Account not found");
           router.push("/dashboard/accounts");
@@ -124,8 +142,10 @@ export default function AccountDetailView() {
         return <AccountOverview account={account} trades={trades} />;
       case "Trading Overview":
         return <TradingOverview trades={trades} />;
+      case "Daily Positions":
+        return <PositionsTable positions={trades} />;
       case "Trading History":
-        return <TradingHistory trades={trades} onEditTrade={(t) => { setSelectedEditTrade(t); setIsEditModalOpen(true); }} onDeleteTrade={handleDeleteTrade} />;
+        return <TradingHistory executions={rawExecutions} onEditTrade={(t) => { setSelectedEditTrade(t); setIsEditModalOpen(true); }} onDeleteTrade={handleDeleteTrade} />;
       case "Psychology":
         return <TradingPsychology trades={trades} />;
       default:
@@ -149,6 +169,13 @@ export default function AccountDetailView() {
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button 
+            onClick={isDemoMode ? handleDemoDeleteAll : () => setIsDeleteModalOpen(true)}
+            className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 rounded-lg font-bold transition-colors flex items-center gap-2"
+          >
+            <i className="las la-calendar-times text-lg"></i>
+            Delete Trades
+          </button>
+          <button 
             onClick={() => setIsImportModalOpen(true)}
             className="px-4 py-2 bg-elevated hover:bg-white/5 border border-default rounded-lg font-bold transition-colors flex items-center gap-2"
           >
@@ -167,7 +194,7 @@ export default function AccountDetailView() {
 
       {/* Navigation Tabs */}
       <div className="flex overflow-x-auto no-scrollbar border-b border-default">
-        {(["Account Overview", "Trading Overview", "Trading History", "Psychology"] as TabType[]).map((tab) => (
+        {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Psychology"] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -192,6 +219,14 @@ export default function AccountDetailView() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         accountId={account!.id}
+        onSuccess={fetchData}
+      />
+
+      <DeleteTradesModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        accountId={account!.id}
+        trades={trades}
         onSuccess={fetchData}
       />
 

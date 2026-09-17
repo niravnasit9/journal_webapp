@@ -1,6 +1,6 @@
 "use server";
 
-import { doc, collection, writeBatch, getDoc } from "firebase/firestore";
+import { doc, collection, writeBatch, getDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { TradeDoc, AccountDoc } from "@/lib/firebase/schema";
 
@@ -251,3 +251,83 @@ export async function editManualTradeAction(tradeId: string, accountId: string, 
     return { success: false, error: error.message };
   }
 }
+
+ export async function clearAllTradesAction(accountId: string) {
+  try {
+    const accountRef = doc(db, 'accounts', accountId);
+    const accountSnap = await getDoc(accountRef);
+    if (!accountSnap.exists()) throw new Error('Account not found');
+    const accountData = accountSnap.data() as AccountDoc;
+
+    const tradesQ = query(collection(db, 'trades'), where('account_id', '==', accountId));
+    const tradesSnap = await getDocs(tradesQ);
+    const posQ = query(collection(db, 'raw_executions'), where('account_id', '==', accountId));
+    const posSnap = await getDocs(posQ);
+
+    const batch = writeBatch(db);
+    tradesSnap.forEach((d: any) => batch.delete(d.ref));
+    posSnap.forEach((d: any) => batch.delete(d.ref));
+
+    const initial = accountData.initial_balance || 0;
+    batch.update(accountRef, {
+      current_balance: initial,
+      current_equity: initial,
+    });
+
+    await batch.commit();
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error clearing trades:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function clearTradesByDateAction(accountId: string, tradeDate: string) {
+  // tradeDate must be YYYY-MM-DD
+  try {
+    const accountRef = doc(db, 'accounts', accountId);
+    const accountSnap = await getDoc(accountRef);
+    if (!accountSnap.exists()) throw new Error('Account not found');
+
+    const tradesQ = query(
+      collection(db, 'trades'),
+      where('account_id', '==', accountId),
+      where('trade_date', '==', tradeDate)
+    );
+    const tradesSnap = await getDocs(tradesQ);
+
+    // For raw_executions we filter by time prefix since we store ISO timestamps
+    const execQ = query(
+      collection(db, 'raw_executions'),
+      where('account_id', '==', accountId)
+    );
+    const execSnap = await getDocs(execQ);
+    const execsForDate = execSnap.docs.filter(d => {
+      const t = d.data().time || '';
+      return t.startsWith(tradeDate);
+    });
+
+    if (tradesSnap.empty && execsForDate.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    // Batch delete — Firestore allows max 500 per batch
+    const allRefs = [
+      ...tradesSnap.docs.map(d => d.ref),
+      ...execsForDate.map(d => d.ref),
+    ];
+
+    const CHUNK = 400;
+    for (let i = 0; i < allRefs.length; i += CHUNK) {
+      const batch = writeBatch(db);
+      allRefs.slice(i, i + CHUNK).forEach(ref => batch.delete(ref));
+      await batch.commit();
+    }
+
+    return { success: true, count: tradesSnap.size };
+  } catch (error: any) {
+    console.error('Error clearing trades by date:', error);
+    return { success: false, error: error.message };
+  }
+}
+

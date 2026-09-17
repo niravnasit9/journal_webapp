@@ -48,6 +48,25 @@ export interface AccountDoc {
   last_synced_at?: any;
 }
 
+export interface RawExecutionDoc {
+  id: string;
+  account_id: string;
+  symbol: string;
+  direction: "BUY" | "SELL";
+  domestic_segment?: string;
+  option_type?: "CE" | "PE";
+  strike_price?: number;
+  price: number;
+  quantity: number; // The units
+  time: string;
+  brokerage: number;
+  stt: number;
+  transaction_charges: number;
+  gst: number;
+  sebi: number;
+  stamp_duty: number;
+}
+
 export interface TradeDoc {
   id: string;
   account_id: string;
@@ -67,6 +86,9 @@ export interface TradeDoc {
   option_type?: "CE" | "PE";
   strike_price?: number;
   quantity?: number;
+  lots?: number;
+  units?: number;
+  trade_date?: string;
   gross_pnl?: number;
   net_pnl?: number;
   total_taxes?: number;

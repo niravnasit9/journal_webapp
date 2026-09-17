@@ -9,6 +9,7 @@ import { TradeDoc } from "@/lib/firebase/schema";
 import { useAuth } from "@/lib/firebase/authContext";
 import { PremiumDateTimePicker } from "@/components/ui/PremiumDateTimePicker";
 import { useUiStore } from "@/store/useUiStore";
+import Portal from "@/components/ui/Portal";
 
 export default function EditTradeModal({ 
   accountId, 
@@ -220,8 +221,9 @@ export default function EditTradeModal({
   if (!isOpen || !trade) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <Portal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
@@ -403,6 +405,7 @@ export default function EditTradeModal({
           </button>
         </form>
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }
