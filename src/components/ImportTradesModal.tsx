@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 import { syncDhanApiAction } from "@/app/actions/importActions";
@@ -61,10 +59,18 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Import Trades" size="lg">
-      <div className="p-6">
-        {/* Tabs */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="premium-card w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
+          <i className="las la-times text-2xl"></i>
+        </button>
+        <h2 className="text-xl font-bold text-primary mb-6">
+          Import Trades
+        </h2>
+
         <div className="flex gap-4 border-b border-default mb-6">
           <button
             onClick={() => setActiveTab("api")}
@@ -98,22 +104,29 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
               </p>
             </div>
 
-            <Input 
-              label="Dhan Client ID"
-              placeholder="e.g. 1100001234"
-              value={clientId}
-              onChange={e => setClientId(e.target.value)}
-              required
-            />
+            <div>
+              <label className="label-premium block mb-2">Dhan Client ID</label>
+              <input 
+                type="text" 
+                className="input-premium w-full"
+                placeholder="e.g. 1100001234"
+                value={clientId}
+                onChange={e => setClientId(e.target.value)}
+                required
+              />
+            </div>
             
-            <Input 
-              label="Access Token (24h validity)"
-              placeholder="eyJ0eXAiOi..."
-              type="password"
-              value={accessToken}
-              onChange={e => setAccessToken(e.target.value)}
-              required
-            />
+            <div>
+              <label className="label-premium block mb-2">Access Token (24h validity)</label>
+              <input 
+                type="password"
+                className="input-premium w-full"
+                placeholder="eyJ0eXAiOi..."
+                value={accessToken}
+                onChange={e => setAccessToken(e.target.value)}
+                required
+              />
+            </div>
 
             <div className="pt-2">
               <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-3">Sync Date Range</label>
@@ -142,20 +155,26 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
 
               {dateRangeType === "custom" && (
                 <div className="grid grid-cols-2 gap-4">
-                  <Input 
-                    label="From Date"
-                    type="date"
-                    value={fromDate}
-                    onChange={e => setFromDate(e.target.value)}
-                    required
-                  />
-                  <Input 
-                    label="To Date"
-                    type="date"
-                    value={toDate}
-                    onChange={e => setToDate(e.target.value)}
-                    required
-                  />
+                  <div>
+                    <label className="label-premium block mb-2">From Date</label>
+                    <input 
+                      type="date"
+                      className="input-premium w-full"
+                      value={fromDate}
+                      onChange={e => setFromDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="label-premium block mb-2">To Date</label>
+                    <input 
+                      type="date"
+                      className="input-premium w-full"
+                      value={toDate}
+                      onChange={e => setToDate(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -184,6 +203,6 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
           </div>
         )}
       </div>
-    </Modal>
+    </div>
   );
 }
