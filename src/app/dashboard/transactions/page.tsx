@@ -160,7 +160,7 @@ export default function TransactionsPage() {
         ) : (
           <>
             {/* Desktop Table View (Hidden on mobile) */}
-            <div className="hidden md:block overflow-x-auto custom-scrollbar">
+            <div className="hidden md:block overflow-x-auto pb-2">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-base border-b border-subtle">

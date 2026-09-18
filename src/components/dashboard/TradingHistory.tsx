@@ -161,7 +161,7 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto no-scrollbar">
+      <div className="overflow-x-auto pb-2">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>
             <tr className="bg-elevated text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
