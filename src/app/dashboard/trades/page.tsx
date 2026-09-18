@@ -190,7 +190,7 @@ export default function TradesPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-sm text-left">
             <thead className="bg-elevated text-xs uppercase text-secondary font-bold tracking-wider border-b border-subtle">
               <tr>

@@ -194,7 +194,7 @@ export default function AdminUsersPage() {
       </div>
 
       <Card className="overflow-visible border-default p-0">
-        <div className="max-md:overflow-x-auto no-scrollbar">
+        <div className="max-md:overflow-x-auto pb-2">
           <table className="w-full text-left text-sm text-secondary">
             <thead className="bg-surface text-xs font-bold text-muted uppercase tracking-widest border-b border-subtle">
               <tr>

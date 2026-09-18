@@ -221,7 +221,7 @@ export default function AdminStrategiesPage() {
           <h2 className="text-sm font-bold text-primary uppercase tracking-widest">Strategy Leaderboard</h2>
         </div>
         
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
               <tr className="bg-[#1a1a1a] text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">

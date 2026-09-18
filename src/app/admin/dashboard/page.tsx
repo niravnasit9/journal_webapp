@@ -207,7 +207,7 @@ export default function AdminDashboardOverview() {
               View All
             </Link>
           </CardHeader>
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto pb-2">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead>
                 <tr className="bg-surface text-secondary text-[11px] font-bold uppercase tracking-widest border-b border-subtle">

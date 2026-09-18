@@ -209,7 +209,7 @@ export const PsychologyDashboard: React.FC<{ trades: TradeDoc[], currency: "USD"
         <div className="bg-surface border border-default p-6 rounded-2xl shadow-xl overflow-hidden flex flex-col">
           <h3 className="text-sm font-bold text-secondary uppercase tracking-widest mb-6">Emotion vs. Performance</h3>
           
-          <div className="overflow-x-auto no-scrollbar flex-1">
+          <div className="overflow-x-auto pb-2 flex-1">
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="bg-elevated text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">

@@ -236,7 +236,7 @@ export default function ReportsPage() {
                   No data found for the selected parameters.
                 </div>
               ) : (
-                <div className="overflow-x-auto no-scrollbar border border-subtle rounded-xl">
+                <div className="overflow-x-auto pb-2 border border-subtle rounded-xl">
                   <table className="w-full text-left text-sm whitespace-nowrap">
                     <thead>
                       <tr className="bg-elevated text-secondary text-[11px] font-bold uppercase tracking-widest border-b border-subtle">

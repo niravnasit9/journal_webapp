@@ -127,7 +127,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
         )}
       </div>
 
-      <div className="overflow-x-auto no-scrollbar">
+      <div className="overflow-x-auto pb-2">
         <div className="min-w-[500px]">
           <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr] gap-1 mb-2">
             <div></div>

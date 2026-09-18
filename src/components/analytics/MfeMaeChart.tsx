@@ -15,14 +15,14 @@ export const MfeMaeChart = ({ trades }: { trades: TradeData[] }) => {
 
   if (!mfeMaeAnalytics) {
     return (
-      <div className="relative rounded-2xl border border-slate-200 p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden min-h-[400px] flex items-center justify-center">
+      <div className="relative rounded-2xl border border-default p-8 shadow-sm bg-surface overflow-hidden min-h-[400px] flex items-center justify-center">
         {/* Blurred background mock chart */}
         <div className="absolute inset-0 filter blur-md opacity-30 pointer-events-none">
-          <div className="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+          <div className="w-full h-full bg-elevated rounded-xl"></div>
         </div>
         
         {/* Upgrade CTA */}
-        <div className="relative z-10 flex flex-col items-center text-center max-w-md bg-white/80 dark:bg-slate-900/80 p-6 rounded-xl backdrop-blur-sm border border-slate-200 dark:border-slate-700">
+        <div className="relative z-10 flex flex-col items-center text-center max-w-md bg-elevated/80 p-6 rounded-xl backdrop-blur-sm border border-default">
           <div className="w-12 h-12 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-full flex items-center justify-center mb-4">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -41,9 +41,9 @@ export const MfeMaeChart = ({ trades }: { trades: TradeData[] }) => {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-default p-6 shadow-sm bg-surface">
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">MFE/MAE Scatter Plot</h3>
-       <div className="h-[400px] w-full border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50 p-4">
+       <div className="h-[400px] w-full border border-default rounded-xl overflow-hidden bg-elevated p-4">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />

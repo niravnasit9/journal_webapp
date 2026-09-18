@@ -196,7 +196,7 @@ const CustomEconomicNews = () => {
 
       {/* Table Section */}
       <div className="w-full rounded-2xl bg-white dark:bg-[#111318] overflow-hidden">
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>
               <tr className="text-gray-900 dark:text-primary font-bold text-[13px] border-b border-gray-200 dark:border-white/5">

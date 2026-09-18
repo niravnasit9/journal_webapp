@@ -202,7 +202,7 @@ export default function TransactionsAdminPage() {
       </div>
 
       <Card className="overflow-visible border-default">
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface border-b border-subtle">

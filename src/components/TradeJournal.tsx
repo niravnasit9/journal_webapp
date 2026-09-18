@@ -261,7 +261,7 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
         </div>
 
         {/* Table Content */}
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-elevated text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">

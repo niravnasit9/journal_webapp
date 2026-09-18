@@ -171,9 +171,9 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
   };
 
   return (
-    <div className="fixed inset-0 bg-[#fafafa] dark:bg-[#0a0f1c]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-300 dark:border-slate-700 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="flex justify-between items-center p-5 border-b border-yellow-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0f1523]">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+      <div className="premium-card w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 relative">
+        <div className="flex justify-between items-center p-5 border-b border-default bg-elevated/50">
           <h3 className="text-lg font-bold text-gray-900 dark:text-primary flex items-center gap-2 tracking-tight">
             <i className="las la-pen text-2xl text-blue-500"></i> Edit Account
           </h3>
@@ -184,13 +184,13 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-2">
-            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
+            <label className="label-premium block mb-2 uppercase tracking-widest pl-1">
               Account Name
             </label>
             <input 
               required type="text"
               value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})}
-              className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold"
+              className="input-premium w-full font-semibold"
             />
           </div>
 

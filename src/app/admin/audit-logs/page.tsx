@@ -105,7 +105,7 @@ export default function AdminAuditLogsPage() {
           />
         </div>
         
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto pb-2">
           <table className="w-full text-left font-mono text-xs text-secondary whitespace-nowrap">
             <thead>
               <tr className="bg-surface text-secondary font-bold uppercase tracking-widest border-b border-default">
