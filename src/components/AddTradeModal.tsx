@@ -229,7 +229,7 @@ export default function AddTradeModal({
                       <option value="EQUITY_DELIVERY">Equity Delivery</option>
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label-premium block mb-2">Asset Symbol</label>
                       <input type="text" className="input-premium w-full uppercase" value={customSymbol} onChange={e => {setSymbolMode("other"); setCustomSymbol(e.target.value.toUpperCase());}} placeholder="e.g. RELIANCE" required />
@@ -254,7 +254,7 @@ export default function AddTradeModal({
                       </div>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label-premium block mb-2">Direction</label>
                       <select className="input-premium w-full" value={formData.direction} onChange={e => setFormData({...formData, direction: e.target.value as "BUY"|"SELL"})}>
@@ -284,7 +284,7 @@ export default function AddTradeModal({
                       <input type="text" className="input-premium w-full uppercase" value={customSymbol} onChange={e => setCustomSymbol(e.target.value.toUpperCase())} placeholder="e.g. GBPJPY" required />
                     )}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="label-premium block mb-2">Direction</label>
                       <select className="input-premium w-full" value={formData.direction} onChange={e => setFormData({...formData, direction: e.target.value as "BUY"|"SELL"})}>
@@ -300,7 +300,7 @@ export default function AddTradeModal({
                 </>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="label-premium block mb-2">Entry Price</label>
                   <input type="number" step="0.00001" className="input-premium w-full" value={formData.open_price} onChange={e => setFormData({...formData, open_price: e.target.value})} required />
@@ -311,7 +311,7 @@ export default function AddTradeModal({
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="label-premium block mb-2">Open Time</label>
                   <PremiumDateTimePicker value={new Date(formData.open_time)} onChange={(d) => handleDateChange('open_time', d)} />
@@ -342,7 +342,7 @@ export default function AddTradeModal({
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="premium-inner-box p-3">
                     <label className="label-premium block mb-1">Gross P&L ($)</label>
                     <input type="number" step="0.01" className="bg-transparent text-primary font-bold text-lg w-full outline-none" value={formData.profit_loss} onChange={e => setFormData({...formData, profit_loss: e.target.value})} placeholder="0.00" />
@@ -354,7 +354,7 @@ export default function AddTradeModal({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="label-premium block mb-2">Stop Loss</label>
                   <input type="number" step="0.00001" className="input-premium w-full" value={formData.stop_loss_price} onChange={e => setFormData({...formData, stop_loss_price: e.target.value})} />
