@@ -80,7 +80,7 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
       if (!timeStr) continue; 
       
       const tradeDate = timeStr.includes("T") ? timeStr.split("T")[0] : timeStr.split(" ")[0];
-      const actualSymbol = t.tradingSymbol || t.customSymbol || t.tradingSymbol;
+      const actualSymbol = t.tradingSymbol || t.customSymbol || t.securityId || "UnknownAsset";
       const groupKey = `${actualSymbol}_${tradeDate}`;
       if (!groups[groupKey]) groups[groupKey] = [];
       groups[groupKey].push(t);
@@ -101,7 +101,29 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
       if (exch.includes("COMM")) segment = "COMMODITY";
       else if (exch.includes("FNO")) segment = "FNO_OPTIONS"; 
 
-      const actualSymbol = executions[0].tradingSymbol || executions[0].customSymbol || groupKey.split('_')[0];
+      const actualSymbol = executions[0].tradingSymbol || executions[0].customSymbol || executions[0].securityId || groupKey.split('_')[0];
+      let optType = "";
+      let strPrice = "";
+      if (segment === "FNO_OPTIONS" || segment === "COMMODITY") {
+        const ceMatch = actualSymbol.match(/(?:CE|CALL)$/i) || actualSymbol.match(/(\d{3,5})CE/i);
+        const peMatch = actualSymbol.match(/(?:PE|PUT)$/i) || actualSymbol.match(/(\d{3,5})PE/i);
+        
+        if (ceMatch) optType = "CE";
+        else if (peMatch) optType = "PE";
+        
+        // Match numbers in the symbol string
+        const numMatch = actualSymbol.match(/(\d{3,5})(?:CE|PE)?$/i);
+        if (numMatch && numMatch[1]) {
+          strPrice = numMatch[1];
+        } else {
+          const parts = actualSymbol.split(' ');
+          for (let i = 0; i < parts.length; i++) {
+            if (!isNaN(Number(parts[i])) && Number(parts[i]) > 0) {
+              strPrice = parts[i];
+            }
+          }
+        }
+      }
       
       let lotSize = 1;
       if (segment === "COMMODITY") {
@@ -243,8 +265,8 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
           symbol: actualSymbol,
           direction: direction === "BUY" ? "BUY" : "SELL",
           domestic_segment: segment,
-          option_type: normalizedExecutions[0].optionType,
-          strike_price: normalizedExecutions[0].strikePrice,
+          option_type: optType,
+          strike_price: strPrice,
           open_time: isoOpenTime, // TradeDoc requirement
           close_time: isoOpenTime, // TradeDoc requirement
           open_price: avgBuy > 0 ? avgBuy : avgSell,
@@ -290,7 +312,7 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
         const existingAgg = aggregatedExecutions.find(a => {
           if (orderId && a.orderId && a.orderId === orderId) return true;
           if (!orderId && 
-              a.symbol === exec.symbol &&
+              a.symbol === actualSymbol &&
               a.transactionType === exec.transactionType &&
               a.time.substring(0, 16) === timeKey) {
             return true;
@@ -331,8 +353,8 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
         const q = query(
           rawRef,
           where("account_id", "==", accountId || ""),
-          where("symbol", "==", exec.symbol || ""),
-          where("time", "==", exec.time || ""),
+          where("symbol", "==", actualSymbol || ""),
+          where("time", "==", formatToISO(exec.time || "")),
           where("quantity", "==", exec.unitQty || 0),
           where("price", "==", exec.price || 0),
           where("direction", "==", exec.transactionType || "")
@@ -347,11 +369,11 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
         const rawPayload = {
           id: newRawRef.id,
           account_id: accountId,
-          symbol: exec.symbol,
+          symbol: actualSymbol,
           direction: exec.transactionType,
-          domestic_segment: exec.segment,
-          option_type: exec.optionType,
-          strike_price: exec.strikePrice,
+          domestic_segment: segment,
+          option_type: optType,
+          strike_price: strPrice,
           price: exec.price,
           quantity: exec.unitQty,
           time: formatToISO(exec.time),

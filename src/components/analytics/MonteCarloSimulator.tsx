@@ -6,7 +6,7 @@ import { TradeDoc, AccountDoc } from '@/lib/firebase/schema';
 import { useAuth } from '@/lib/firebase/authContext';
 import Link from 'next/link';
 
-export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: AccountDoc }> = ({ trades, account }) => {
+export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: AccountDoc, isDomestic?: boolean }> = ({ trades, account, isDomestic }) => {
   const { tier } = useAuth();
   const isElite = tier === 'elite';
 
@@ -19,7 +19,7 @@ export const MonteCarloSimulator: React.FC<{ trades: TradeDoc[], account?: Accou
     let lossProfit = 0;
 
     trades.forEach(t => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       if (net > 0) {
         totalWins++;
         winProfit += net;

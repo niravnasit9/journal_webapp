@@ -6,7 +6,7 @@ import { TradeDoc } from '@/lib/firebase/schema';
 import { useAuth } from '@/lib/firebase/authContext';
 import Link from 'next/link';
 
-export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
+export const DrawdownProfile: React.FC<{ trades: TradeDoc[], isDomestic?: boolean }> = ({ trades, isDomestic }) => {
   const { tier } = useAuth();
   const isPremium = tier === 'pro' || tier === 'elite';
 
@@ -23,7 +23,7 @@ export const DrawdownProfile: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
     const recoveryLengths: number[] = [];
 
     const chartData = sorted.map((t, index) => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       balance += net;
       
       if (balance > hwm) {

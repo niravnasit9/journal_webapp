@@ -5,7 +5,7 @@ import { TradeDoc } from '@/lib/firebase/schema';
 import { useAuth } from '@/lib/firebase/authContext';
 import Link from 'next/link';
 
-export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
+export const SessionHeatmap: React.FC<{ trades: TradeDoc[], isDomestic?: boolean }> = ({ trades, isDomestic }) => {
   const { tier } = useAuth();
   const isElite = tier === 'elite';
 
@@ -29,7 +29,7 @@ export const SessionHeatmap: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => 
       const h = date.getHours();
       
       if (d >= 1 && d <= 5) {
-        const net = t.profit_loss - (t.commission || 0);
+        const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
         const key = `${d}-${h}`;
         if (grid[key]) {
           grid[key].total++;

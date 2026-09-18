@@ -153,13 +153,22 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
       let optType = "";
       let strPrice = "";
       if (segment === "FNO_OPTIONS" || segment === "COMMODITY") {
-        if (actualSymbol.includes(" CE") || actualSymbol.includes(" CALL")) optType = "CE";
-        else if (actualSymbol.includes(" PE") || actualSymbol.includes(" PUT")) optType = "PE";
+        const ceMatch = actualSymbol.match(/(?:CE|CALL)$/i) || actualSymbol.match(/(\d{3,5})CE/i);
+        const peMatch = actualSymbol.match(/(?:PE|PUT)$/i) || actualSymbol.match(/(\d{3,5})PE/i);
         
-        const parts = actualSymbol.split(' ');
-        for (let i = 0; i < parts.length; i++) {
-          if (!isNaN(Number(parts[i])) && Number(parts[i]) > 0) {
-            strPrice = parts[i];
+        if (ceMatch) optType = "CE";
+        else if (peMatch) optType = "PE";
+        
+        // Match numbers in the symbol string
+        const numMatch = actualSymbol.match(/(\d{3,5})(?:CE|PE)?$/i);
+        if (numMatch && numMatch[1]) {
+          strPrice = numMatch[1];
+        } else {
+          const parts = actualSymbol.split(' ');
+          for (let i = 0; i < parts.length; i++) {
+            if (!isNaN(Number(parts[i])) && Number(parts[i]) > 0) {
+              strPrice = parts[i];
+            }
           }
         }
       }
@@ -183,6 +192,7 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
           id: newPosRef.id,
           account_id: accountId,
           symbol: actualSymbol,
+          direction: executions.length > 0 ? executions[0].transactionType : "BUY",
           option_type: optType,
           strike_price: strPrice,
           domestic_segment: segment,
@@ -243,7 +253,7 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
         const rawPayload = {
           id: newRawRef.id,
           account_id: accountId,
-          symbol: exec.tradingSymbol || exec.symbol,
+          symbol: actualSymbol,
           option_type: optType,
           strike_price: strPrice,
           domestic_segment: segment,

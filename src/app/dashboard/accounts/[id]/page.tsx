@@ -202,12 +202,12 @@ export default function AccountDetailView() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto no-scrollbar border-b border-default">
+      <div className="flex flex-wrap md:flex-nowrap md:overflow-x-auto md:no-scrollbar border-b border-default gap-x-2 md:gap-x-0">
         {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Psychology", "Calendar"] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-4 text-sm font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
+            className={`px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-sm font-bold uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
               activeTab === tab
                 ? "border-blue-500 text-blue-400 bg-blue-500/5"
                 : "border-transparent text-muted hover:text-white hover:bg-white/5"

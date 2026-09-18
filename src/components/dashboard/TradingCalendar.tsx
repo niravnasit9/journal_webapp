@@ -24,23 +24,26 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
 
   // Compute stats per day for the entire dataset
   const dailyStats = useMemo(() => {
-    const stats: Record<string, { pnl: number; count: number; wins: number; losses: number }> = {};
+    const stats: Record<string, { grossPnl: number; netPnl: number; count: number; wins: number; losses: number }> = {};
     
     trades.forEach(trade => {
       const tradeDate = new Date(trade.close_time);
       if (isNaN(tradeDate.getTime())) return;
       
       const dateKey = format(tradeDate, 'yyyy-MM-dd');
-      const pnl = isDomestic ? (trade as any).net_pnl || 0 : trade.profit_loss || 0;
+      const netPnl = isDomestic ? (trade as any).net_pnl || 0 : trade.profit_loss || 0;
+      const grossPnl = trade.profit_loss || 0;
       
       if (!stats[dateKey]) {
-        stats[dateKey] = { pnl: 0, count: 0, wins: 0, losses: 0 };
+        stats[dateKey] = { grossPnl: 0, netPnl: 0, count: 0, wins: 0, losses: 0 };
       }
       
-      stats[dateKey].pnl += pnl;
+      stats[dateKey].grossPnl += grossPnl;
+      stats[dateKey].netPnl += netPnl;
       stats[dateKey].count += 1;
-      if (pnl > 0) stats[dateKey].wins += 1;
-      else if (pnl < 0) stats[dateKey].losses += 1;
+      // Evaluate win/loss based on gross PnL
+      if (grossPnl > 0) stats[dateKey].wins += 1;
+      else if (grossPnl < 0) stats[dateKey].losses += 1;
     });
     
     return stats;
@@ -131,17 +134,16 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
         </div>
       </div>
 
-      {/* Days of Week */}
-      <div className="grid grid-cols-7 gap-2 mb-2">
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-[10px] font-bold text-muted uppercase tracking-widest">
+          <div key={day} className="text-center text-[8px] md:text-[10px] font-bold text-muted uppercase tracking-widest">
             {day}
           </div>
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 md:gap-2">
         {daysInGrid.map(day => {
           const dateKey = format(day, 'yyyy-MM-dd');
           const stat = dailyStats[dateKey];
@@ -152,10 +154,10 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
           let textColor = "text-secondary";
           
           if (stat && stat.count > 0) {
-            if (stat.pnl > 0) {
+            if (stat.grossPnl > 0) {
               bgColor = "bg-emerald-500/10 border-emerald-500/30";
               textColor = "text-emerald-400";
-            } else if (stat.pnl < 0) {
+            } else if (stat.grossPnl < 0) {
               bgColor = "bg-rose-500/10 border-rose-500/30";
               textColor = "text-rose-400";
             } else {
@@ -178,24 +180,29 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
             <div 
               key={dateKey} 
               onClick={() => setSelectedDate(day)}
-              className={`min-h-[80px] p-2 rounded-xl border flex flex-col justify-between transition-all cursor-pointer hover:border-primary ${bgColor}`}
+              className={`min-h-[50px] md:min-h-[80px] p-1 md:p-2 rounded-lg md:rounded-xl border flex flex-col justify-between transition-all cursor-pointer hover:border-primary overflow-hidden ${bgColor}`}
             >
               <div className="flex justify-between items-start">
-                <span className={`text-xs font-bold ${!isCurrentMonth && !stat ? 'text-muted' : 'text-primary'}`}>
+                <span className={`text-[10px] md:text-xs font-bold ${!isCurrentMonth && !stat ? 'text-muted' : 'text-primary'}`}>
                   {format(day, 'd')}
                 </span>
                 {stat && stat.count > 0 && (
-                  <span className="text-[9px] font-medium bg-background/50 px-1.5 py-0.5 rounded text-muted">
+                  <span className="hidden md:inline-block text-[9px] font-medium bg-background/50 px-1.5 py-0.5 rounded text-muted">
                     {stat.count} {stat.count === 1 ? 'trade' : 'trades'}
                   </span>
                 )}
               </div>
               
               {stat && stat.count > 0 && (
-                <div className="mt-2 text-right">
-                  <span className={`text-sm font-black tracking-tight block ${textColor}`}>
-                    {stat.pnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.pnl)}
+                <div className="mt-1 md:mt-2 text-right flex flex-col items-end">
+                  <span className={`text-[9px] md:text-sm font-black tracking-tight block truncate ${textColor}`}>
+                    {stat.grossPnl >= 0 ? '+' : '-'}<span className="hidden md:inline">{currencySymbol}</span>{formatMoney(stat.grossPnl)}
                   </span>
+                  {isDomestic && (
+                    <span className={`text-[7px] md:text-[9px] font-medium tracking-tighter truncate ${stat.netPnl >= 0 ? 'text-emerald-500/60' : 'text-rose-500/60'}`}>
+                      Net: {stat.netPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.netPnl)}
+                    </span>
+                  )}
                 </div>
               )}
             </div>

@@ -123,7 +123,7 @@ export default function AnalyticsOverview() {
     let pnl = 0;
 
     activeTrades.forEach(t => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       pnl += net;
       if (net > 0) {
         wins++;
@@ -144,7 +144,7 @@ export default function AnalyticsOverview() {
       profitFactor: pf,
       totalTrades: total
     };
-  }, [activeTrades]);
+  }, [activeTrades, isDomestic]);
 
   const formatMoney = (val: number) => {
     return new Intl.NumberFormat(isDomestic ? 'en-IN' : 'en-US', { 
@@ -215,17 +215,17 @@ export default function AnalyticsOverview() {
 
       {/* Equity Curve & Advanced Metrics */}
       <div>
-        <InteractiveEquityCurve trades={activeTrades} currency={isDomestic ? "INR" : "USD"} />
-        <AdvancedMetrics trades={activeTrades} />
+        <InteractiveEquityCurve trades={activeTrades} currency={isDomestic ? "INR" : "USD"} isDomestic={isDomestic} />
+        <AdvancedMetrics trades={activeTrades} isDomestic={isDomestic} />
       </div>
 
       {/* Bottom Algorithmic Add-ons */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <DrawdownProfile trades={activeTrades} />
-        <VolumeCorrelation trades={activeTrades} />
-        <SessionHeatmap trades={activeTrades} />
-        <MaeMfeScatter trades={activeTrades} />
-        <MonteCarloSimulator trades={activeTrades} account={activeAccount} />
+        <DrawdownProfile trades={activeTrades} isDomestic={isDomestic} />
+        <VolumeCorrelation trades={activeTrades} isDomestic={isDomestic} />
+        <SessionHeatmap trades={activeTrades} isDomestic={isDomestic} />
+        <MaeMfeScatter trades={activeTrades} isDomestic={isDomestic} />
+        <MonteCarloSimulator trades={activeTrades} account={activeAccount} isDomestic={isDomestic} />
       </div>
 
     </div>

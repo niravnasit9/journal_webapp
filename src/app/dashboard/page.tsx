@@ -61,7 +61,7 @@ export default function UserDashboardCommandCenter() {
     todayStart.setHours(0, 0, 0, 0);
 
     recentTrades.forEach((t: TradeDoc) => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       totalPnL += net;
       if (net > 0) winningTrades++;
       
@@ -74,7 +74,7 @@ export default function UserDashboardCommandCenter() {
     const winRate = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
 
     return { totalBalance, totalPnL, todaysPnL, winRate, totalTradesCount };
-  }, [activeAccounts, recentTrades]);
+  }, [activeAccounts, recentTrades, isDomestic]);
 
   if (loading) {
     return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
@@ -107,7 +107,7 @@ export default function UserDashboardCommandCenter() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-primary transition-colors">

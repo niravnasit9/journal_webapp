@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TradeDoc } from '@/lib/firebase/schema';
 
-export const MaeMfeScatter: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
+export const MaeMfeScatter: React.FC<{ trades: TradeDoc[], isDomestic?: boolean }> = ({ trades, isDomestic }) => {
   const { data, moneyLeftOnTable } = useMemo(() => {
     let mfeSum = 0;
     let profitSum = 0;
@@ -13,7 +13,7 @@ export const MaeMfeScatter: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
     const chartData = trades
       .filter(t => t.mfe_usd !== undefined && t.mae_usd !== undefined)
       .map(t => {
-        const pnl = t.profit_loss - (t.commission || 0);
+        const pnl = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
         
         // For AI Calc: Money left on table for winning trades
         if (pnl > 0 && t.mfe_usd !== undefined) {

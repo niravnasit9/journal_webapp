@@ -197,8 +197,8 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                     <>
                       <td className="px-6 py-4 font-bold text-primary">
                         {(t as any).domestic_segment === "FNO_OPTIONS"
-                          ? `${t.symbol} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`
-                          : t.symbol}
+                          ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
+                          : (t.symbol || "Unknown Asset")}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${

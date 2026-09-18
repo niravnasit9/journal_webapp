@@ -75,7 +75,7 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <MetricCard label="Today" value={metrics.daily} icon="la-sun" />
       <MetricCard label="This Week" value={metrics.weekly} icon="la-calendar-week" />
       <MetricCard label="This Month" value={metrics.monthly} icon="la-calendar" />

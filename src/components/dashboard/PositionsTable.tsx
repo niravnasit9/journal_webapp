@@ -207,8 +207,8 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                       <div className="flex flex-col">
                         <span className="font-bold text-primary">
                           {(t as any).domestic_segment === "FNO_OPTIONS"
-                            ? `${t.symbol} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`
-                            : t.symbol}
+                            ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
+                            : (t.symbol || "Unknown Asset")}
                         </span>
                         {(t as any).domestic_segment && (
                           <span className="text-[10px] text-muted">{(t as any).domestic_segment}</span>

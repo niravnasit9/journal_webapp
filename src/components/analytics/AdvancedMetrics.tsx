@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { TradeDoc } from '@/lib/firebase/schema';
 
-export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
+export const AdvancedMetrics: React.FC<{ trades: TradeDoc[], isDomestic?: boolean }> = ({ trades, isDomestic }) => {
   const stats = useMemo(() => {
     if (trades.length === 0) return { expectancy: 0, maxDrawdownPct: 0, avgRr: 0 };
 
@@ -22,7 +22,7 @@ export const AdvancedMetrics: React.FC<{ trades: TradeDoc[] }> = ({ trades }) =>
     const sorted = [...trades].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime());
 
     sorted.forEach(t => {
-      const net = t.profit_loss - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       
       // Expectancy & R:R
       if (net > 0) {

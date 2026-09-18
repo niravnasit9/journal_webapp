@@ -6,7 +6,7 @@ import { TradeDoc } from '@/lib/firebase/schema';
 import { useAuth } from '@/lib/firebase/authContext';
 import Link from 'next/link';
 
-export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) => {
+export const VolumeCorrelation: React.FC<{ trades: TradeDoc[], isDomestic?: boolean }> = ({ trades, isDomestic }) => {
   const { tier } = useAuth();
   const isPremium = tier === 'pro' || tier === 'elite';
 
@@ -21,7 +21,7 @@ export const VolumeCorrelation: React.FC<{ trades: TradeDoc[] }> = ({ trades }) 
     };
 
     trades.forEach(t => {
-      const net = (t.profit_loss || t.net_pnl || 0) - (t.commission || 0);
+      const net = isDomestic ? ((t as any).net_pnl || 0) : ((t.profit_loss || t.net_pnl || 0) - (t.commission || 0));
       const vol = t.lot_size || t.quantity || 0;
       let tierKey = "";
       if (vol < 0.5) tierKey = "Micro (< 0.5)";

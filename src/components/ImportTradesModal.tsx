@@ -95,16 +95,38 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
             }
           }
           
+          // Dynamically find column keys
+          let symbolKey = '__EMPTY_2';
+          let typeKey = '__EMPTY_1';
+          let qtyKey = '__EMPTY_4';
+          let priceKey = '__EMPTY_6';
+          let statusKey = '__EMPTY_8';
+          let timeKey = '__EMPTY';
+
+          for (const row of data) {
+            for (const key in row) {
+              const val = String(row[key]).trim();
+              if (val === "Trading Symbol") symbolKey = key;
+              else if (val === "Buy/Sell" || val === "B/S") typeKey = key;
+              else if (val.includes("Qty")) qtyKey = key;
+              else if (val === "Traded Price") priceKey = key;
+              else if (val === "Status") statusKey = key;
+              else if (val === "Order Time") timeKey = key;
+            }
+          }
+          
           for (let i = 0; i < data.length; i++) {
             const row = data[i];
-            if (!row['__EMPTY_1'] || !['B', 'S'].includes(row['__EMPTY_1'])) continue; // skip non-trade rows
+            if (!row[typeKey] || !['B', 'S'].includes(row[typeKey])) continue; // skip non-trade rows
             
-            const symbol = row['__EMPTY_2'];
-            const status = row['__EMPTY_8'];
+            const symbol = row[symbolKey];
+            if (!symbol) continue;
+
+            const status = row[statusKey];
             if (status !== 'Success') continue; // only successful trades
             
             let qty = 0;
-            const qtyStr = row['__EMPTY_4'];
+            const qtyStr = String(row[qtyKey] || "");
             if (qtyStr) {
                qty = Number(qtyStr.split('/')[0]) || Number(qtyStr.split('/')[1]);
             }
@@ -119,12 +141,12 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
             
             parsedTrades.push({
                tradingSymbol: symbol,
-               transactionType: row['__EMPTY_1'] === 'B' ? 'BUY' : 'SELL',
+               transactionType: row[typeKey] === 'B' ? 'BUY' : 'SELL',
                quantity: qty,
                tradedQuantity: qty,
-               tradedPrice: Number(row['__EMPTY_6']),
-               price: Number(row['__EMPTY_6']),
-               tradeTime: `${tradeDateStr}T${row['__EMPTY']}`,
+               tradedPrice: Number(row[priceKey]),
+               price: Number(row[priceKey]),
+               tradeTime: `${tradeDateStr}T${row[timeKey] || row['__EMPTY']}`,
                exchangeSegment: exchSegment
             });
           }

@@ -25,7 +25,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
     const availableFunds = account.initial_balance + netPnl;
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="premium-card p-6 border-t-2 border-t-orange-500">
           <p className="text-xs font-bold text-muted uppercase">Available Funds</p>
           <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(availableFunds, true)}</p>
@@ -53,7 +53,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
   const equity = account.initial_balance + grossPnl;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div className="premium-card p-6 border-t-2 border-t-blue-500">
         <p className="text-xs font-bold text-muted uppercase">Account Balance</p>
         <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(account.initial_balance, false)}</p>

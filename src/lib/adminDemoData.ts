@@ -228,7 +228,7 @@ export const generateTradesForAccount = (accountId: string, startDay: number, co
       executionScore = "Perfect";
     }
 
-    trades.push({
+    let tradeData: any = {
       id: `trd_demo_gen_${accountId}_${i}`,
       account_id: accountId,
       symbol,
@@ -245,7 +245,7 @@ export const generateTradesForAccount = (accountId: string, startDay: number, co
       stop_loss_price: Number(stopLossPrice.toFixed(5)),
       take_profit_price: Number(takeProfitPrice.toFixed(5)),
       risk_reward_ratio: Number(riskRewardRatio.toFixed(2)),
-      execution_score: executionScore as any,
+      execution_score: executionScore,
       news_event: newsEvent,
       impact: impact,
       news_volatility_flag: newsVolatilityFlag,
@@ -262,7 +262,21 @@ export const generateTradesForAccount = (accountId: string, startDay: number, co
       notes: !isLoss ? "Great setup. Followed the plan perfectly." : "Missed the entry and chased it. Stop loss hit.",
       screenshot_url: "",
       mistake_tags: !isLoss ? [] : ["Chasing Price", "Impatient"]
-    });
+    };
+
+    if (isDomestic) {
+      const brokerage = 40; // 20 buy, 20 sell
+      const stt = Number((openPrice * lotSize * 0.001).toFixed(2));
+      const gst = Number((brokerage * 0.18).toFixed(2));
+      const totalTaxes = brokerage + stt + gst;
+      tradeData.tax_breakdown = { brokerage, stt, gst, exchange_txn_charge: 0, sebi_turnover_charge: 0, stamp_duty: 0 };
+      tradeData.total_taxes = totalTaxes;
+      tradeData.net_pnl = Number((profitLoss - totalTaxes).toFixed(2));
+      tradeData.domestic_segment = "FNO_OPTIONS";
+    }
+
+    trades.push(tradeData as TradeDoc);
+
   }
   return trades;
 };
