@@ -23,9 +23,11 @@ import TradingHistory from "@/components/dashboard/TradingHistory";
 import TradingOverview from "@/components/dashboard/TradingOverview";
 import TradingPsychology from "@/components/dashboard/TradingPsychology";
 import PositionsTable from "@/components/dashboard/PositionsTable";
+import TimeBasedMetrics from "@/components/dashboard/TimeBasedMetrics";
+import TradingCalendar from "@/components/dashboard/TradingCalendar";
 import { useUiStore } from "@/store/useUiStore";
 
-type TabType = "Account Overview" | "Trading Overview" | "Daily Positions" | "Trading History" | "Psychology";
+type TabType = "Account Overview" | "Trading Overview" | "Daily Positions" | "Trading History" | "Psychology" | "Calendar";
 
 export default function AccountDetailView() {
   const { id } = useParams();
@@ -148,6 +150,13 @@ export default function AccountDetailView() {
         return <TradingHistory executions={rawExecutions} onEditTrade={(t) => { setSelectedEditTrade(t); setIsEditModalOpen(true); }} onDeleteTrade={handleDeleteTrade} />;
       case "Psychology":
         return <TradingPsychology trades={trades} />;
+      case "Calendar":
+        return (
+          <div className="space-y-6">
+            <TimeBasedMetrics trades={trades} isDomestic={account.market_type === "DOMESTIC"} />
+            <TradingCalendar trades={trades} isDomestic={account.market_type === "DOMESTIC"} />
+          </div>
+        );
       default:
         return null;
     }
@@ -194,7 +203,7 @@ export default function AccountDetailView() {
 
       {/* Navigation Tabs */}
       <div className="flex overflow-x-auto no-scrollbar border-b border-default">
-        {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Psychology"] as TabType[]).map((tab) => (
+        {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Psychology", "Calendar"] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
