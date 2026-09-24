@@ -8,22 +8,30 @@ interface GuardianProps {
   currentFloatingLoss: number;
   dailyLossLimit: number; // e.g., 5%
   isTrailing: boolean;
+  currencySymbol?: string;
+  isDomestic?: boolean;
 }
 
-export const DrawdownGuardian = ({ accountBalance, highestEquity, currentFloatingLoss, dailyLossLimit, isTrailing }: GuardianProps) => {
+export const DrawdownGuardian = ({ accountBalance, highestEquity, currentFloatingLoss, dailyLossLimit, isTrailing, currencySymbol = "$", isDomestic = false }: GuardianProps) => {
   const { propFirmGuardian } = useTierAccess();
+  
+  const guardianTitle = isDomestic ? "Capital Guardian" : "Prop Firm Guardian";
 
   if (!propFirmGuardian) {
     return (
       <div className="rounded-xl border border-slate-200 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-4 text-center">
-            <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-2">Prop Firm Guardian Locked</h4>
-            <p className="text-xs text-slate-500 mb-4">Track trailing vs static drawdown and get real-time breach alerts.</p>
+            <h4 className="text-slate-900 dark:text-slate-100 font-semibold mb-2">{guardianTitle} Locked</h4>
+            <p className="text-xs text-slate-500 mb-4">
+              {isDomestic 
+                ? "Set personal daily loss limits and get real-time capital preservation alerts." 
+                : "Track trailing vs static drawdown and get real-time breach alerts."}
+            </p>
             <Button variant="outline" size="sm" onClick={() => window.location.href='/checkout/pro'}>Unlock Guardian</Button>
         </div>
         {/* Basic Risk UI underneath */}
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Risk Status</h3>
-        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">${accountBalance}</div>
+        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currencySymbol}{accountBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
       </div>
     );
   }
@@ -44,7 +52,7 @@ export const DrawdownGuardian = ({ accountBalance, highestEquity, currentFloatin
       <div className="grid grid-cols-2 gap-4">
         <div>
            <p className="text-xs text-slate-500 mb-1">Remaining Drawdown</p>
-           <p className={`text-xl font-bold ${isDanger ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-100'}`}>${remainingDrawdown.toFixed(2)}</p>
+           <p className={`text-xl font-bold ${isDanger ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-100'}`}>{currencySymbol}{Math.max(0, remainingDrawdown).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
         <div>
            <p className="text-xs text-slate-500 mb-1">Limit Type</p>

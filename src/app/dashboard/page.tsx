@@ -185,8 +185,19 @@ export default function UserDashboardCommandCenter() {
               <tbody className="divide-y divide-subtle">
                 {recentTrades.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-secondary">
-                      No trades recorded yet.
+                    <td colSpan={4} className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
+                        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 flex items-center justify-center mb-4 ring-1 ring-blue-500/20">
+                          <i className="las la-file-invoice text-3xl"></i>
+                        </div>
+                        <h4 className="text-primary font-bold text-lg mb-1">No trades recorded yet</h4>
+                        <p className="text-secondary text-sm mb-6">Connect your brokerage account or upload a CSV to see your trading data here.</p>
+                        <Link href="/dashboard/accounts">
+                          <Button variant="primary" size="sm" className="shadow-lg shadow-blue-500/20">
+                            Connect Account
+                          </Button>
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -202,7 +213,7 @@ export default function UserDashboardCommandCenter() {
                         {new Date(trade.close_time).toLocaleString()}
                       </td>
                       <td className={`px-6 py-3 text-right font-bold ${trade.profit_loss >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {trade.profit_loss >= 0 ? '+' : ''}${trade.profit_loss.toFixed(2)}
+                        {trade.profit_loss >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(trade.profit_loss).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   ))
@@ -221,36 +232,33 @@ export default function UserDashboardCommandCenter() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
-            <Link href="/dashboard/risk" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-danger hover:bg-danger/5 transition-all">
+            <Link href="/dashboard/risk" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-danger hover:bg-danger/5 transition-all hover:shadow-[0_4_12px_rgba(220,38,38,0.1)]">
               <div className="flex items-center gap-3">
-                <i className="las la-shield-alt text-xl text-danger group-hover:scale-110 transition-transform"></i>
-                <div className="font-bold text-primary text-sm">Risk Center</div>
+                <i className="las la-shield-alt text-xl text-danger group-hover:scale-110 transition-transform duration-300"></i>
+                <div className="font-bold text-primary text-sm group-hover:text-danger transition-colors">Risk Center</div>
               </div>
-              <i className="las la-angle-right text-secondary"></i>
+              <i className="las la-angle-right text-secondary group-hover:translate-x-1 group-hover:text-danger transition-all duration-300"></i>
             </Link>
-
-            <Link href="/dashboard/goals" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-success hover:bg-success/5 transition-all">
+            <Link href="/dashboard/goals" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-success hover:bg-success/5 transition-all hover:shadow-[0_4_12px_rgba(22,163,74,0.1)]">
               <div className="flex items-center gap-3">
-                <i className="las la-bullseye text-xl text-success group-hover:scale-110 transition-transform"></i>
-                <div className="font-bold text-primary text-sm">Trading Goals</div>
+                <i className="las la-bullseye text-xl text-success group-hover:scale-110 transition-transform duration-300"></i>
+                <div className="font-bold text-primary text-sm group-hover:text-success transition-colors">Trading Goals</div>
               </div>
-              <i className="las la-angle-right text-secondary"></i>
+              <i className="las la-angle-right text-secondary group-hover:translate-x-1 group-hover:text-success transition-all duration-300"></i>
             </Link>
-
-            <Link href="/dashboard/reports" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-info hover:bg-info/5 transition-all">
+            <Link href="/dashboard/reports" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-info hover:bg-info/5 transition-all hover:shadow-[0_4_12px_rgba(37,99,235,0.1)]">
               <div className="flex items-center gap-3">
-                <i className="las la-file-download text-xl text-info group-hover:scale-110 transition-transform"></i>
-                <div className="font-bold text-primary text-sm">Export Reports</div>
+                <i className="las la-file-download text-xl text-info group-hover:scale-110 transition-transform duration-300"></i>
+                <div className="font-bold text-primary text-sm group-hover:text-info transition-colors">Export Reports</div>
               </div>
-              <i className="las la-angle-right text-secondary"></i>
+              <i className="las la-angle-right text-secondary group-hover:translate-x-1 group-hover:text-info transition-all duration-300"></i>
             </Link>
-
-            <Link href="/dashboard/insights" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-warning hover:bg-warning/5 transition-all">
+            <Link href="/dashboard/insights" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-warning hover:bg-warning/5 transition-all hover:shadow-[0_4_12px_rgba(234,88,12,0.1)]">
               <div className="flex items-center gap-3">
-                <i className="las la-lightbulb text-xl text-warning group-hover:scale-110 transition-transform"></i>
-                <div className="font-bold text-primary text-sm">View Insights</div>
+                <i className="las la-lightbulb text-xl text-warning group-hover:scale-110 transition-transform duration-300"></i>
+                <div className="font-bold text-primary text-sm group-hover:text-warning transition-colors">View Insights</div>
               </div>
-              <i className="las la-angle-right text-secondary"></i>
+              <i className="las la-angle-right text-secondary group-hover:translate-x-1 group-hover:text-warning transition-all duration-300"></i>
             </Link>
           </CardContent>
         </Card>

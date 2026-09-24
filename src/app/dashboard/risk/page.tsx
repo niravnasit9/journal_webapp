@@ -14,6 +14,7 @@ import CustomSelect from "@/components/ui/CustomSelect";
 import { calculateAccountRisk, RiskMetrics } from "@/lib/riskEngine";
 import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 import { DrawdownGuardian } from "@/components/risk/DrawdownGuardian";
+import { DomesticRiskCalculator } from "@/components/risk/DomesticRiskCalculator";
 import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
 import { getLocalJsDate } from "@/lib/dateUtils";
 import { useUiStore } from "@/store/useUiStore";
@@ -151,7 +152,11 @@ export default function RiskCenterPage() {
           <h1 className="text-2xl md:text-3xl font-black text-primary tracking-tight flex items-center gap-3">
             <i className="las la-shield-alt text-danger"></i> {isDomestic ? 'Domestic' : 'Global'} Risk Center
           </h1>
-          <p className="text-secondary mt-1">Monitor drawdown limits and rule violations for your {isDomestic ? 'domestic' : 'global'} accounts.</p>
+          <p className="text-secondary mt-1">
+            {isDomestic 
+              ? "Monitor daily limits and capital preservation for your personal domestic accounts."
+              : "Monitor drawdown limits and rule violations for your global funded accounts."}
+          </p>
         </div>
         
         <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
@@ -183,7 +188,9 @@ export default function RiskCenterPage() {
           </div>
           <h3 className="text-lg font-bold text-primary">No Accounts Yet</h3>
           <p className="text-secondary text-sm mt-2 max-w-md">
-            Add a trading account to begin monitoring your risk, drawdowns, and prop firm rules.
+            {isDomestic
+              ? "Add a trading account to begin monitoring your personal risk and capital preservation."
+              : "Add a trading account to begin monitoring your risk, drawdowns, and prop firm rules."}
           </p>
           <Link href="/dashboard/accounts" className="mt-6">
             <button className="px-4 py-2 bg-primary text-inverse font-bold rounded-lg hover:bg-primary-hover transition-colors">
@@ -235,6 +242,8 @@ export default function RiskCenterPage() {
                       currentFloatingLoss={(acc as any).current_floating_pnl ?? (risk.currentDailyPnL < 0 ? risk.currentDailyPnL : 0)}
                       dailyLossLimit={acc.daily_loss_limit_pct || 5}
                       isTrailing={(acc as any).is_trailing ?? (acc.drawdown_type === 'trailing')}
+                      currencySymbol={currencySymbol}
+                      isDomestic={isDomestic}
                     />
                   </div>
 
@@ -309,6 +318,16 @@ export default function RiskCenterPage() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Domestic Specific Risk Tools */}
+                  {isDomestic && (
+                    <div className="mt-6 pt-6 border-t border-subtle">
+                      <DomesticRiskCalculator 
+                        accountBalance={risk.currentBalance} 
+                        currencySymbol={currencySymbol} 
+                      />
                     </div>
                   )}
 
