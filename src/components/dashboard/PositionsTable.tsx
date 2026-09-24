@@ -20,7 +20,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
   const [dateTo, setDateTo] = useState("");
   const [symbolSearch, setSymbolSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("CLOSED");
   const [pnlFilter, setPnlFilter] = useState("ALL"); // ALL | WIN | LOSS
 
   const formatCurrency = (val: number) =>
@@ -55,7 +55,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
         if (!sym.includes(symbolSearch.toLowerCase())) return false;
       }
       if (segmentFilter !== "ALL" && (p as any).domestic_segment !== segmentFilter) return false;
-      if (statusFilter !== "ALL" && (p as any).status !== statusFilter) return false;
+      if ((p as any).status !== statusFilter) return false;
       const pnl = (p as any).net_pnl ?? p.profit_loss ?? 0;
       if (pnlFilter === "WIN" && pnl <= 0) return false;
       if (pnlFilter === "LOSS" && pnl >= 0) return false;
@@ -92,7 +92,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
 
   const clearFilters = () => {
     setDateFrom(""); setDateTo(""); setSymbolSearch("");
-    setSegmentFilter("ALL"); setStatusFilter("ALL"); setPnlFilter("ALL");
+    setSegmentFilter("ALL"); setStatusFilter("CLOSED"); setPnlFilter("ALL");
   };
 
   return (
@@ -123,69 +123,102 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="border-b border-default bg-background/50 px-5 py-3 flex flex-wrap gap-2 items-center">
-        {/* Symbol Search */}
-        <div className="relative">
-          <i className="las la-search absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
-          <input
-            type="text"
-            placeholder="Symbol..."
-            value={symbolSearch}
-            onChange={e => setSymbolSearch(e.target.value)}
-            className="input-premium pl-8 py-1.5 text-xs w-36"
-          />
-        </div>
+      <div className="border-b border-default bg-background/50 px-5 py-4 flex flex-col gap-4">
+        {/* Top Row: Search and Date */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Symbol Search */}
+            <div className="relative">
+              <i className="las la-search absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
+              <input
+                type="text"
+                placeholder="Symbol..."
+                value={symbolSearch}
+                onChange={e => setSymbolSearch(e.target.value)}
+                className="input-premium pl-8 py-1.5 text-xs w-48"
+              />
+            </div>
 
-        {/* Date Range Picker */}
-        <div className="z-50">
-          <DateRangePicker 
-            value={datePreset}
-            onChange={(range: DateRange) => {
-              setDatePreset(range.preset);
-              setDateFrom(range.start ? format(range.start, "yyyy-MM-dd") : "");
-              setDateTo(range.end ? format(range.end, "yyyy-MM-dd") : "");
-            }}
-          />
-        </div>
-
-        {/* Segment (domestic only) */}
-        {isDomestic && segments.length > 0 && (
-          <select value={segmentFilter} onChange={e => setSegmentFilter(e.target.value)}
-            className="input-premium py-1.5 text-xs">
-            <option value="ALL">All Segments</option>
-            {segments.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        )}
-
-        {/* Status */}
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="input-premium py-1.5 text-xs">
-          <option value="ALL">All Status</option>
-          <option value="CLOSED">Closed</option>
-          <option value="OPEN">Open</option>
-        </select>
-
-        {/* PnL */}
-        <div className="flex rounded-lg border border-default overflow-hidden text-xs font-bold">
-          {(["ALL", "WIN", "LOSS"] as const).map(v => (
-            <button key={v} onClick={() => setPnlFilter(v)}
-              className={`px-3 py-1.5 transition-colors ${pnlFilter === v
-                ? v === "WIN" ? "bg-emerald-500/20 text-emerald-400"
-                : v === "LOSS" ? "bg-rose-500/20 text-rose-400"
-                : "bg-elevated text-primary"
-                : "text-muted hover:text-secondary"}`}>
-              {v === "ALL" ? "All" : v === "WIN" ? "✓ Win" : "✗ Loss"}
+            {/* Date Range Picker */}
+            <div className="z-50">
+              <DateRangePicker 
+                value={datePreset}
+                onChange={(range: DateRange) => {
+                  setDatePreset(range.preset);
+                  setDateFrom(range.start ? format(range.start, "yyyy-MM-dd") : "");
+                  setDateTo(range.end ? format(range.end, "yyyy-MM-dd") : "");
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Clear Button */}
+          {hasActiveFilters && (
+            <button onClick={clearFilters}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors border border-rose-500/20">
+              <i className="las la-times"></i> Clear Filters
             </button>
-          ))}
+          )}
         </div>
 
-        {/* Clear */}
-        {hasActiveFilters && (
-          <button onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-colors border border-rose-500/20">
-            <i className="las la-times"></i> Clear
-          </button>
-        )}
+        {/* Bottom Row: Toggle Buttons */}
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Status */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Status:</span>
+            <div className="flex rounded-lg border border-default overflow-hidden text-xs font-bold">
+              {(["CLOSED", "OPEN"] as const).map(v => (
+                <button key={v} onClick={() => setStatusFilter(v)}
+                  className={`px-3 py-1.5 transition-colors ${statusFilter === v
+                    ? "bg-elevated text-primary"
+                    : "text-muted hover:text-secondary"} ${v === "OPEN" ? "border-l border-default" : ""}`}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* PnL */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">PnL:</span>
+            <div className="flex rounded-lg border border-default overflow-hidden text-xs font-bold">
+              {(["ALL", "WIN", "LOSS"] as const).map((v, i) => (
+                <button key={v} onClick={() => setPnlFilter(v)}
+                  className={`px-3 py-1.5 transition-colors ${pnlFilter === v
+                    ? v === "WIN" ? "bg-emerald-500/20 text-emerald-400"
+                    : v === "LOSS" ? "bg-rose-500/20 text-rose-400"
+                    : "bg-elevated text-primary"
+                    : "text-muted hover:text-secondary"} ${i > 0 ? "border-l border-default" : ""}`}>
+                  {v === "ALL" ? "All" : v === "WIN" ? "✓ Win" : "✗ Loss"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Segment (domestic only) */}
+          {isDomestic && segments.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Segment:</span>
+              <div className="flex rounded-lg border border-default overflow-hidden text-xs font-bold flex-wrap">
+                <button
+                  onClick={() => setSegmentFilter("ALL")}
+                  className={`px-3 py-1.5 transition-colors ${segmentFilter === "ALL" ? "bg-elevated text-primary" : "text-muted hover:text-secondary"}`}
+                >
+                  All
+                </button>
+                {segments.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setSegmentFilter(s)}
+                    className={`px-3 py-1.5 transition-colors border-l border-default ${segmentFilter === s ? "bg-elevated text-primary" : "text-muted hover:text-secondary"}`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Table */}
