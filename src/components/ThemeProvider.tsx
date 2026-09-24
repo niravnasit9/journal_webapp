@@ -30,10 +30,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    // 1. Apply from localStorage or system preference immediately (fast, no network)
+    // 1. Apply from localStorage immediately (fast, no network)
     let localTheme = localStorage.getItem("theme") as Theme | null;
     if (!localTheme) {
-      localTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+      localTheme = "light"; // Force default to light mode for all screens
     }
     setThemeState(localTheme);
     applyThemeToDOM(localTheme);

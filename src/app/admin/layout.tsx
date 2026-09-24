@@ -213,7 +213,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}} />
 
-        {/* Mobile Header Topbar */}
         <div className="md:hidden sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-subtle px-4 py-3 flex items-center justify-between">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
              <div className="w-8 h-8 rounded-lg bg-info flex items-center justify-center text-inverse">
@@ -223,12 +222,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 ADMIN<span className="text-info">PANEL</span>
               </h1>
           </Link>
-          <button 
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-elevated text-secondary hover:text-primary border border-default"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <i className="las la-bars text-xl"></i>
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle variant="icon" />
+            <button 
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-elevated text-secondary hover:text-primary border border-default"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <i className="las la-bars text-xl"></i>
+            </button>
+          </div>
         </div>
 
         {/* Dynamic Page Content */}

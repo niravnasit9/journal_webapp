@@ -51,36 +51,49 @@ export default function FeatureGrid() {
   ];
 
   return (
-    <section id="features" className="py-24 relative overflow-hidden bg-[#050608]">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+    <section id="features" className="py-24 relative overflow-hidden bg-slate-50 dark:bg-base transition-colors duration-300">
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-white/10 to-transparent"></div>
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-            Everything you need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">master the markets</span>.
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 text-slate-900 dark:text-white">
+            Everything you need to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">master the markets</span>.
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-slate-600 dark:text-slate-400 text-lg">
             Built by traders, for traders. ProfitPulse provides institutional-grade analytics wrapped in a beautiful, intuitive interface.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, i) => (
-            <div 
-              key={i} 
-              className="group bg-surface/50 hover:bg-surface backdrop-blur-sm border border-white/5 hover:border-white/10 p-8 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-1"
-            >
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${feature.bg} ${feature.border} border transition-transform group-hover:scale-110 group-hover:rotate-3`}>
-                <i className={`las ${feature.icon} text-3xl ${feature.color}`}></i>
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6 auto-rows-auto md:auto-rows-[220px]">
+          {features.map((feature, i) => {
+            // Create a Bento-style layout by making some cards span multiple columns/rows
+            const isLarge = i === 0 || i === 3;
+            const spanClass = isLarge 
+              ? "md:col-span-2 lg:col-span-3 row-span-2" 
+              : "md:col-span-2 lg:col-span-3 row-span-1";
+
+            return (
+              <div 
+                key={i} 
+                className={`group ${spanClass} bg-white dark:bg-surface/50 border border-slate-200 dark:border-white/10 p-8 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/5 dark:hover:shadow-[0_0_30px_rgba(30,58,138,0.2)] hover:-translate-y-1 flex flex-col justify-between overflow-hidden relative`}
+              >
+                {/* Subtle background gradient glow on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.bg} opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none`}></div>
+                
+                <div className="relative z-10">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${feature.bg} ${feature.border} border transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+                    <i className={`las ${feature.icon} text-2xl ${feature.color}`}></i>
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-colors">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

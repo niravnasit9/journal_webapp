@@ -370,17 +370,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}} />
 
-        {/* Mobile Top Header */}
         <div className="md:hidden h-16 border-b border-subtle bg-surface flex items-center justify-between px-4 sticky top-0 z-30 shadow-sm">
           <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
             <Logo />
           </Link>
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="text-secondary p-2 -mr-2 hover:text-primary"
-          >
-            <i className="las la-bars text-2xl"></i>
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle variant="icon" />
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="text-secondary p-2 -mr-2 hover:text-primary"
+            >
+              <i className="las la-bars text-2xl"></i>
+            </button>
+          </div>
         </div>
 
         {/* Upgrade Banner - Only show if free */}
