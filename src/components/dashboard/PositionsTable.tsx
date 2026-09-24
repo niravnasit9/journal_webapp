@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useUiStore } from "@/store/useUiStore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { format } from "date-fns";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
 
 interface PositionsTableProps {
   positions: TradeDoc[];
@@ -14,6 +15,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
   const isDomestic = activeWorkspace === "DOMESTIC";
 
   // ── Filter state ──────────────────────────────────────────────────────────
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [symbolSearch, setSymbolSearch] = useState("");
@@ -114,18 +116,16 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
           />
         </div>
 
-        {/* Date From */}
-        <div className="flex items-center gap-1.5">
-          <label className="text-[10px] text-muted font-bold uppercase tracking-wider whitespace-nowrap">From</label>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-            className="input-premium py-1.5 text-xs w-36" />
-        </div>
-
-        {/* Date To */}
-        <div className="flex items-center gap-1.5">
-          <label className="text-[10px] text-muted font-bold uppercase tracking-wider whitespace-nowrap">To</label>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-            className="input-premium py-1.5 text-xs w-36" />
+        {/* Date Range Picker */}
+        <div className="z-50">
+          <DateRangePicker 
+            value={datePreset}
+            onChange={(range: DateRange) => {
+              setDatePreset(range.preset);
+              setDateFrom(range.start ? format(range.start, "yyyy-MM-dd") : "");
+              setDateTo(range.end ? format(range.end, "yyyy-MM-dd") : "");
+            }}
+          />
         </div>
 
         {/* Segment (domestic only) */}

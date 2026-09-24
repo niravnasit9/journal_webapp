@@ -108,7 +108,7 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
         let sebiCharges = t.sebiTax || 0;
         let stampCharges = t.stampDuty || 0;
 
-        if (bCharges === 0 && sttCharges === 0 && gstCharges === 0) {
+        if ((bCharges + sttCharges + gstCharges) < 5) {
           const turnover = t.unitQty * t.price;
           bCharges = 20;
           if (segment === "COMMODITY" || segment === "FNO_OPTIONS") {

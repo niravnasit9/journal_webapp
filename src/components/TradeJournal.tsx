@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { TradeDetailDrawer } from "@/components/TradeDetailDrawer";
+import { format } from "date-fns";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
+import DatePicker from "./ui/DatePicker";
 
 interface TradeJournalProps {
   trades: TradeDoc[];
@@ -18,6 +21,7 @@ interface TradeJournalProps {
 }
 
 export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, currency = "USD" }: TradeJournalProps) {
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [search, setSearch] = useState("");
@@ -238,24 +242,15 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
               />
             </div>
             
-            <div className="flex items-center gap-2 w-auto">
-              <div className="w-36">
-                <Input 
-                  type="date" 
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  leftIcon={<i className="las la-calendar text-lg"></i>}
-                />
-              </div>
-              <span className="text-muted text-sm font-medium">to</span>
-              <div className="w-36">
-                <Input 
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  leftIcon={<i className="las la-calendar text-lg"></i>}
-                />
-              </div>
+            <div className="z-50">
+              <DateRangePicker 
+                value={datePreset}
+                onChange={(range: DateRange) => {
+                  setDatePreset(range.preset);
+                  setStartDate(range.start ? format(range.start, "yyyy-MM-dd") : "");
+                  setEndDate(range.end ? format(range.end, "yyyy-MM-dd") : "");
+                }}
+              />
             </div>
           </div>
         </div>
@@ -365,18 +360,14 @@ export default function TradeJournal({ trades, onDeleteTrade, onEditTrade, curre
                 <div>
                   <label className="block text-xs font-bold text-secondary uppercase tracking-widest mb-2">Date Range</label>
                   <div className="flex flex-col gap-3 w-full">
-                    <Input 
-                      type="date" 
+                    <DatePicker 
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      leftIcon={<i className="las la-calendar text-lg"></i>}
+                      onChange={setStartDate}
                     />
                     <div className="text-center text-muted font-medium text-sm">to</div>
-                    <Input 
-                      type="date"
+                    <DatePicker 
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      leftIcon={<i className="las la-calendar text-lg"></i>}
+                      onChange={setEndDate}
                     />
                   </div>
                 </div>

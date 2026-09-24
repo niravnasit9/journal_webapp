@@ -6,6 +6,8 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { clearTradesByDateAction, clearAllTradesAction } from "@/app/actions/tradeActions";
 import { TradeDoc } from "@/lib/firebase/schema";
 import Portal from "@/components/ui/Portal";
+import { format } from "date-fns";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
 
 interface DeleteTradesModalProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ type FilterMode = "date" | "range" | "all";
 export default function DeleteTradesModal({ isOpen, onClose, accountId, trades, onSuccess }: DeleteTradesModalProps) {
   const [mode, setMode] = useState<FilterMode>("date");
   const [selectedDate, setSelectedDate] = useState("");
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('custom');
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -162,15 +165,18 @@ export default function DeleteTradesModal({ isOpen, onClose, accountId, trades, 
             )}
 
             {mode === "range" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="label-premium block mb-2">From Date</label>
-                  <input type="date" className="input-premium w-full" value={fromDate} onChange={e => { setFromDate(e.target.value); setConfirmed(false); }} />
-                </div>
-                <div>
-                  <label className="label-premium block mb-2">To Date</label>
-                  <input type="date" className="input-premium w-full" value={toDate} onChange={e => { setToDate(e.target.value); setConfirmed(false); }} />
-                </div>
+              <div className="z-50">
+                <label className="label-premium block mb-2">Select Range</label>
+                <DateRangePicker 
+                  value={datePreset} 
+                  onChange={(range: DateRange) => {
+                    setDatePreset(range.preset);
+                    setFromDate(range.start ? format(range.start, "yyyy-MM-dd") : "");
+                    setToDate(range.end ? format(range.end, "yyyy-MM-dd") : "");
+                    setConfirmed(false);
+                  }} 
+                  className="w-full"
+                />
               </div>
             )}
 

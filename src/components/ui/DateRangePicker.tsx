@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { startOfDay, startOfWeek, startOfMonth, startOfYear, subDays, subMonths, format, parseISO } from "date-fns";
 import { Button } from './Button';
+import DatePicker from './DatePicker';
 import { getStartOfDay } from '@/lib/dateUtils';
 
-export type DateRangePreset = 'all' | 'today' | '7days' | '30days' | 'thisMonth';
+export type DateRangePreset = 'all' | 'today' | '7days' | '30days' | 'thisMonth' | 'custom';
 
 export interface DateRange {
   preset: DateRangePreset;
@@ -18,6 +20,8 @@ interface DateRangePickerProps {
 
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChange, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   const presets: { id: DateRangePreset; label: string }[] = [
     { id: 'all', label: 'All Time' },
@@ -25,6 +29,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChang
     { id: '7days', label: 'Last 7 Days' },
     { id: '30days', label: 'Last 30 Days' },
     { id: 'thisMonth', label: 'This Month' },
+    { id: 'custom', label: 'Custom Range' },
   ];
 
   const handleSelect = (presetId: DateRangePreset) => {
@@ -47,6 +52,17 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChang
       case 'thisMonth':
         start = new Date(today.getFullYear(), today.getMonth(), 1);
         break;
+      case 'custom':
+        if (customStart) {
+          start = new Date(customStart);
+          start.setHours(0, 0, 0, 0);
+        }
+        if (customEnd) {
+          end = new Date(customEnd);
+          end.setHours(23, 59, 59, 999);
+        }
+        onChange({ preset: presetId, start, end });
+        return; // don't close, or let them click apply
       case 'all':
       default:
         start = null;
@@ -55,6 +71,21 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChang
     }
 
     onChange({ preset: presetId, start, end });
+    setIsOpen(false);
+  };
+
+  const handleApplyCustom = () => {
+    let start: Date | null = null;
+    let end: Date | null = null;
+    if (customStart) {
+      start = new Date(customStart);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (customEnd) {
+      end = new Date(customEnd);
+      end.setHours(23, 59, 59, 999);
+    }
+    onChange({ preset: 'custom', start, end });
     setIsOpen(false);
   };
 
@@ -76,20 +107,45 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ value, onChang
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute top-full mt-2 left-0 w-48 bg-surface/90 backdrop-blur-xl border border-default rounded-xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute top-full mt-2 left-0 w-64 bg-surface/90 backdrop-blur-xl border border-default rounded-xl shadow-2xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-200">
             {presets.map(preset => (
-              <button
-                key={preset.id}
-                onClick={() => handleSelect(preset.id)}
-                className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 min-h-[44px] flex items-center justify-between ${
-                  value === preset.id 
-                    ? 'bg-primary/10 text-primary font-bold pl-5' 
-                    : 'text-secondary hover:bg-elevated hover:text-primary hover:pl-5'
-                }`}
-              >
-                {preset.label}
-                {value === preset.id && <i className="las la-check text-primary"></i>}
-              </button>
+              <div key={preset.id}>
+                <button
+                  onClick={() => handleSelect(preset.id)}
+                  className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 min-h-[44px] flex items-center justify-between ${
+                    value === preset.id && preset.id !== 'custom'
+                      ? 'bg-primary/10 text-primary font-bold pl-5' 
+                      : 'text-secondary hover:bg-elevated hover:text-primary hover:pl-5'
+                  }`}
+                >
+                  {preset.label}
+                  {value === preset.id && preset.id !== 'custom' && <i className="las la-check text-primary"></i>}
+                </button>
+                
+                {preset.id === 'custom' && value === 'custom' && (
+                  <div className="px-4 pb-4 pt-2 border-t border-default/50 mt-1 space-y-3 bg-elevated/30">
+                    <div>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1 block">Start Date</label>
+                      <DatePicker 
+                        value={customStart}
+                        onChange={setCustomStart}
+                        placeholder="Select start date"
+                        className="text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1 block">End Date</label>
+                      <DatePicker 
+                        value={customEnd}
+                        onChange={setCustomEnd}
+                        placeholder="Select end date"
+                        className="text-xs"
+                      />
+                    </div>
+                    <Button onClick={handleApplyCustom} size="sm" className="w-full justify-center">Apply</Button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </>

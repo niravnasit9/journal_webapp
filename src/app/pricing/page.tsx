@@ -9,6 +9,7 @@ import { getPricingPlanList } from "@/lib/pricingConfig";
 import { db } from "@/lib/firebase/config";
 import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { AutoDiscount, CouponCode } from "@/lib/firebase/schema";
+import Logo from "@/components/ui/Logo";
 
 const allPlans = getPricingPlanList();
 // Render all 4 plans (Free, Starter, Pro, Elite)
@@ -114,12 +115,7 @@ export default function PricingPage() {
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-default">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-              <i className="las la-chart-bar text-xl text-[#0a0a0a]"></i>
-            </div>
-            <span className="text-lg font-bold tracking-tight">
-              ProfitPulse
-            </span>
+            <Logo />
           </Link>
           <div className="flex items-center gap-4">
             {user ? (

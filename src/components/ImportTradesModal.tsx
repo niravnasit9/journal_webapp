@@ -7,6 +7,9 @@ import * as xlsx from 'xlsx';
 import { syncCsvTradesAction } from "../app/actions/csvActions";
 import { syncDhanApiAction } from "@/app/actions/importActions";
 import Portal from "@/components/ui/Portal";
+import { DateRangePicker, DateRangePreset, DateRange } from "@/components/ui/DateRangePicker";
+import DatePicker from "@/components/ui/DatePicker";
+import { format } from "date-fns";
 
 interface ImportTradesModalProps {
   isOpen: boolean;
@@ -24,7 +27,8 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
   const [accessToken, setAccessToken] = useState("");
   
   // Date Range State
-  const [dateRangeType, setDateRangeType] = useState<"today" | "custom">("today");
+  const [dateRangeType, setDateRangeType] = useState<"today" | "single" | "custom">("today");
+  const [datePreset, setDatePreset] = useState<DateRangePreset>("custom");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
@@ -34,9 +38,20 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
       toast.error("Please provide both Client ID and Access Token.");
       return;
     }
-    if (dateRangeType === "custom" && (!fromDate || !toDate)) {
-      toast.error("Please provide both From and To dates.");
+    if (dateRangeType !== "today" && !fromDate) {
+      toast.error("Please select a date.");
       return;
+    }
+    if (dateRangeType === "custom" && !toDate) {
+      toast.error("Please select an end date.");
+      return;
+    }
+
+    let finalFrom = fromDate;
+    let finalTo = toDate;
+    
+    if (dateRangeType === "single") {
+        finalTo = fromDate;
     }
 
     try {
@@ -45,8 +60,8 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
         clientId, 
         accessToken, 
         accountId, 
-        dateRangeType === "custom" ? fromDate : undefined, 
-        dateRangeType === "custom" ? toDate : undefined
+        dateRangeType !== "today" ? finalFrom : undefined, 
+        dateRangeType !== "today" ? finalTo : undefined
       );
       if (res.success) {
         toast.success(`Successfully imported ${res.count} trades!`);
@@ -249,52 +264,62 @@ export default function ImportTradesModal({ isOpen, onClose, accountId, onSucces
             </div>
 
             <div className="pt-2">
-              <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-3">Sync Date Range</label>
-              <div className="flex gap-4 mb-4">
-                <label className="flex items-center gap-2 text-sm text-secondary cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="dateRange" 
-                    checked={dateRangeType === "today"}
-                    onChange={() => setDateRangeType("today")}
-                    className="text-blue-500 bg-elevated border-default"
-                  />
-                  Today Only
-                </label>
-                <label className="flex items-center gap-2 text-sm text-secondary cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="dateRange" 
-                    checked={dateRangeType === "custom"}
-                    onChange={() => setDateRangeType("custom")}
-                    className="text-blue-500 bg-elevated border-default"
-                  />
-                  Historical Dates
-                </label>
+              <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-3">Sync Date</label>
+              
+              {/* Sleek Toggle Buttons */}
+              <div className="flex bg-elevated/50 p-1 rounded-xl border border-default mb-5">
+                <button
+                  type="button"
+                  onClick={() => setDateRangeType("today")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
+                    dateRangeType === "today" ? "bg-primary/10 text-primary shadow-sm" : "text-muted hover:text-secondary"
+                  }`}
+                >
+                  <i className="las la-clock text-lg"></i> Today
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateRangeType("single")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
+                    dateRangeType === "single" ? "bg-primary/10 text-primary shadow-sm" : "text-muted hover:text-secondary"
+                  }`}
+                >
+                  <i className="las la-calendar-day text-lg"></i> Single Date
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateRangeType("custom")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
+                    dateRangeType === "custom" ? "bg-primary/10 text-primary shadow-sm" : "text-muted hover:text-secondary"
+                  }`}
+                >
+                  <i className="las la-calendar-week text-lg"></i> Date Range
+                </button>
               </div>
 
+              {dateRangeType === "single" && (
+                <div className="relative group mb-5">
+                  <label className="label-premium block mb-2">Select Date</label>
+                  <DatePicker 
+                    value={fromDate}
+                    onChange={setFromDate}
+                    maxDate={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+              )}
+
               {dateRangeType === "custom" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="label-premium block mb-2">From Date</label>
-                    <input 
-                      type="date"
-                      className="input-premium w-full"
-                      value={fromDate}
-                      onChange={e => setFromDate(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label-premium block mb-2">To Date</label>
-                    <input 
-                      type="date"
-                      className="input-premium w-full"
-                      value={toDate}
-                      onChange={e => setToDate(e.target.value)}
-                      required
-                    />
-                  </div>
+                <div className="mb-5 z-50">
+                  <label className="label-premium block mb-2">Select Range</label>
+                  <DateRangePicker 
+                    value={datePreset}
+                    onChange={(range: DateRange) => {
+                      setDatePreset(range.preset);
+                      setFromDate(range.start ? format(range.start, "yyyy-MM-dd") : "");
+                      setToDate(range.end ? format(range.end, "yyyy-MM-dd") : "");
+                    }}
+                    className="w-full"
+                  />
                 </div>
               )}
             </div>

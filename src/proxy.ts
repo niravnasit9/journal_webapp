@@ -7,7 +7,12 @@ export function proxy(request: NextRequest) {
   // Get the role cookie set during login
   const role = request.cookies.get('userRole')?.value;
   
-  // Public routes - allow access
+  // Landing page - completely open
+  if (pathname === '/' || pathname === '/pricing') {
+    return NextResponse.next();
+  }
+
+  // Auth routes - redirect if already logged in
   if (pathname === '/login' || pathname === '/register') {
     if (role === 'admin') {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));

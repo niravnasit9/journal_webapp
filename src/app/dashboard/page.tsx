@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { PlanStatusCard } from "@/components/subscription/PlanStatusCard";
 import MarketSwitcher from "@/components/layout/MarketSwitcher";
+import TradeInsightsEngine from "@/components/dashboard/TradeInsightsEngine";
 import dynamic from 'next/dynamic';
 
 // Lazy loading heavy components (if any are extracted in the future, e.g., Charts)
@@ -22,19 +23,19 @@ import dynamic from 'next/dynamic';
 export default function UserDashboardCommandCenter() {
   const { user, role } = useAuth();
   const { isDemoMode } = useDemo();
-  
+
   // 1. Consume Account Logic Layer
   const { accounts, loading: accLoading } = useAccountData(user?.uid, isDemoMode, role);
-  
+
   // Get active workspace for filtering
   const { activeWorkspace } = useUiStore();
   const isDomestic = activeWorkspace === "DOMESTIC";
   const currencySymbol = isDomestic ? "₹" : "$";
-  
+
   // Filter accounts by active workspace
   const activeAccounts = useMemo(() => {
-    return accounts.filter((a: AccountDoc) => 
-      (isDomestic && a.market_type === "DOMESTIC") || 
+    return accounts.filter((a: AccountDoc) =>
+      (isDomestic && a.market_type === "DOMESTIC") ||
       (!isDomestic && a.market_type !== "DOMESTIC")
     );
   }, [accounts, isDomestic]);
@@ -56,7 +57,7 @@ export default function UserDashboardCommandCenter() {
     let totalPnL = 0;
     let winningTrades = 0;
     let todaysPnL = 0;
-    
+
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
@@ -64,7 +65,7 @@ export default function UserDashboardCommandCenter() {
       const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
       totalPnL += net;
       if (net > 0) winningTrades++;
-      
+
       if (new Date(t.close_time).getTime() >= todayStart.getTime()) {
         todaysPnL += net;
       }
@@ -81,9 +82,9 @@ export default function UserDashboardCommandCenter() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-sans animate-in fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans animate-in fade-in w-full overflow-x-hidden">
       <PlanStatusCard />
-      
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
         <div>
           <h1 className="text-2xl font-bold text-primary tracking-tight flex items-center gap-3">
@@ -107,7 +108,9 @@ export default function UserDashboardCommandCenter() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <TradeInsightsEngine trades={recentTrades} isDomestic={isDomestic} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-primary transition-colors">
@@ -115,7 +118,7 @@ export default function UserDashboardCommandCenter() {
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
           </div>
-          <p className="text-3xl font-extrabold text-primary tracking-tight">
+          <p className="text-3xl font-extrabold text-primary tracking-tight truncate" title={`${currencySymbol}${metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
             {currencySymbol}{metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">Across {activeAccounts.length} active {isDomestic ? 'Domestic' : 'Global'} accounts</div>
@@ -128,7 +131,7 @@ export default function UserDashboardCommandCenter() {
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight ${metrics.totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+          <p className={`text-3xl font-extrabold tracking-tight truncate ${metrics.totalPnL >= 0 ? 'text-success' : 'text-danger'}`} title={`${metrics.totalPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
             {metrics.totalPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">All-time profit/loss</div>
@@ -141,7 +144,7 @@ export default function UserDashboardCommandCenter() {
             </div>
             <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Today's P/L</h3>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight ${metrics.todaysPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+          <p className={`text-3xl font-extrabold tracking-tight truncate ${metrics.todaysPnL >= 0 ? 'text-success' : 'text-danger'}`} title={`${metrics.todaysPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
             {metrics.todaysPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <div className="text-xs font-medium text-secondary mt-2">Reset at midnight</div>
@@ -161,9 +164,9 @@ export default function UserDashboardCommandCenter() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
         {/* Recent Trades Table */}
-        <Card className="lg:col-span-2 overflow-hidden border-default shadow-sm">
+        <Card className="lg:col-span-2 overflow-hidden border-default shadow-sm min-w-0">
           <CardHeader className="bg-elevated/50 border-b border-subtle py-4 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
               <i className="las la-history text-lg"></i>
@@ -214,7 +217,7 @@ export default function UserDashboardCommandCenter() {
         </Card>
 
         {/* Quick Links & Tips */}
-        <Card className="lg:col-span-1 border-default shadow-sm">
+        <Card className="lg:col-span-1 border-default shadow-sm min-w-0">
           <CardHeader className="bg-elevated/50 border-b border-subtle py-4">
             <CardTitle className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
               <i className="las la-bolt text-lg"></i>
@@ -229,7 +232,7 @@ export default function UserDashboardCommandCenter() {
               </div>
               <i className="las la-angle-right text-secondary"></i>
             </Link>
-            
+
             <Link href="/dashboard/goals" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-success hover:bg-success/5 transition-all">
               <div className="flex items-center gap-3">
                 <i className="las la-bullseye text-xl text-success group-hover:scale-110 transition-transform"></i>

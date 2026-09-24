@@ -188,8 +188,8 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
         let sebiCharges = t.sebiTax || 0;
         let stampCharges = t.stampDuty || 0;
 
-        // Fallback for today's trades where Dhan API returns 0
-        if (bCharges === 0 && sttCharges === 0 && gstCharges === 0) {
+        // Fallback for today's trades where Dhan API returns 0 or incomplete data
+        if ((bCharges + sttCharges + gstCharges) < 5) {
           const turnover = t.unitQty * t.price;
           // Brokerage is typically 20 per executed order leg
           bCharges = 20;

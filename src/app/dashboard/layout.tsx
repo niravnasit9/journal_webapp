@@ -8,6 +8,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { GlobalSettings } from "@/lib/firebase/schema";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
+import Logo from "@/components/ui/Logo";
 import { useRouter, usePathname } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
@@ -220,14 +221,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 overflow-y-auto no-scrollbar pb-6 flex flex-col">
           
           <div className="pt-8 pb-8 px-6 flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
-              <i className={`las la-shield-alt text-3xl transition-colors duration-300 ${theme.icon}`}></i>
-              <div className="flex flex-col leading-tight">
-                <span className="text-primary font-bold tracking-widest text-lg transition-colors duration-300">PROFITPULSE</span>
-                <UpgradeCelebration tier={tier}>
-                  <span className={`${theme.textHighlight} text-[10px] uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"} PLAN</span>
-                </UpgradeCelebration>
-              </div>
+            <Link href="/dashboard" className="flex flex-col gap-1" onClick={() => setIsMobileMenuOpen(false)}>
+              <Logo />
+              <UpgradeCelebration tier={tier}>
+                <span className={`${theme.textHighlight} text-[10px] uppercase tracking-wider transition-colors duration-300`}>{tier ? tier.toUpperCase() : "FREE"} PLAN</span>
+              </UpgradeCelebration>
             </Link>
             <button className="md:hidden text-secondary hover:text-primary" onClick={() => setIsMobileMenuOpen(false)}>
               <i className="las la-times text-2xl"></i>
@@ -374,9 +372,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Mobile Top Header */}
         <div className="md:hidden h-16 border-b border-subtle bg-surface flex items-center justify-between px-4 sticky top-0 z-30 shadow-sm">
-          <Link href="/dashboard" className="flex items-center gap-2 text-primary font-bold tracking-tight">
-             <i className="las la-shield-alt text-2xl text-primary"></i>
-            <span>ProfitPulse</span>
+          <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+            <Logo />
           </Link>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
