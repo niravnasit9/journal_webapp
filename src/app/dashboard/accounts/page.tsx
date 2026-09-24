@@ -172,13 +172,15 @@ export default function UserAccountsPage() {
                 </div>
   
                 <div className="space-y-3 mb-6 flex-1">
-                  <div className="flex items-center gap-2.5">
-                    <i className={`las la-trophy text-lg ${theme.icon}`}></i>
-                    <span className="text-secondary text-sm font-medium">
-                      {account.account_type === 'funded' ? 'Funded Account: ' : 'Phase 1 Challenge: '}
-                      <span className="text-primary font-semibold">{account.account_type === 'funded' ? 'Instant Hero' : 'Pay Later Challenge'}</span>
-                    </span>
-                  </div>
+                  {!isDomestic && (
+                    <div className="flex items-center gap-2.5">
+                      <i className={`las la-trophy text-lg ${theme.icon}`}></i>
+                      <span className="text-secondary text-sm font-medium">
+                        {account.account_type === 'funded' ? 'Funded Account: ' : 'Phase 1 Challenge: '}
+                        <span className="text-primary font-semibold">{account.account_type === 'funded' ? 'Instant Hero' : 'Pay Later Challenge'}</span>
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2.5">
                     <i className={`las la-calendar text-lg ${theme.icon}`}></i>
                     <span className="text-secondary text-sm font-medium">
@@ -205,7 +207,9 @@ export default function UserAccountsPage() {
                   <div className="col-span-2 lg:col-span-1">
                     <p className="text-xs text-secondary font-medium mb-1">Type</p>
                     <p className="text-sm font-bold text-primary tracking-tight mt-1">
-                      {account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", "")}
+                      {isDomestic 
+                        ? (account.broker || "Personal Brokerage")
+                        : (account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", ""))}
                     </p>
                   </div>
                 </div>

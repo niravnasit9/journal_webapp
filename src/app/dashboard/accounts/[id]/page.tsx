@@ -27,7 +27,7 @@ import TimeBasedMetrics from "@/components/dashboard/TimeBasedMetrics";
 import TradingCalendar from "@/components/dashboard/TradingCalendar";
 import { useUiStore } from "@/store/useUiStore";
 
-type TabType = "Account Overview" | "Trading Overview" | "Daily Positions" | "Trading History" | "Psychology" | "Calendar";
+type TabType = "Account Overview" | "Trading Overview" | "Daily Positions" | "Trading History" | "Calendar";
 
 export default function AccountDetailView() {
   const { id } = useParams();
@@ -148,8 +148,6 @@ export default function AccountDetailView() {
         return <PositionsTable positions={trades} />;
       case "Trading History":
         return <TradingHistory executions={rawExecutions} onEditTrade={(t) => { setSelectedEditTrade(t); setIsEditModalOpen(true); }} onDeleteTrade={handleDeleteTrade} />;
-      case "Psychology":
-        return <TradingPsychology trades={trades} />;
       case "Calendar":
         return (
           <div className="space-y-6">
@@ -203,7 +201,7 @@ export default function AccountDetailView() {
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap md:flex-nowrap md:overflow-x-auto md:no-scrollbar border-b border-default gap-x-2 md:gap-x-0">
-        {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Psychology", "Calendar"] as TabType[]).map((tab) => (
+        {(["Account Overview", "Trading Overview", "Daily Positions", "Trading History", "Calendar"] as TabType[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

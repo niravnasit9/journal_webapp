@@ -245,8 +245,10 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
       };
 
       const openTime = normalizedExecutions[0].time;
+      const closeTime = normalizedExecutions[normalizedExecutions.length - 1].time;
       const tradeDate = openTime.includes("T") ? openTime.split("T")[0] : openTime.split(" ")[0];
       const isoOpenTime = formatToISO(openTime);
+      const isoCloseTime = formatToISO(closeTime);
 
       const positionsRef = collection(db, "trades");
       const posQuery = query(
@@ -268,7 +270,7 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
           option_type: optType,
           strike_price: strPrice,
           open_time: isoOpenTime, // TradeDoc requirement
-          close_time: isoOpenTime, // TradeDoc requirement
+          close_time: isoCloseTime, // TradeDoc requirement
           open_price: avgBuy > 0 ? avgBuy : avgSell,
           close_price: avgSell,
           lots: displayLots,

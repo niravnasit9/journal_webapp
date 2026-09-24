@@ -111,57 +111,53 @@ export default function UserDashboardCommandCenter() {
       <TradeInsightsEngine trades={recentTrades} isDomestic={isDomestic} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card className="p-6 border-default shadow-sm hover:border-info transition-colors group">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-info-bg border border-info/20 rounded-xl flex items-center justify-center text-info group-hover:bg-info group-hover:text-primary transition-colors">
-              <i className="las la-dollar-sign text-xl"></i>
-            </div>
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
+        {/* Balance Card */}
+        <div className="premium-card p-6 border-t-2 border-t-blue-500 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative z-10">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
+            <p className="text-3xl font-black text-white mt-2 drop-shadow-md truncate" title={`${currencySymbol}${metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+              {currencySymbol}{metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">Across {activeAccounts.length} active accounts</div>
           </div>
-          <p className="text-3xl font-extrabold text-primary tracking-tight truncate" title={`${currencySymbol}${metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
-            {currencySymbol}{metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <div className="text-xs font-medium text-secondary mt-2">Across {activeAccounts.length} active {isDomestic ? 'Domestic' : 'Global'} accounts</div>
-        </Card>
+        </div>
 
-        <Card className="p-6 border-default shadow-sm hover:border-success transition-colors group">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-success-bg border border-success/20 rounded-xl flex items-center justify-center text-success group-hover:bg-success group-hover:text-primary transition-colors">
-              <i className="las la-chart-line text-xl"></i>
-            </div>
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Net P/L</h3>
+        {/* Net P/L Card */}
+        <div className={`premium-card p-6 border-t-2 relative overflow-hidden group ${metrics.totalPnL >= 0 ? 'border-t-emerald-500' : 'border-t-rose-500'}`}>
+          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${metrics.totalPnL >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent'}`}></div>
+          <div className="relative z-10">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Net P/L</h3>
+            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.totalPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`${metrics.totalPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+              {metrics.totalPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">All-time profit/loss</div>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight truncate ${metrics.totalPnL >= 0 ? 'text-success' : 'text-danger'}`} title={`${metrics.totalPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
-            {metrics.totalPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <div className="text-xs font-medium text-secondary mt-2">All-time profit/loss</div>
-        </Card>
+        </div>
 
-        <Card className="p-6 border-default shadow-sm hover:border-primary transition-colors group">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-elevated border border-default rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-inverse transition-colors">
-              <i className="las la-sun text-xl"></i>
-            </div>
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Today's P/L</h3>
+        {/* Today's P/L Card */}
+        <div className={`premium-card p-6 border-t-2 relative overflow-hidden group ${metrics.todaysPnL >= 0 ? 'border-t-emerald-500' : 'border-t-rose-500'}`}>
+          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${metrics.todaysPnL >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent'}`}></div>
+          <div className="relative z-10">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Today's P/L</h3>
+            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.todaysPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`${metrics.todaysPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+              {metrics.todaysPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">Reset at midnight</div>
           </div>
-          <p className={`text-3xl font-extrabold tracking-tight truncate ${metrics.todaysPnL >= 0 ? 'text-success' : 'text-danger'}`} title={`${metrics.todaysPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
-            {metrics.todaysPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <div className="text-xs font-medium text-secondary mt-2">Reset at midnight</div>
-        </Card>
+        </div>
 
-        <Card className="p-6 border-default shadow-sm hover:border-warning transition-colors group">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-warning/10 border border-warning/20 rounded-xl flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-primary transition-colors">
-              <i className="las la-bullseye text-xl"></i>
-            </div>
-            <h3 className="text-xs font-bold text-secondary uppercase tracking-widest">Win Rate</h3>
+        {/* Win Rate Card */}
+        <div className="premium-card p-6 border-t-2 border-t-purple-500 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative z-10">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Win Rate</h3>
+            <p className="text-3xl font-black text-purple-400 mt-2 drop-shadow-md">
+              {metrics.winRate.toFixed(1)}%
+            </p>
+            <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">From {metrics.totalTradesCount} total trades</div>
           </div>
-          <p className="text-3xl font-extrabold text-primary tracking-tight">
-            {metrics.winRate.toFixed(1)}%
-          </p>
-          <div className="text-xs font-medium text-secondary mt-2">From {metrics.totalTradesCount} total trades</div>
-        </Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">

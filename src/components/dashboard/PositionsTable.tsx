@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useUiStore } from "@/store/useUiStore";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { format } from "date-fns";
@@ -62,6 +62,26 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
       return true;
     });
   }, [positions, dateFrom, dateTo, symbolSearch, segmentFilter, statusFilter, pnlFilter]);
+
+  // Group by date (descending)
+  const groupedByDate = useMemo(() => {
+    const groups: Record<string, TradeDoc[]> = {};
+    filtered.forEach(p => {
+      const date = (p as any).trade_date || (p.close_time || "").split("T")[0];
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(p);
+    });
+    return Object.keys(groups)
+      .sort((a, b) => b.localeCompare(a)) // descending
+      .map(date => {
+        const dayTrades = groups[date];
+        const dailyGross = dayTrades.reduce((s, p) => s + ((p as any).gross_pnl ?? p.profit_loss ?? 0), 0);
+        const dailyNet = dayTrades.reduce((s, p) => s + ((p as any).net_pnl ?? p.profit_loss ?? 0), 0);
+        const dailyTaxes = dayTrades.reduce((s, p) => s + ((p as any).total_taxes ?? 0), 0);
+        const dailyWins = dayTrades.filter(p => ((p as any).net_pnl ?? p.profit_loss ?? 0) > 0).length;
+        return { date, dayTrades, dailyGross, dailyNet, dailyTaxes, dailyWins };
+      });
+  }, [filtered]);
 
   // ── Summary row ───────────────────────────────────────────────────────────
   const totalGross = filtered.reduce((s, p) => s + ((p as any).gross_pnl ?? 0), 0);
@@ -197,70 +217,98 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-default">
-            {filtered.map(t => (
-              <tr key={t.id} className="hover:bg-elevated/50 transition-colors group">
-                <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.open_time || (t as any).trade_date || "")}</td>
-                <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time || (t as any).trade_date || "")}</td>
-                {isDomestic ? (
-                  <>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-primary">
-                          {(t as any).domestic_segment === "FNO_OPTIONS"
-                            ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
-                            : (t.symbol || "Unknown Asset")}
+            {groupedByDate.map(group => (
+              <React.Fragment key={group.date}>
+                {/* Date Group Header */}
+                <tr className="bg-surface border-b border-default border-t border-t-white/10">
+                  <td colSpan={isDomestic ? 8 : 4} className="px-6 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
+                          {format(new Date(group.date), "EEE, dd MMM yyyy")}
                         </span>
-                        {(t as any).domestic_segment && (
-                          <span className="text-[10px] text-muted">{(t as any).domestic_segment}</span>
-                        )}
+                        <span className="text-xs font-bold text-muted uppercase">
+                          {group.dayTrades.length} Trades • {group.dailyWins} Wins
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-right font-mono text-xs text-emerald-400">{formatCurrency(t.open_price || 0)}</td>
-                    <td className="px-6 py-4 text-right font-mono text-xs text-rose-400">{formatCurrency(t.close_price || 0)}</td>
-                    <td className="px-6 py-4 text-secondary font-mono">
-                      {(t as any).lots && (t as any).lots !== (t as any).units ? (
-                        <div className="flex flex-col">
-                          <span className="font-bold text-primary">{(t as any).lots} Lots</span>
-                          <span className="text-[10px] text-muted">{(t as any).units} Units</span>
-                        </div>
-                      ) : (
-                        <span className="font-bold text-primary">{(t as any).units || 0} Units</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        (t as any).status === "CLOSED"
-                          ? "bg-emerald-500/15 text-emerald-400"
-                          : "bg-amber-500/15 text-amber-400"
-                      }`}>
-                        {(t as any).status || "—"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-mono text-xs">
-                      <span className={((t as any).gross_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
-                        {formatCurrency((t as any).gross_pnl || 0)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency((t as any).total_taxes || 0)}</td>
-                    <td className="px-6 py-4 text-right font-bold font-mono">
-                      <span className={((t as any).net_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
-                        {formatCurrency((t as any).net_pnl || 0)}
-                      </span>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
-                    <td className="px-6 py-4 text-secondary font-mono">{(t as any).lots || 0}</td>
-                    <td className="px-6 py-4 text-secondary font-mono">0</td>
-                    <td className="px-6 py-4 text-right font-bold font-mono">
-                      <span className={(t.profit_loss || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
-                        {formatCurrency(t.profit_loss || 0)}
-                      </span>
-                    </td>
-                  </>
-                )}
-              </tr>
+                      <div className="flex items-center gap-3 text-xs font-mono font-bold">
+                        <span className="text-muted">Gross: <span className={group.dailyGross >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{formatCurrency(group.dailyGross)}</span></span>
+                        {isDomestic && <span className="text-rose-400">Tax: {formatCurrency(group.dailyTaxes)}</span>}
+                        <span className="text-white px-3 py-1 rounded bg-elevated border border-default shadow-sm">
+                          Net: <span className={group.dailyNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{formatCurrency(group.dailyNet)}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                {/* Date Group Trades */}
+                {group.dayTrades.map(t => (
+                  <tr key={t.id} className="hover:bg-elevated/50 transition-colors group">
+                    <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.open_time || (t as any).trade_date || "")}</td>
+                    <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time || (t as any).trade_date || "")}</td>
+                    {isDomestic ? (
+                      <>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-primary">
+                              {(t as any).domestic_segment === "FNO_OPTIONS"
+                                ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
+                                : (t.symbol || "Unknown Asset")}
+                            </span>
+                            {(t as any).domestic_segment && (
+                              <span className="text-[10px] text-muted">{(t as any).domestic_segment}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right font-mono text-xs text-emerald-400">{formatCurrency(t.open_price || 0)}</td>
+                        <td className="px-6 py-4 text-right font-mono text-xs text-rose-400">{formatCurrency(t.close_price || 0)}</td>
+                        <td className="px-6 py-4 text-secondary font-mono">
+                          {(t as any).lots && (t as any).lots !== (t as any).units ? (
+                            <div className="flex flex-col">
+                              <span className="font-bold text-primary">{(t as any).lots} Lots</span>
+                              <span className="text-[10px] text-muted">{(t as any).units} Units</span>
+                            </div>
+                          ) : (
+                            <span className="font-bold text-primary">{(t as any).units || 0} Units</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            (t as any).status === "CLOSED"
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : "bg-amber-500/15 text-amber-400"
+                          }`}>
+                            {(t as any).status || "—"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-mono text-xs">
+                          <span className={((t as any).gross_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                            {formatCurrency((t as any).gross_pnl || 0)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency((t as any).total_taxes || 0)}</td>
+                        <td className="px-6 py-4 text-right font-bold font-mono">
+                          <span className={((t as any).net_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                            {formatCurrency((t as any).net_pnl || 0)}
+                          </span>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
+                        <td className="px-6 py-4 text-secondary font-mono">{(t as any).lots || 0}</td>
+                        <td className="px-6 py-4 text-secondary font-mono">0</td>
+                        <td className="px-6 py-4 text-right font-bold font-mono">
+                          <span className={(t.profit_loss || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                            {formatCurrency(t.profit_loss || 0)}
+                          </span>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </React.Fragment>
             ))}
             {filtered.length === 0 && (
               <tr>

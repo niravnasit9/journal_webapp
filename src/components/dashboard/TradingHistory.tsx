@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useUiStore } from "@/store/useUiStore";
 import { RawExecutionDoc } from "@/lib/firebase/schema";
 import { format } from "date-fns";
@@ -60,6 +60,25 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
       return true;
     });
   }, [executions, dateFrom, dateTo, symbolSearch, directionFilter, segmentFilter]);
+
+  // Group by date (descending)
+  const groupedByDate = useMemo(() => {
+    const groups: Record<string, RawExecutionDoc[]> = {};
+    filtered.forEach(e => {
+      const date = (e.time || "").split("T")[0];
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(e);
+    });
+    return Object.keys(groups)
+      .sort((a, b) => b.localeCompare(a)) // descending
+      .map(date => {
+        const dayExecs = groups[date];
+        const dailyBuys = dayExecs.filter(e => e.direction === "BUY").length;
+        const dailySells = dayExecs.filter(e => e.direction === "SELL").length;
+        const dailyTaxes = dayExecs.reduce((s, e) => s + ((e.brokerage || 0) + (e.stt || 0) + (e.transaction_charges || 0) + (e.gst || 0) + (e.sebi || 0) + (e.stamp_duty || 0)), 0);
+        return { date, dayExecs, dailyBuys, dailySells, dailyTaxes };
+      });
+  }, [filtered]);
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const totalBuys = filtered.filter(e => e.direction === "BUY").length;
@@ -187,49 +206,75 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
             </tr>
           </thead>
           <tbody className="divide-y divide-default">
-            {filtered.map(t => {
-              const totalTax = (t.brokerage || 0) + (t.stt || 0) + (t.transaction_charges || 0) + (t.gst || 0) + (t.sebi || 0) + (t.stamp_duty || 0);
-              const turnover = (t.quantity || 0) * (t.price || 0);
-              return (
-                <tr key={t.id} className="hover:bg-elevated/50 transition-colors group">
-                  <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.time)}</td>
-                  {isDomestic ? (
-                    <>
-                      <td className="px-6 py-4 font-bold text-primary">
-                        {(t as any).domestic_segment === "FNO_OPTIONS"
-                          ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
-                          : (t.symbol || "Unknown Asset")}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-400"
-                          : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-400"
-                          : "bg-blue-500/15 text-blue-400"
-                        }`}>
-                          {(t as any).domestic_segment || "EQUITY"}
+            {groupedByDate.map(group => (
+              <React.Fragment key={group.date}>
+                {/* Date Group Header */}
+                <tr className="bg-surface border-b border-default border-t border-t-white/10">
+                  <td colSpan={isDomestic ? 8 : 4} className="px-6 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
+                          {format(new Date(group.date), "EEE, dd MMM yyyy")}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 font-bold">
-                        <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
-                      </td>
-                      <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
-                      <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
-                      <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(turnover)}</td>
-                      <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency(totalTax)}</td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
-                      <td className="px-6 py-4 font-bold">
-                        <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
-                      </td>
-                      <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
-                      <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
-                    </>
-                  )}
+                        <span className="text-xs font-bold text-muted uppercase">
+                          {group.dayExecs.length} Executions
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs font-mono font-bold">
+                        <span className="text-emerald-400">{group.dailyBuys} BUY</span>
+                        <span className="text-rose-400">{group.dailySells} SELL</span>
+                        {isDomestic && <span className="text-rose-400 ml-2">Tax: {formatCurrency(group.dailyTaxes)}</span>}
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-              );
-            })}
+
+                {/* Date Group Executions */}
+                {group.dayExecs.map(t => {
+                  const totalTax = (t.brokerage || 0) + (t.stt || 0) + (t.transaction_charges || 0) + (t.gst || 0) + (t.sebi || 0) + (t.stamp_duty || 0);
+                  const turnover = (t.quantity || 0) * (t.price || 0);
+                  return (
+                    <tr key={t.id} className="hover:bg-elevated/50 transition-colors group">
+                      <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.time)}</td>
+                      {isDomestic ? (
+                        <>
+                          <td className="px-6 py-4 font-bold text-primary">
+                            {(t as any).domestic_segment === "FNO_OPTIONS"
+                              ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
+                              : (t.symbol || "Unknown Asset")}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-400"
+                              : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-400"
+                              : "bg-blue-500/15 text-blue-400"
+                            }`}>
+                              {(t as any).domestic_segment || "EQUITY"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 font-bold">
+                            <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
+                          </td>
+                          <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(turnover)}</td>
+                          <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency(totalTax)}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
+                          <td className="px-6 py-4 font-bold">
+                            <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
+                          </td>
+                          <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
+              </React.Fragment>
+            ))}
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={10} className="px-6 py-12 text-center">
