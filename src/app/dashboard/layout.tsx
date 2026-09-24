@@ -170,7 +170,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       title: "ANALYTICS",
       items: [
         { name: "Analytics", href: "/dashboard/analytics", icon: "las la-chart-pie" },
-        { name: "Risk Center", href: "/dashboard/risk", icon: "las la-shield-alt" },
+
         { name: "Insights", href: "/dashboard/insights", icon: "las la-lightbulb" },
         { name: "Reports", href: "/dashboard/reports", icon: "las la-file-alt" },
       ]

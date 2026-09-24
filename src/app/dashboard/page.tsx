@@ -232,13 +232,7 @@ export default function UserDashboardCommandCenter() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
-            <Link href="/dashboard/risk" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-danger hover:bg-danger/5 transition-all hover:shadow-[0_4_12px_rgba(220,38,38,0.1)]">
-              <div className="flex items-center gap-3">
-                <i className="las la-shield-alt text-xl text-danger group-hover:scale-110 transition-transform duration-300"></i>
-                <div className="font-bold text-primary text-sm group-hover:text-danger transition-colors">Risk Center</div>
-              </div>
-              <i className="las la-angle-right text-secondary group-hover:translate-x-1 group-hover:text-danger transition-all duration-300"></i>
-            </Link>
+
             <Link href="/dashboard/goals" className="group flex items-center justify-between p-3 rounded-lg border border-subtle hover:border-success hover:bg-success/5 transition-all hover:shadow-[0_4_12px_rgba(22,163,74,0.1)]">
               <div className="flex items-center gap-3">
                 <i className="las la-bullseye text-xl text-success group-hover:scale-110 transition-transform duration-300"></i>
