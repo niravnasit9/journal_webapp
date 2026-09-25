@@ -226,25 +226,25 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>
             <tr className="bg-elevated text-muted text-[10px] font-bold uppercase tracking-widest border-b border-default">
-              <th className="px-6 py-4">Entry Time</th>
-              <th className="px-6 py-4">Exit Time</th>
+              <th className="px-6 py-4 hidden lg:table-cell">Entry Time</th>
+              <th className="px-6 py-4 hidden sm:table-cell">Exit Time</th>
               {isDomestic ? (
                 <>
                   <th className="px-6 py-4">Asset</th>
-                  <th className="px-6 py-4 text-right">Avg Buy</th>
-                  <th className="px-6 py-4 text-right">Avg Sell</th>
-                  <th className="px-6 py-4">Position Size</th>
+                  <th className="px-6 py-4 text-right hidden md:table-cell">Avg Buy</th>
+                  <th className="px-6 py-4 text-right hidden md:table-cell">Avg Sell</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Position Size</th>
                   <th className="px-6 py-4 text-center">Status</th>
-                  <th className="px-6 py-4 text-right">Gross PnL</th>
-                  <th className="px-6 py-4 text-right">Taxes</th>
+                  <th className="px-6 py-4 text-right hidden lg:table-cell">Gross PnL</th>
+                  <th className="px-6 py-4 text-right hidden md:table-cell">Taxes</th>
                   <th className="px-6 py-4 text-right">Net PnL</th>
                 </>
               ) : (
                 <>
                   <th className="px-6 py-4">Asset</th>
-                  <th className="px-6 py-4">Lots</th>
-                  <th className="px-6 py-4">Pips</th>
-                  <th className="px-6 py-4 text-right">Gross PnL</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Lots</th>
+                  <th className="px-6 py-4 hidden md:table-cell">Pips</th>
+                  <th className="px-6 py-4 text-right hidden lg:table-cell">Gross PnL</th>
                 </>
               )}
             </tr>
@@ -255,20 +255,20 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                 {/* Date Group Header */}
                 <tr className="bg-surface border-b border-default border-t border-t-white/10">
                   <td colSpan={isDomestic ? 8 : 4} className="px-6 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
                           {format(new Date(group.date), "EEE, dd MMM yyyy")}
                         </span>
                         <span className="text-xs font-bold text-muted uppercase">
                           {group.dayTrades.length} Trades • {group.dailyWins} Wins
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs font-mono font-bold">
-                        <span className="text-muted">Gross: <span className={group.dailyGross >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{formatCurrency(group.dailyGross)}</span></span>
-                        {isDomestic && <span className="text-rose-400">Tax: {formatCurrency(group.dailyTaxes)}</span>}
-                        <span className="text-white px-3 py-1 rounded bg-elevated border border-default shadow-sm">
-                          Net: <span className={group.dailyNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{formatCurrency(group.dailyNet)}</span>
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-mono font-bold">
+                        <span className="text-muted">Gross: <span className={group.dailyGross >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{formatCurrency(group.dailyGross)}</span></span>
+                        {isDomestic && <span className="text-rose-600 dark:text-rose-400">Tax: {formatCurrency(group.dailyTaxes)}</span>}
+                        <span className="text-slate-900 dark:text-white px-3 py-1 rounded bg-elevated border border-default shadow-sm">
+                          Net: <span className={group.dailyNet >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{formatCurrency(group.dailyNet)}</span>
                         </span>
                       </div>
                     </div>
@@ -278,12 +278,12 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                 {/* Date Group Trades */}
                 {group.dayTrades.map(t => (
                   <tr key={t.id} className="hover:bg-elevated/50 transition-colors group">
-                    <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.open_time || (t as any).trade_date || "")}</td>
-                    <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.close_time || (t as any).trade_date || "")}</td>
+                    <td className="px-6 py-4 text-secondary font-mono text-xs hidden lg:table-cell">{formatDate(t.open_time || (t as any).trade_date || "")}</td>
+                    <td className="px-6 py-4 text-secondary font-mono text-xs hidden sm:table-cell">{formatDate(t.close_time || (t as any).trade_date || "")}</td>
                     {isDomestic ? (
                       <>
                         <td className="px-6 py-4">
-                          <div className="flex flex-col">
+                          <div className="flex flex-col whitespace-normal break-words min-w-[120px]">
                             <span className="font-bold text-primary">
                               {(t as any).domestic_segment === "FNO_OPTIONS"
                                 ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
@@ -294,9 +294,9 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right font-mono text-xs text-emerald-400">{formatCurrency(t.open_price || 0)}</td>
-                        <td className="px-6 py-4 text-right font-mono text-xs text-rose-400">{formatCurrency(t.close_price || 0)}</td>
-                        <td className="px-6 py-4 text-secondary font-mono">
+                        <td className="px-6 py-4 text-right font-mono text-xs text-emerald-600 dark:text-emerald-400 hidden md:table-cell">{formatCurrency(t.open_price || 0)}</td>
+                        <td className="px-6 py-4 text-right font-mono text-xs text-rose-600 dark:text-rose-400 hidden md:table-cell">{formatCurrency(t.close_price || 0)}</td>
+                        <td className="px-6 py-4 text-secondary font-mono hidden sm:table-cell">
                           {(t as any).lots && (t as any).lots !== (t as any).units ? (
                             <div className="flex flex-col">
                               <span className="font-bold text-primary">{(t as any).lots} Lots</span>
@@ -309,20 +309,20 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                         <td className="px-6 py-4 text-center">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             (t as any).status === "CLOSED"
-                              ? "bg-emerald-500/15 text-emerald-400"
-                              : "bg-amber-500/15 text-amber-400"
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                              : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
                           }`}>
                             {(t as any).status || "—"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right font-mono text-xs">
-                          <span className={((t as any).gross_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                        <td className="px-6 py-4 text-right font-mono text-xs hidden lg:table-cell">
+                          <span className={((t as any).gross_pnl || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                             {formatCurrency((t as any).gross_pnl || 0)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency((t as any).total_taxes || 0)}</td>
+                        <td className="px-6 py-4 text-right text-rose-600 dark:text-rose-400 font-mono text-xs hidden md:table-cell">{formatCurrency((t as any).total_taxes || 0)}</td>
                         <td className="px-6 py-4 text-right font-bold font-mono">
-                          <span className={((t as any).net_pnl || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                          <span className={((t as any).net_pnl || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                             {formatCurrency((t as any).net_pnl || 0)}
                           </span>
                         </td>
@@ -330,10 +330,10 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                     ) : (
                       <>
                         <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
-                        <td className="px-6 py-4 text-secondary font-mono">{(t as any).lots || 0}</td>
-                        <td className="px-6 py-4 text-secondary font-mono">0</td>
-                        <td className="px-6 py-4 text-right font-bold font-mono">
-                          <span className={(t.profit_loss || 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
+                        <td className="px-6 py-4 text-secondary font-mono hidden sm:table-cell">{(t as any).lots || 0}</td>
+                        <td className="px-6 py-4 text-secondary font-mono hidden md:table-cell">0</td>
+                        <td className="px-6 py-4 text-right font-bold font-mono hidden lg:table-cell">
+                          <span className={(t.profit_loss || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                             {formatCurrency(t.profit_loss || 0)}
                           </span>
                         </td>

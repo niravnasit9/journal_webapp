@@ -77,15 +77,15 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
         {/* Starting Balance & Current Equity */}
         <div className="lg:col-span-2 premium-card p-6 flex flex-col justify-between border-t-2 border-t-blue-500 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative z-10 flex items-center justify-between">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold text-muted uppercase tracking-widest">Starting Balance</p>
-              <p className="text-xl font-bold text-white/70 mt-1">{formatCurrency(account.initial_balance)}</p>
+              <p className="text-xl font-bold text-slate-600 dark:text-white/70 mt-1">{formatCurrency(account.initial_balance)}</p>
             </div>
-            <div className="h-10 w-[1px] bg-white/10 mx-4"></div>
-            <div className="text-right">
+            <div className="hidden sm:block h-10 w-[1px] bg-slate-200 dark:bg-white/10 mx-4"></div>
+            <div className="sm:text-right">
               <p className="text-xs font-bold text-muted uppercase tracking-widest">Current Equity</p>
-              <p className="text-3xl font-black text-white mt-1 drop-shadow-md">{formatCurrency(currentEquity)}</p>
+              <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1 drop-shadow-md">{formatCurrency(currentEquity)}</p>
             </div>
           </div>
         </div>
@@ -96,13 +96,13 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
           <div className="relative z-10">
             <p className="text-xs font-bold text-muted uppercase tracking-widest">Net Return</p>
             <div className="mt-2 flex items-baseline gap-2">
-              <p className={`text-3xl font-black drop-shadow-md ${netPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <p className={`text-2xl sm:text-3xl font-black drop-shadow-md ${netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                 {netPnl > 0 ? '+' : ''}{formatCurrency(netPnl)}
               </p>
             </div>
             <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface/50 border border-white/5">
-              <i className={`las ${netPnl >= 0 ? 'la-arrow-up text-emerald-400' : 'la-arrow-down text-rose-400'} mr-1`}></i>
-              <span className={netPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{Math.abs(netPnlPct).toFixed(2)}%</span>
+              <i className={`las ${netPnl >= 0 ? 'la-arrow-up text-emerald-600 dark:text-emerald-400' : 'la-arrow-down text-rose-600 dark:text-rose-400'} mr-1`}></i>
+              <span className={netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{Math.abs(netPnlPct).toFixed(2)}%</span>
             </div>
           </div>
         </div>
@@ -112,11 +112,11 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative z-10">
             <p className="text-xs font-bold text-muted uppercase tracking-widest">Max Drawdown</p>
-            <p className="text-3xl font-black text-orange-400 mt-2 drop-shadow-md">
+            <p className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400 mt-2 drop-shadow-md">
               -{formatCurrency(maxDrawdownValue)}
             </p>
             <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface/50 border border-white/5">
-              <span className="text-orange-400">-{maxDrawdownPct.toFixed(2)}%</span>
+              <span className="text-orange-600 dark:text-orange-400">-{maxDrawdownPct.toFixed(2)}%</span>
             </div>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart */}
         <div className="lg:col-span-2 premium-card p-6">
-          <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Equity Curve</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-6">Equity Curve</h3>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={equityCurve} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -136,10 +136,10 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="tradeIndex" stroke="#ffffff40" fontSize={12} tickLine={false} axisLine={false} minTickGap={10} tickFormatter={(val) => val === 0 ? 'Start' : `T${val}`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" vertical={false} />
+                <XAxis dataKey="tradeIndex" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} minTickGap={10} tickFormatter={(val) => val === 0 ? 'Start' : `T${val}`} />
                 <YAxis 
-                  stroke="#ffffff40" 
+                  stroke="var(--text-muted)" 
                   fontSize={12} 
                   tickLine={false} 
                   axisLine={false}
@@ -147,8 +147,8 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
                   domain={['auto', 'auto']}
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: '8px' }}
+                  itemStyle={{ color: 'var(--text-primary)', fontWeight: 'bold' }}
                   formatter={(value: any) => [formatCurrency(Number(value || 0)), 'Equity']}
                   labelFormatter={(label, payload) => {
                     if (payload && payload.length > 0) {
@@ -157,7 +157,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
                     }
                     return label;
                   }}
-                  labelStyle={{ color: '#888', marginBottom: '4px' }}
+                  labelStyle={{ color: 'var(--text-muted)', marginBottom: '4px' }}
                 />
                 <Area 
                   type="monotone" 
@@ -179,7 +179,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
              <div className="relative z-10">
                <p className="text-xs font-bold text-muted uppercase tracking-widest">Win Rate</p>
-               <p className="text-2xl font-bold text-white mt-1">{winRate.toFixed(1)}%</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{winRate.toFixed(1)}%</p>
              </div>
              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center relative z-10 text-blue-400">
                <i className="las la-trophy text-2xl"></i>
@@ -190,7 +190,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
              <div className="relative z-10">
                <p className="text-xs font-bold text-muted uppercase tracking-widest">Profit Factor</p>
-               <p className="text-2xl font-bold text-white mt-1">{profitFactor.toFixed(2)}</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{profitFactor.toFixed(2)}</p>
              </div>
              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center relative z-10 text-purple-400">
                <i className="las la-balance-scale text-2xl"></i>
@@ -201,7 +201,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
              <div className="relative z-10">
                <p className="text-xs font-bold text-muted uppercase tracking-widest">Total Trades</p>
-               <p className="text-2xl font-bold text-white mt-1">{totalTrades}</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{totalTrades}</p>
              </div>
              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center relative z-10 text-emerald-400">
                <i className="las la-exchange-alt text-2xl"></i>

@@ -134,80 +134,115 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-[8px] md:text-[10px] font-bold text-muted uppercase tracking-widest">
-            {day}
-          </div>
-        ))}
-      </div>
+      {/* Calendar Grid Container */}
+      <div className="border border-default rounded-xl bg-surface shadow-sm mb-2">
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 border-b border-default bg-elevated/50">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="text-center py-3 text-[10px] font-bold text-muted uppercase tracking-widest border-r border-default last:border-r-0">
+              {day}
+            </div>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-7 gap-1 md:gap-2">
+        {/* Days Grid */}
+        <div className="grid grid-cols-7">
         {daysInGrid.map(day => {
           const dateKey = format(day, 'yyyy-MM-dd');
           const stat = dailyStats[dateKey];
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const isTodayDate = isToday(day);
           
-          let bgColor = "bg-elevated border-default";
+          const primaryPnl = isDomestic ? stat?.netPnl : stat?.grossPnl;
+          
+          let bgColor = "bg-surface";
           let textColor = "text-secondary";
           
-          if (stat && stat.count > 0) {
-            if (stat.grossPnl > 0) {
-              bgColor = "bg-emerald-500/10 border-emerald-500/30";
-              textColor = "text-emerald-400";
-            } else if (stat.grossPnl < 0) {
-              bgColor = "bg-rose-500/10 border-rose-500/30";
-              textColor = "text-rose-400";
+          if (stat && stat.count > 0 && primaryPnl !== undefined) {
+            if (primaryPnl > 0) {
+              bgColor = "bg-emerald-50 dark:bg-emerald-500/10";
+              textColor = "text-emerald-500 dark:text-emerald-400";
+            } else if (primaryPnl < 0) {
+              bgColor = "bg-rose-50 dark:bg-rose-500/10";
+              textColor = "text-rose-500 dark:text-rose-400";
             } else {
-              bgColor = "bg-blue-500/10 border-blue-500/30";
-              textColor = "text-blue-400";
+              bgColor = "bg-blue-50 dark:bg-blue-500/10";
+              textColor = "text-blue-500 dark:text-blue-400";
             }
           } else if (!isCurrentMonth) {
-            bgColor = "bg-background/50 border-transparent opacity-50";
+            bgColor = "bg-background/20";
+          } else {
+            bgColor = "bg-surface";
           }
 
-          if (isTodayDate) {
-            bgColor += " ring-2 ring-primary ring-offset-2 ring-offset-base";
-          }
-
+          let ringClass = "";
           if (selectedDate && isSameDay(day, selectedDate)) {
-            bgColor += " ring-2 ring-blue-500 ring-offset-2 ring-offset-base";
+            ringClass = "ring-1 ring-inset ring-primary/10 shadow-inner";
           }
 
           return (
             <div 
               key={dateKey} 
               onClick={() => setSelectedDate(day)}
-              className={`min-h-[50px] md:min-h-[80px] p-1 md:p-2 rounded-lg md:rounded-xl border flex flex-col justify-between transition-all cursor-pointer hover:border-primary overflow-hidden ${bgColor}`}
+              className={`group min-h-[100px] md:min-h-[140px] p-3 border-r border-b border-default flex flex-col relative transition-all duration-200 cursor-pointer ${bgColor} ${ringClass} ${day.getDay() === 6 ? 'border-r-0' : ''}`}
             >
+              {/* Day Number Header & Trade Count */}
               <div className="flex justify-between items-start">
-                <span className={`text-[10px] md:text-xs font-bold ${!isCurrentMonth && !stat ? 'text-muted' : 'text-primary'}`}>
+                <div className={`flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full text-sm font-semibold ${isTodayDate ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : !isCurrentMonth && !stat ? 'text-muted/30' : 'text-secondary'}`}>
                   {format(day, 'd')}
-                </span>
+                </div>
+                {/* Trade Count Dot */}
                 {stat && stat.count > 0 && (
-                  <span className="hidden md:inline-block text-[9px] font-medium bg-background/50 px-1.5 py-0.5 rounded text-muted">
-                    {stat.count} {stat.count === 1 ? 'trade' : 'trades'}
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-default text-[10px] font-bold text-muted shadow-sm">
+                    {stat.count}
                   </span>
                 )}
               </div>
               
-              {stat && stat.count > 0 && (
-                <div className="mt-1 md:mt-2 text-right flex flex-col items-end">
-                  <span className={`text-[9px] md:text-sm font-black tracking-tight block truncate ${textColor}`}>
-                    {stat.grossPnl >= 0 ? '+' : '-'}<span className="hidden md:inline">{currencySymbol}</span>{formatMoney(stat.grossPnl)}
+              {/* Centered PnL */}
+              {stat && stat.count > 0 && primaryPnl !== undefined && (
+                <div className="flex-1 flex items-center justify-center pt-2 pb-1">
+                  <span className={`text-[15px] md:text-[17px] font-bold tracking-tight text-center ${textColor}`}>
+                    {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
                   </span>
-                  {isDomestic && (
-                    <span className={`text-[7px] md:text-[9px] font-medium tracking-tighter truncate ${stat.netPnl >= 0 ? 'text-emerald-500/60' : 'text-rose-500/60'}`}>
-                      Net: {stat.netPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.netPnl)}
-                    </span>
-                  )}
+                </div>
+              )}
+              
+              {/* Detailed Hover Tooltip */}
+              {stat && stat.count > 0 && primaryPnl !== undefined && (
+                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-elevated border border-default shadow-2xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none hidden md:block">
+                  <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-elevated border-b border-r border-default rotate-45"></div>
+                  <p className="text-xs font-bold text-primary mb-2 border-b border-default pb-2">{format(day, 'MMM do, yyyy')}</p>
+                  <div className="space-y-1.5 text-xs relative z-10">
+                    <div className="flex justify-between">
+                      <span className="text-muted">Trades</span>
+                      <span className="font-bold text-primary">{stat.count}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted">Win / Loss</span>
+                      <span className="font-bold text-primary">{stat.wins}W / {stat.losses}L</span>
+                    </div>
+                    {isDomestic && (
+                      <div className="flex justify-between">
+                        <span className="text-muted">Gross P&L</span>
+                        <span className={`font-bold ${stat.grossPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {stat.grossPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.grossPnl)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-black pt-2 border-t border-default mt-2">
+                      <span className="text-primary">{isDomestic ? 'Net P&L' : 'Total P&L'}</span>
+                      <span className={primaryPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
+                        {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           );
         })}
+      </div>
       </div>
       </div>
 

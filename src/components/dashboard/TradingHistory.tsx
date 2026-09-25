@@ -181,9 +181,9 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
 
           {/* Segment (domestic only) */}
           {isDomestic && segments.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Segment:</span>
-              <div className="flex rounded-lg border border-default overflow-hidden text-xs font-bold flex-wrap">
+            <div className="flex items-center gap-2 max-w-full">
+              <span className="text-[10px] font-bold text-muted uppercase tracking-widest shrink-0">Segment:</span>
+              <div className="flex rounded-lg border border-default overflow-x-auto no-scrollbar text-xs font-bold whitespace-nowrap">
                 <button
                   onClick={() => setSegmentFilter("ALL")}
                   className={`px-3 py-1.5 transition-colors ${segmentFilter === "ALL" ? "bg-elevated text-primary" : "text-muted hover:text-secondary"}`}
@@ -214,19 +214,19 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
               {isDomestic ? (
                 <>
                   <th className="px-6 py-4">Asset</th>
-                  <th className="px-6 py-4">Segment</th>
+                  <th className="px-6 py-4 hidden md:table-cell">Segment</th>
                   <th className="px-6 py-4">Direction</th>
-                  <th className="px-6 py-4">Qty</th>
-                  <th className="px-6 py-4 text-right">Price</th>
-                  <th className="px-6 py-4 text-right">Turnover</th>
-                  <th className="px-6 py-4 text-right">Taxes</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Qty</th>
+                  <th className="px-6 py-4 text-right hidden sm:table-cell">Price</th>
+                  <th className="px-6 py-4 text-right hidden lg:table-cell">Turnover</th>
+                  <th className="px-6 py-4 text-right hidden md:table-cell">Taxes</th>
                 </>
               ) : (
                 <>
                   <th className="px-6 py-4">Asset</th>
                   <th className="px-6 py-4">Direction</th>
-                  <th className="px-6 py-4">Qty</th>
-                  <th className="px-6 py-4 text-right">Price</th>
+                  <th className="px-6 py-4 hidden sm:table-cell">Qty</th>
+                  <th className="px-6 py-4 text-right hidden sm:table-cell">Price</th>
                 </>
               )}
             </tr>
@@ -237,19 +237,19 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                 {/* Date Group Header */}
                 <tr className="bg-surface border-b border-default border-t border-t-white/10">
                   <td colSpan={isDomestic ? 8 : 4} className="px-6 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="font-bold text-slate-900 dark:text-white uppercase tracking-widest text-sm bg-elevated px-3 py-1 rounded border border-default">
                           {format(new Date(group.date), "EEE, dd MMM yyyy")}
                         </span>
                         <span className="text-xs font-bold text-muted uppercase">
                           {group.dayExecs.length} Executions
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs font-mono font-bold">
-                        <span className="text-emerald-400">{group.dailyBuys} BUY</span>
-                        <span className="text-rose-400">{group.dailySells} SELL</span>
-                        {isDomestic && <span className="text-rose-400 ml-2">Tax: {formatCurrency(group.dailyTaxes)}</span>}
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-mono font-bold">
+                        <span className="text-emerald-600 dark:text-emerald-400">{group.dailyBuys} BUY</span>
+                        <span className="text-rose-600 dark:text-rose-400">{group.dailySells} SELL</span>
+                        {isDomestic && <span className="text-rose-600 dark:text-rose-400 ml-2">Tax: {formatCurrency(group.dailyTaxes)}</span>}
                       </div>
                     </div>
                   </td>
@@ -264,36 +264,36 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                       <td className="px-6 py-4 text-secondary font-mono text-xs">{formatDate(t.time)}</td>
                       {isDomestic ? (
                         <>
-                          <td className="px-6 py-4 font-bold text-primary">
+                          <td className="px-6 py-4 font-bold text-primary whitespace-normal break-words min-w-[120px]">
                             {(t as any).domestic_segment === "FNO_OPTIONS"
-                              ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
+                              ? `${t.symbol || "Unknown Asset"} ${t.symbol?.includes((t as any).strike_price?.toString()) ? "" : ((t as any).strike_price || "")} ${t.symbol?.includes((t as any).option_type) ? "" : ((t as any).option_type || "")}`.trim()
                               : (t.symbol || "Unknown Asset")}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 hidden md:table-cell">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-400"
-                              : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-400"
-                              : "bg-blue-500/15 text-blue-400"
+                              (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                              : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
+                              : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
                             }`}>
                               {(t as any).domestic_segment || "EQUITY"}
                             </span>
                           </td>
                           <td className="px-6 py-4 font-bold">
-                            <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
+                            <span className={t.direction === "BUY" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>{t.direction}</span>
                           </td>
-                          <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
-                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
-                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(turnover)}</td>
-                          <td className="px-6 py-4 text-right text-rose-400 font-mono text-xs">{formatCurrency(totalTax)}</td>
+                          <td className="px-6 py-4 text-secondary font-mono hidden sm:table-cell">{t.quantity || 0}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary hidden sm:table-cell">{formatCurrency(t.price || 0)}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary hidden lg:table-cell">{formatCurrency(turnover)}</td>
+                          <td className="px-6 py-4 text-right text-rose-600 dark:text-rose-400 font-mono text-xs hidden md:table-cell">{formatCurrency(totalTax)}</td>
                         </>
                       ) : (
                         <>
-                          <td className="px-6 py-4 font-bold text-primary">{t.symbol}</td>
+                          <td className="px-6 py-4 font-bold text-primary whitespace-normal break-words min-w-[120px]">{t.symbol}</td>
                           <td className="px-6 py-4 font-bold">
-                            <span className={t.direction === "BUY" ? "text-emerald-400" : "text-rose-400"}>{t.direction}</span>
+                            <span className={t.direction === "BUY" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>{t.direction}</span>
                           </td>
-                          <td className="px-6 py-4 text-secondary font-mono">{t.quantity || 0}</td>
-                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary">{formatCurrency(t.price || 0)}</td>
+                          <td className="px-6 py-4 text-secondary font-mono hidden sm:table-cell">{t.quantity || 0}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs text-secondary hidden sm:table-cell">{formatCurrency(t.price || 0)}</td>
                         </>
                       )}
                     </tr>

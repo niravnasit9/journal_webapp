@@ -194,14 +194,14 @@ export default function TradesPage() {
           <table className="w-full text-sm text-left">
             <thead className="bg-elevated text-xs uppercase text-secondary font-bold tracking-wider border-b border-subtle">
               <tr>
-                <th className="px-6 py-4">Account</th>
-                <th className="px-6 py-4">Open Date & Time</th>
+                <th className="px-6 py-4 hidden md:table-cell">Account</th>
+                <th className="px-6 py-4 hidden sm:table-cell">Open Date & Time</th>
                 <th className="px-6 py-4">Close Date & Time</th>
-                <th className="px-6 py-4">Duration</th>
+                <th className="px-6 py-4 hidden lg:table-cell">Duration</th>
                 <th className="px-6 py-4">Symbol</th>
                 <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4 text-right">{isDomestic ? 'Qty' : 'Lots'}</th>
-                <th className="px-6 py-4 text-right">Open / Close</th>
+                <th className="px-6 py-4 text-right hidden sm:table-cell">{isDomestic ? 'Qty' : 'Lots'}</th>
+                <th className="px-6 py-4 text-right hidden lg:table-cell">Open / Close</th>
                 <th className="px-6 py-4 text-right">Net PnL</th>
               </tr>
             </thead>
@@ -220,22 +220,22 @@ export default function TradesPage() {
                   const account = accounts.find(a => a.id === trade.account_id);
                   return (
                     <tr key={trade.id} className="hover:bg-elevated transition-colors group">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${account?.account_type === 'real' ? 'bg-success' : 'bg-info'}`}></div>
                           <span className="text-primary font-semibold text-xs">{account?.label || "Unknown"}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-primary font-medium">{formatTradeDate(trade.open_time)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-primary font-medium">{formatTradeDate(trade.close_time)}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                         <div className="text-secondary font-medium">{getTradeDuration(trade.open_time, trade.close_time)}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-normal break-words min-w-[120px]">
                         <span className="font-bold text-primary tracking-tight">{trade.symbol}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -244,10 +244,10 @@ export default function TradesPage() {
                           {trade.direction}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-primary font-semibold">
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-primary font-semibold hidden sm:table-cell">
                         {isDomestic ? (trade.quantity || 0) : (trade.lot_size || 0).toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-mono">
+                      <td className="px-6 py-4 whitespace-nowrap text-right font-mono hidden lg:table-cell">
                         <div className="text-primary font-semibold">{isDomestic ? trade.open_price.toFixed(2) : trade.open_price.toFixed(5)}</div>
                         <div className="text-xs text-muted">→ {isDomestic ? trade.close_price.toFixed(2) : trade.close_price.toFixed(5)}</div>
                       </td>

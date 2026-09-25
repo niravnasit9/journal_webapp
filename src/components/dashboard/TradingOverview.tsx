@@ -88,8 +88,8 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
             <i className="las la-balance-scale-right text-3xl"></i>
           </div>
           <p className="text-sm font-bold text-muted uppercase tracking-widest">Reward to Risk</p>
-          <p className="text-4xl font-black text-white mt-2 drop-shadow-md">{rewardToRisk.toFixed(2)}</p>
-          <p className="text-xs text-white/50 mt-2">Avg Win vs Avg Loss</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 drop-shadow-md">{rewardToRisk.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 dark:text-white/50 mt-2">Avg Win vs Avg Loss</p>
         </div>
 
         <div className="premium-card p-6 flex flex-col justify-center items-center text-center">
@@ -97,17 +97,17 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
             <i className="las la-layer-group text-3xl"></i>
           </div>
           <p className="text-sm font-bold text-muted uppercase tracking-widest">{isDomestic ? "Total Volume (Qty)" : "Total Lots Traded"}</p>
-          <p className="text-4xl font-black text-white mt-2 drop-shadow-md">{totalVolume.toLocaleString()}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 drop-shadow-md">{totalVolume.toLocaleString()}</p>
         </div>
 
         {/* Long vs Short */}
         <div className="premium-card p-6 flex flex-col justify-center">
-          <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Direction Edge</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-6">Direction Edge</h3>
           
           <div className="mb-6">
             <div className="flex justify-between items-end mb-2">
               <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Longs</span>
-              <span className="text-sm font-bold text-white">{longWinRate.toFixed(1)}% <span className="text-[10px] text-muted">win</span></span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white">{longWinRate.toFixed(1)}% <span className="text-[10px] text-muted">win</span></span>
             </div>
             <div className="h-2 w-full bg-surface/50 rounded-full overflow-hidden">
               <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${longWinRate}%` }}></div>
@@ -118,7 +118,7 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
           <div>
             <div className="flex justify-between items-end mb-2">
               <span className="text-xs font-bold text-rose-400 uppercase tracking-widest">Shorts</span>
-              <span className="text-sm font-bold text-white">{shortWinRate.toFixed(1)}% <span className="text-[10px] text-muted">win</span></span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white">{shortWinRate.toFixed(1)}% <span className="text-[10px] text-muted">win</span></span>
             </div>
             <div className="h-2 w-full bg-surface/50 rounded-full overflow-hidden">
               <div className="h-full bg-rose-500 rounded-full" style={{ width: `${shortWinRate}%` }}></div>
@@ -138,15 +138,15 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total Brokerage</p>
-              <p className="text-lg font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total STT</p>
-              <p className="text-lg font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total GST</p>
-              <p className="text-lg font-bold text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-500/20">
               <p className="text-[10px] text-rose-400 uppercase font-bold tracking-widest mb-1">Total Tax Drag</p>

@@ -116,7 +116,7 @@ export default function UserDashboardCommandCenter() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative z-10">
             <h3 className="text-xs font-bold text-muted uppercase tracking-widest">{isDomestic ? 'Domestic' : 'Global'} Balance</h3>
-            <p className="text-3xl font-black text-white mt-2 drop-shadow-md truncate" title={`${currencySymbol}${metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-2 drop-shadow-md truncate" title={`${currencySymbol}${metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
               {currencySymbol}{metrics.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
             <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">Across {activeAccounts.length} active accounts</div>
@@ -128,7 +128,7 @@ export default function UserDashboardCommandCenter() {
           <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${metrics.totalPnL >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent'}`}></div>
           <div className="relative z-10">
             <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Net P/L</h3>
-            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.totalPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`${metrics.totalPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.totalPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`} title={`${metrics.totalPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
               {metrics.totalPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
             <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">All-time profit/loss</div>
@@ -140,7 +140,7 @@ export default function UserDashboardCommandCenter() {
           <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${metrics.todaysPnL >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent'}`}></div>
           <div className="relative z-10">
             <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Today's P/L</h3>
-            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.todaysPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`${metrics.todaysPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+            <p className={`text-3xl font-black mt-2 drop-shadow-md truncate ${metrics.todaysPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`} title={`${metrics.todaysPnL >= 0 ? '+' : ''}${currencySymbol}${metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
               {metrics.todaysPnL >= 0 ? '+' : ''}{currencySymbol}{metrics.todaysPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
             <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">Reset at midnight</div>
@@ -152,7 +152,7 @@ export default function UserDashboardCommandCenter() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative z-10">
             <h3 className="text-xs font-bold text-muted uppercase tracking-widest">Win Rate</h3>
-            <p className="text-3xl font-black text-purple-400 mt-2 drop-shadow-md">
+            <p className="text-3xl font-black text-purple-600 dark:text-purple-400 mt-2 drop-shadow-md">
               {metrics.winRate.toFixed(1)}%
             </p>
             <div className="text-xs font-bold text-muted mt-2 border-t border-default pt-2">From {metrics.totalTradesCount} total trades</div>
