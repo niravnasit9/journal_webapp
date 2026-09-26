@@ -111,7 +111,39 @@ export default function AccountDetailView() {
 
           const pq = query(collection(db, "raw_executions"), where("account_id", "==", accountId));
           const pSnap = await getDocs(pq);
-          const pList = pSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+          const pList: any[] = pSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+
+          // Inject IPO Trades as Mock Executions
+          const ipoTrades = tList.filter(t => (t as any).domestic_segment === "IPO");
+          ipoTrades.forEach(ipo => {
+            // Sell execution
+            pList.push({
+              id: `exec-sell-${ipo.id}`,
+              account_id: ipo.account_id,
+              time: ipo.close_time,
+              symbol: ipo.symbol,
+              direction: "SELL",
+              price: ipo.close_price,
+              quantity: (ipo as any).quantity ?? (ipo as any).units ?? 0,
+              domestic_segment: "IPO",
+              order_id: `ipo-sell-${ipo.id}`
+            });
+            // Buy execution
+            if (ipo.open_time) {
+              pList.push({
+                id: `exec-buy-${ipo.id}`,
+                account_id: ipo.account_id,
+                time: ipo.open_time,
+                symbol: ipo.symbol,
+                direction: "BUY",
+                price: ipo.open_price,
+                quantity: (ipo as any).quantity ?? (ipo as any).units ?? 0,
+                domestic_segment: "IPO",
+                order_id: `ipo-buy-${ipo.id}`
+              });
+            }
+          });
+
           pList.sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime());
           setRawExecutions(pList);
         } else {
@@ -151,8 +183,8 @@ export default function AccountDetailView() {
       case "Calendar":
         return (
           <div className="space-y-6">
-            <TimeBasedMetrics trades={trades} isDomestic={account.market_type === "DOMESTIC"} />
-            <TradingCalendar trades={trades} isDomestic={account.market_type === "DOMESTIC"} />
+            <TimeBasedMetrics trades={trades} isDomestic={account.market_type === "DOMESTIC" || account.currency === "INR"} />
+            <TradingCalendar trades={trades} isDomestic={account.market_type === "DOMESTIC" || account.currency === "INR"} />
           </div>
         );
       default:

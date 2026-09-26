@@ -24,22 +24,28 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
 
   // Compute stats per day for the entire dataset
   const dailyStats = useMemo(() => {
-    const stats: Record<string, { grossPnl: number; netPnl: number; count: number; wins: number; losses: number }> = {};
+    const stats: Record<string, { grossPnl: number; netPnl: number; ipoPnl: number; tradePnl: number; count: number; wins: number; losses: number }> = {};
     
     trades.forEach(trade => {
       const tradeDate = new Date(trade.close_time);
       if (isNaN(tradeDate.getTime())) return;
       
       const dateKey = format(tradeDate, 'yyyy-MM-dd');
-      const netPnl = isDomestic ? (trade as any).net_pnl || 0 : trade.profit_loss || 0;
+      const isIpo = (trade as any).domestic_segment === 'IPO';
+      const netPnl = isDomestic ? ((trade as any).net_pnl ?? (isIpo ? trade.profit_loss : 0)) : (trade.profit_loss || 0);
       const grossPnl = trade.profit_loss || 0;
       
       if (!stats[dateKey]) {
-        stats[dateKey] = { grossPnl: 0, netPnl: 0, count: 0, wins: 0, losses: 0 };
+        stats[dateKey] = { grossPnl: 0, netPnl: 0, ipoPnl: 0, tradePnl: 0, count: 0, wins: 0, losses: 0 };
       }
       
       stats[dateKey].grossPnl += grossPnl;
       stats[dateKey].netPnl += netPnl;
+      if (isIpo) {
+        stats[dateKey].ipoPnl += netPnl;
+      } else {
+        stats[dateKey].tradePnl += netPnl;
+      }
       stats[dateKey].count += (trade as any).trades_count || 1;
       // Evaluate win/loss based on gross PnL
       if (grossPnl > 0) stats[dateKey].wins += 1;
@@ -79,15 +85,21 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
 
     let grossPnl = 0;
     let netPnl = 0;
+    let ipoPnl = 0;
+    let tradePnl = 0;
     let brokerage = 0;
     let stt = 0;
     let gst = 0;
     let totalTaxes = 0;
 
     tradesOnDay.forEach(t => {
+      const isIpo = (t as any).domestic_segment === 'IPO';
       grossPnl += t.profit_loss || 0;
       if (isDomestic) {
-        netPnl += (t as any).net_pnl || 0;
+        const tNetPnl = (t as any).net_pnl ?? (isIpo ? t.profit_loss : 0);
+        netPnl += tNetPnl;
+        if (isIpo) ipoPnl += tNetPnl; else tradePnl += tNetPnl;
+        
         const taxes = (t as any).tax_breakdown || {};
         brokerage += taxes.brokerage || 0;
         stt += taxes.stt || 0;
@@ -95,13 +107,17 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
         totalTaxes += (t as any).total_taxes || 0;
       } else {
         netPnl += t.profit_loss || 0;
+        tradePnl += t.profit_loss || 0;
       }
     });
 
     return {
       tradeCount: tradesOnDay.length,
+      tradesList: tradesOnDay,
       grossPnl,
       netPnl,
+      ipoPnl,
+      tradePnl,
       brokerage,
       stt,
       gst,
@@ -222,16 +238,34 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
                       <span className="text-muted">Win / Loss</span>
                       <span className="font-bold text-primary">{stat.wins}W / {stat.losses}L</span>
                     </div>
+                    {isDomestic && stat.ipoPnl !== 0 && (
+                      <>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-muted">IPO P&L</span>
+                          <span className={`font-bold ${stat.ipoPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {stat.ipoPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.ipoPnl)}
+                          </span>
+                        </div>
+                        {stat.tradePnl !== 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted">Trades Net P&L</span>
+                            <span className={`font-bold ${stat.tradePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {stat.tradePnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.tradePnl)}
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
                     {isDomestic && (
-                      <div className="flex justify-between">
-                        <span className="text-muted">Gross P&L</span>
+                      <div className="flex justify-between pt-1 border-t border-default/50 mt-1">
+                        <span className="text-muted">Total Gross P&L</span>
                         <span className={`font-bold ${stat.grossPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                           {stat.grossPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(stat.grossPnl)}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between font-black pt-2 border-t border-default mt-2">
-                      <span className="text-primary">{isDomestic ? 'Net P&L' : 'Total P&L'}</span>
+                      <span className="text-primary">{isDomestic ? 'Total Net P&L' : 'Total P&L'}</span>
                       <span className={primaryPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
                         {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
                       </span>
@@ -259,13 +293,21 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div className="bg-elevated p-4 rounded-xl border border-default">
               <p className="text-xs text-muted uppercase font-bold tracking-widest mb-1">Total Trades</p>
               <p className="text-xl font-black text-primary">{selectedDayDetails.tradeCount}</p>
             </div>
+            {isDomestic && selectedDayDetails.ipoPnl !== 0 && (
+              <div className="bg-elevated p-4 rounded-xl border border-default">
+                <p className="text-xs text-muted uppercase font-bold tracking-widest mb-1">IPO P&L</p>
+                <p className={`text-xl font-black ${selectedDayDetails.ipoPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {selectedDayDetails.ipoPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(selectedDayDetails.ipoPnl)}
+                </p>
+              </div>
+            )}
             <div className="bg-elevated p-4 rounded-xl border border-default">
-              <p className="text-xs text-muted uppercase font-bold tracking-widest mb-1">Gross P&L</p>
+              <p className="text-xs text-muted uppercase font-bold tracking-widest mb-1">Total Gross P&L</p>
               <p className={`text-xl font-black ${selectedDayDetails.grossPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {selectedDayDetails.grossPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(selectedDayDetails.grossPnl)}
               </p>
@@ -279,7 +321,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
               </div>
             )}
             <div className={`p-4 rounded-xl border ${selectedDayDetails.netPnl >= 0 ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/30'}`}>
-              <p className={`text-xs uppercase font-bold tracking-widest mb-1 ${selectedDayDetails.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>Net P&L</p>
+              <p className={`text-xs uppercase font-bold tracking-widest mb-1 ${selectedDayDetails.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>Total Net P&L</p>
               <p className={`text-xl font-black ${selectedDayDetails.netPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {selectedDayDetails.netPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(selectedDayDetails.netPnl)}
               </p>
@@ -305,6 +347,56 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
                   <p className="text-[10px] text-muted uppercase font-bold">GST</p>
                   <p className="text-sm font-bold text-primary">{currencySymbol}{formatMoney(selectedDayDetails.gst)}</p>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Daily Trades List */}
+          {selectedDayDetails.tradesList && selectedDayDetails.tradesList.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-default">
+              <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
+                <i className="las la-list text-lg text-blue-500"></i> Trades on {format(selectedDate, 'MMM do')}
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="text-xs text-muted uppercase tracking-widest border-b border-default bg-elevated/50">
+                      <th className="p-3">Time</th>
+                      <th className="p-3">Symbol</th>
+                      <th className="p-3">Direction</th>
+                      <th className="p-3">Type</th>
+                      <th className="p-3 text-right">Net P&L</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-default">
+                    {selectedDayDetails.tradesList.map(t => {
+                      const isIpo = (t as any).domestic_segment === 'IPO';
+                      const tNetPnl = isDomestic ? ((t as any).net_pnl ?? (isIpo ? t.profit_loss : 0)) : (t.profit_loss || 0);
+                      const timeStr = new Date(t.close_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <tr key={t.id} className="hover:bg-surface/50 transition-colors">
+                          <td className="p-3 text-muted">{timeStr}</td>
+                          <td className="p-3 font-bold text-primary">{t.symbol}</td>
+                          <td className="p-3">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${t.direction === 'BUY' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'}`}>
+                              {t.direction}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            {isIpo ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 border border-purple-500/20 uppercase">IPO</span>
+                            ) : (
+                              <span className="text-muted text-xs">{(t as any).domestic_segment || 'Trade'}</span>
+                            )}
+                          </td>
+                          <td className={`p-3 text-right font-black ${tNetPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {tNetPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(tNetPnl)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

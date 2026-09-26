@@ -55,7 +55,8 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
         if (!sym.includes(symbolSearch.toLowerCase())) return false;
       }
       if (segmentFilter !== "ALL" && (p as any).domestic_segment !== segmentFilter) return false;
-      if ((p as any).status !== statusFilter) return false;
+      const tradeStatus = (p as any).status || ((p as any).domestic_segment === "IPO" ? "CLOSED" : "CLOSED");
+      if (statusFilter !== "ALL" && tradeStatus !== statusFilter) return false;
       const pnl = (p as any).net_pnl ?? p.profit_loss ?? 0;
       if (pnlFilter === "WIN" && pnl <= 0) return false;
       if (pnlFilter === "LOSS" && pnl >= 0) return false;
@@ -297,13 +298,13 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                         <td className="px-6 py-4 text-right font-mono text-xs text-emerald-600 dark:text-emerald-400 hidden md:table-cell">{formatCurrency(t.open_price || 0)}</td>
                         <td className="px-6 py-4 text-right font-mono text-xs text-rose-600 dark:text-rose-400 hidden md:table-cell">{formatCurrency(t.close_price || 0)}</td>
                         <td className="px-6 py-4 text-secondary font-mono hidden sm:table-cell">
-                          {(t as any).lots && (t as any).lots !== (t as any).units ? (
+                          {(t as any).lots && (t as any).lots !== ((t as any).units ?? (t as any).quantity) ? (
                             <div className="flex flex-col">
                               <span className="font-bold text-primary">{(t as any).lots} Lots</span>
-                              <span className="text-[10px] text-muted">{(t as any).units} Units</span>
+                              <span className="text-[10px] text-muted">{(t as any).units ?? (t as any).quantity} Units</span>
                             </div>
                           ) : (
-                            <span className="font-bold text-primary">{(t as any).units || 0} Units</span>
+                            <span className="font-bold text-primary">{(t as any).units ?? (t as any).quantity ?? 0} Units</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -316,14 +317,14 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right font-mono text-xs hidden lg:table-cell">
-                          <span className={((t as any).gross_pnl || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
-                            {formatCurrency((t as any).gross_pnl || 0)}
+                          <span className={((t as any).gross_pnl ?? t.profit_loss ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                            {formatCurrency((t as any).gross_pnl ?? t.profit_loss ?? 0)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right text-rose-600 dark:text-rose-400 font-mono text-xs hidden md:table-cell">{formatCurrency((t as any).total_taxes || 0)}</td>
                         <td className="px-6 py-4 text-right font-bold font-mono">
-                          <span className={((t as any).net_pnl || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
-                            {formatCurrency((t as any).net_pnl || 0)}
+                          <span className={((t as any).net_pnl ?? t.profit_loss ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                            {formatCurrency((t as any).net_pnl ?? t.profit_loss ?? 0)}
                           </span>
                         </td>
                       </>
