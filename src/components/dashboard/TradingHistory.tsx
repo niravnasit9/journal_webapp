@@ -273,6 +273,7 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                               (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
                               : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
+                              : (t as any).domestic_segment === "IPO" ? "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 font-black border border-fuchsia-500/20"
                               : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
                             }`}>
                               {(t as any).domestic_segment || "EQUITY"}

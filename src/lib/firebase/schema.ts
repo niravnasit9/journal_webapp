@@ -276,6 +276,7 @@ export interface IpoApplicationDoc {
   sell_price?: number;
   offer_price?: number; // Issue price
   lot_size?: number; // Number of shares per lot
+  taxes_and_charges?: number; // Brokerage and taxes
   
   listing_date?: string;
   listing_price?: number;

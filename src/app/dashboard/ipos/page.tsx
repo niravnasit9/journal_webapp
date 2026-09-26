@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/lib/firebase/authContext";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs, getDoc, updateDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
@@ -35,6 +36,7 @@ export default function IpoDashboard() {
   const hasFetched = React.useRef(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<'UPCOMING' | 'LISTED'>('UPCOMING');
   const [formData, setFormData] = useState({
     ipo_name: "",
@@ -54,7 +56,8 @@ export default function IpoDashboard() {
     sell_date: new Date().toISOString().split('T')[0],
     sell_price: 0,
     offer_price: 0,
-    lot_size: 1
+    lot_size: 1,
+    taxes_and_charges: 0
   });
 
   useEffect(() => {
@@ -105,14 +108,16 @@ export default function IpoDashboard() {
     if (!user) return;
 
     try {
-      const newRef = doc(collection(db, "ipo_applications"));
+      const newRef = editId ? doc(db, "ipo_applications", editId) : doc(collection(db, "ipo_applications"));
       let profit_loss = 0;
+      let gross_profit = 0;
       if (formData.is_sold) {
-        profit_loss = (Number(formData.sell_price) - Number(formData.offer_price)) * (Number(formData.lot_size) * Number(formData.lots_allotted));
+        gross_profit = (Number(formData.sell_price) - Number(formData.offer_price)) * (Number(formData.lot_size) * Number(formData.lots_allotted));
+        profit_loss = gross_profit - Number(formData.taxes_and_charges);
       }
 
-      const payload: IpoApplicationDoc = {
-        id: newRef.id,
+      const payload: any = {
+        id: editId || newRef.id,
         owner_uid: user.uid,
         ipo_name: formData.ipo_name,
         symbol: formData.symbol,
@@ -131,24 +136,50 @@ export default function IpoDashboard() {
         sell_price: Number(formData.sell_price),
         offer_price: Number(formData.offer_price),
         lot_size: Number(formData.lot_size),
+        taxes_and_charges: Number(formData.taxes_and_charges),
         profit_loss: profit_loss,
 
-        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
-      await setDoc(newRef, payload);
+      if (!editId) {
+        payload.created_at = new Date().toISOString();
+      }
 
-      // Update Account Balance if Sold
-      if (formData.is_sold && profit_loss !== 0 && formData.allotted_account_id) {
-        const accRef = doc(db, "accounts", formData.allotted_account_id);
-        const accSnap = await getDoc(accRef);
-        if (accSnap.exists()) {
-          const accData = accSnap.data();
-          await updateDoc(accRef, {
-            current_balance: (accData.current_balance || 0) + profit_loss
-          });
+      await setDoc(newRef, payload, { merge: true });
+
+      // Update Account Balance & Create Trade Record if Sold
+      if (formData.is_sold && formData.allotted_account_id) {
+        
+        // 1. Update Account Balance
+        if (profit_loss !== 0) {
+          const accRef = doc(db, "accounts", formData.allotted_account_id);
+          const accSnap = await getDoc(accRef);
+          if (accSnap.exists()) {
+            const accData = accSnap.data();
+            await updateDoc(accRef, {
+              current_balance: (accData.current_balance || 0) + profit_loss
+            });
+          }
         }
+
+        // 2. Create Trade Record
+        const tradeRef = doc(db, "trades", `ipo-${newRef.id}`);
+        await setDoc(tradeRef, {
+          id: tradeRef.id,
+          account_id: formData.allotted_account_id,
+          symbol: `${formData.ipo_name} (IPO)`,
+          direction: "BUY",
+          open_price: Number(formData.offer_price),
+          close_price: Number(formData.sell_price),
+          open_time: new Date(formData.application_date).toISOString(),
+          close_time: new Date(formData.sell_date).toISOString(),
+          profit_loss: profit_loss,
+          commission: Number(formData.taxes_and_charges),
+          domestic_segment: "IPO",
+          quantity: Number(formData.lot_size) * Number(formData.lots_allotted),
+          comment: "Auto-logged from IPO Suite"
+        }, { merge: true });
       }
 
       toast.success("IPO Application Logged!");
@@ -179,6 +210,7 @@ export default function IpoDashboard() {
           <p className="text-muted mt-2">Track upcoming IPOs and log your applications.</p>
         </div>
         <Button onClick={() => {
+          setEditId(null);
           setModalMode('UPCOMING');
           setFormData({
             ipo_name: "",
@@ -196,7 +228,8 @@ export default function IpoDashboard() {
             sell_date: new Date().toISOString().split('T')[0],
             sell_price: 0,
             offer_price: 0,
-            lot_size: 1
+            lot_size: 1,
+            taxes_and_charges: 0
           });
           setIsModalOpen(true);
         }} className="flex items-center gap-2">
@@ -237,12 +270,17 @@ export default function IpoDashboard() {
                 <Card key={app.id} className="p-5 flex flex-col justify-between hover:border-strong transition-all">
                   <div>
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-bold text-primary text-lg">{app.ipo_name}</h3>
-                        <p className="text-xs font-mono text-muted">
-                          {app.applied_account_name ? `${app.applied_account_name} ` : ''}
-                          {app.application_number ? `(#${app.application_number})` : "No App #"}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 border border-default shadow-sm">
+                          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(app.ipo_name)}&background=random&color=fff&bold=true`} alt={app.ipo_name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-primary text-lg leading-tight">{app.ipo_name}</h3>
+                          <p className="text-xs font-mono text-muted mt-0.5">
+                            {app.applied_account_name ? `${app.applied_account_name} ` : ''}
+                            {app.application_number ? `(#${app.application_number})` : "No App #"}
+                          </p>
+                        </div>
                       </div>
                       <Badge variant={app.status === "Allotted" ? "success" : app.status === "Rejected" ? "danger" : "warning"}>
                         {app.status}
@@ -265,7 +303,35 @@ export default function IpoDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-default">
+                  <div className="flex gap-4 mt-4 pt-4 border-t border-default">
+                    <button
+                      onClick={() => {
+                        setEditId(app.id);
+                        setFormData({
+                          ipo_name: app.ipo_name || "",
+                          symbol: app.symbol || "",
+                          application_date: app.application_date || new Date().toISOString().split('T')[0],
+                          application_number: app.application_number || "",
+                          status: app.status || "Pending",
+                          lots_applied: app.lots_applied || 1,
+                          total_amount: app.total_amount || 0,
+                          applied_account_id: app.applied_account_id || "",
+                          applied_account_name: app.applied_account_name || "",
+                          allotted_account_id: app.allotted_account_id || "",
+                          lots_allotted: app.lots_allotted || 0,
+                          is_sold: app.is_sold || false,
+                          sell_date: app.sell_date || new Date().toISOString().split('T')[0],
+                          sell_price: app.sell_price || 0,
+                          offer_price: app.offer_price || 0,
+                          lot_size: app.lot_size || 1,
+                          taxes_and_charges: app.taxes_and_charges || 0
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <i className="las la-edit"></i> Edit
+                    </button>
                     <button
                       onClick={() => handleDelete(app.id)}
                       className="text-xs text-red-400 hover:text-red-300 transition-colors"
@@ -314,9 +380,9 @@ export default function IpoDashboard() {
                     <Card className="p-4 bg-elevated border border-default hover:border-blue-500/50 transition-all duration-300">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 overflow-hidden shrink-0 border border-default">
-                            {/* Placeholder Logo */}
-                            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${ipo.name}&backgroundColor=000000&textColor=ffffff`} alt={ipo.name} className="w-full h-full object-contain" />
+                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden shrink-0 border border-default shadow-sm">
+                            {/* Generated Logo */}
+                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(ipo.name)}&background=random&color=fff&bold=true`} alt={ipo.name} className="w-full h-full object-cover" />
                           </div>
                           <div>
                             <h3 className="font-bold text-primary group-hover:text-blue-400 transition-colors text-lg leading-tight">{ipo.name}</h3>
@@ -366,6 +432,7 @@ export default function IpoDashboard() {
                         className="w-full text-xs h-8 bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                         onClick={(e) => {
                           e.preventDefault(); // Prevent navigating to detail page when clicking the button
+                          setEditId(null);
                           setFormData({
                             ...formData,
                             ipo_name: ipo.name,
@@ -383,7 +450,8 @@ export default function IpoDashboard() {
                             sell_date: new Date().toISOString().split('T')[0],
                             sell_price: 0,
                             offer_price: 0,
-                            lot_size: 1
+                            lot_size: 1,
+                            taxes_and_charges: 0
                           });
                           setModalMode('UPCOMING');
                           setIsModalOpen(true);
@@ -399,8 +467,8 @@ export default function IpoDashboard() {
       </div>
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm">
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm">
           <div className="absolute inset-0 md:left-72 flex items-center justify-center p-4">
             <Card className="w-full max-w-md p-6 relative shadow-2xl border border-default/20 max-h-[90vh] flex flex-col">
             <button
@@ -449,18 +517,42 @@ export default function IpoDashboard() {
                 </div>
               </div>
 
-              {/* Extended Fields for Listed/Past Applications */}
-              {modalMode === 'LISTED' && (
+              {/* Standard Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lots Applied</label>
+                  <input
+                    type="number"
+                    required min="1"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                    value={formData.lots_applied}
+                    onChange={e => setFormData({ ...formData, lots_applied: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Total Amount (₹)</label>
+                  <input
+                    type="number"
+                    required min="0"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                    value={formData.total_amount}
+                    onChange={e => setFormData({ ...formData, total_amount: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              {/* Extended Fields for Allotted */}
+              {formData.status === 'Allotted' && (
                 <div className="space-y-4 pt-2 border-t border-default/50">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Applied From Account (Name)</label>
+                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lots Allotted</label>
                       <input
-                        type="text"
-                        placeholder="e.g. Zerodha, Groww"
+                        type="number"
+                        required min="0"
                         className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                        value={formData.applied_account_name}
-                        onChange={e => setFormData({ ...formData, applied_account_name: e.target.value })}
+                        value={formData.lots_allotted}
+                        onChange={e => setFormData({ ...formData, lots_allotted: Number(e.target.value) })}
                       />
                     </div>
                     <div>
@@ -469,7 +561,6 @@ export default function IpoDashboard() {
                         className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
                         value={formData.allotted_account_id}
                         onChange={e => setFormData({ ...formData, allotted_account_id: e.target.value })}
-                        disabled={formData.status !== 'Allotted'}
                       >
                         <option value="">Select Account</option>
                         {userAccounts.map(acc => (
@@ -479,110 +570,93 @@ export default function IpoDashboard() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lots Applied</label>
+                  <div className="bg-surface/50 p-3 rounded-lg border border-default">
+                    <div className="flex items-center gap-2 mb-3">
                       <input
-                        type="number"
-                        required min="1"
-                        className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                        value={formData.lots_applied}
-                        onChange={e => setFormData({ ...formData, lots_applied: Number(e.target.value) })}
+                        type="checkbox"
+                        id="is_sold"
+                        className="w-4 h-4 rounded text-blue-500 focus:ring-blue-500 border-default"
+                        checked={formData.is_sold}
+                        onChange={e => setFormData({ ...formData, is_sold: e.target.checked })}
                       />
+                      <label htmlFor="is_sold" className="text-sm font-bold text-primary">I have sold this IPO</label>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lots Allotted</label>
-                      <input
-                        type="number"
-                        required min="0"
-                        disabled={formData.status !== 'Allotted'}
-                        className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500 disabled:opacity-50"
-                        value={formData.lots_allotted}
-                        onChange={e => setFormData({ ...formData, lots_allotted: Number(e.target.value) })}
-                      />
-                    </div>
-                  </div>
 
-                  {formData.status === 'Allotted' && (
-                    <div className="bg-surface/50 p-3 rounded-lg border border-default">
-                      <div className="flex items-center gap-2 mb-3">
-                        <input
-                          type="checkbox"
-                          id="is_sold"
-                          className="w-4 h-4 rounded text-blue-500 focus:ring-blue-500 border-default"
-                          checked={formData.is_sold}
-                          onChange={e => setFormData({ ...formData, is_sold: e.target.checked })}
-                        />
-                        <label htmlFor="is_sold" className="text-sm font-bold text-primary">I have sold this IPO</label>
-                      </div>
-
-                      {formData.is_sold && (
+                    {formData.is_sold && (
+                      <>
                         <div className="grid grid-cols-2 gap-4 mt-3">
-                          <div>
-                            <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lot Size (Shares)</label>
+                        <div>
+                          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lot Size (Shares)</label>
+                          <input
+                            type="number"
+                            required min="1"
+                            className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                            value={formData.lot_size}
+                            onChange={e => setFormData({ ...formData, lot_size: Number(e.target.value) })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Offer Price (₹)</label>
+                          <input
+                            type="number"
+                            required min="0"
+                            className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                            value={formData.offer_price}
+                            onChange={e => setFormData({ ...formData, offer_price: Number(e.target.value) })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Sell Price (₹)</label>
+                          <input
+                            type="number"
+                            required min="0"
+                            className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                            value={formData.sell_price}
+                            onChange={e => setFormData({ ...formData, sell_price: Number(e.target.value) })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Sell Date</label>
+                          <input
+                            type="date"
+                            required
+                            className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                            value={formData.sell_date}
+                            onChange={e => setFormData({ ...formData, sell_date: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      
+                      {formData.lot_size > 0 && formData.lots_allotted > 0 && formData.offer_price > 0 && formData.sell_price > 0 && (
+                        <div className="mt-4 p-4 rounded-lg bg-black/20 border border-default space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted">Gross Profit</span>
+                            <span className={`font-mono font-bold ${(formData.sell_price - formData.offer_price) * (formData.lot_size * formData.lots_allotted) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              ₹{((formData.sell_price - formData.offer_price) * (formData.lot_size * formData.lots_allotted)).toLocaleString()}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between gap-4">
+                            <label className="text-sm font-bold text-muted whitespace-nowrap">Taxes & Brokerage (₹)</label>
                             <input
                               type="number"
-                              className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                              value={formData.lot_size}
-                              onChange={e => setFormData({ ...formData, lot_size: Number(e.target.value) })}
+                              min="0"
+                              className="w-32 bg-elevated border border-default rounded-lg px-3 py-1.5 text-primary text-right focus:outline-none focus:border-blue-500"
+                              value={formData.taxes_and_charges}
+                              onChange={e => setFormData({ ...formData, taxes_and_charges: Number(e.target.value) })}
                             />
                           </div>
-                          <div>
-                            <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Offer Price (₹)</label>
-                            <input
-                              type="number"
-                              className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                              value={formData.offer_price}
-                              onChange={e => setFormData({ ...formData, offer_price: Number(e.target.value) })}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Sell Price (₹)</label>
-                            <input
-                              type="number"
-                              className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                              value={formData.sell_price}
-                              onChange={e => setFormData({ ...formData, sell_price: Number(e.target.value) })}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Sell Date</label>
-                            <input
-                              type="date"
-                              className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                              value={formData.sell_date}
-                              onChange={e => setFormData({ ...formData, sell_date: e.target.value })}
-                            />
+
+                          <div className="flex justify-between text-sm pt-2 border-t border-default/50">
+                            <span className="font-bold text-primary">Net Profit</span>
+                            <span className={`font-mono font-bold text-lg ${((formData.sell_price - formData.offer_price) * (formData.lot_size * formData.lots_allotted) - formData.taxes_and_charges) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              ₹{((formData.sell_price - formData.offer_price) * (formData.lot_size * formData.lots_allotted) - formData.taxes_and_charges).toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Standard fields for Upcoming mode */}
-              {modalMode === 'UPCOMING' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Lots</label>
-                    <input
-                      type="number"
-                      required min="1"
-                      className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                      value={formData.lots_applied}
-                      onChange={e => setFormData({ ...formData, lots_applied: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Total Amount (₹)</label>
-                    <input
-                      type="number"
-                      required min="0"
-                      className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                      value={formData.total_amount}
-                      onChange={e => setFormData({ ...formData, total_amount: Number(e.target.value) })}
-                    />
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -615,7 +689,8 @@ export default function IpoDashboard() {
             </form>
           </Card>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
