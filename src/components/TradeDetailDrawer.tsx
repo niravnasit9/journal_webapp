@@ -34,7 +34,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
 
   const pnl = trade.profit_loss - (trade.commission || 0);
   const isWin = pnl > 0;
-  
+
   // Calculate duration
   const openTime = new Date(trade.open_time).getTime();
   const closeTime = new Date(trade.close_time).getTime();
@@ -46,14 +46,14 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
-      
+
       {/* Drawer */}
       <div className={`fixed inset-y-0 right-0 z-[110] w-full max-w-md bg-surface border-l border-default shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-default bg-elevated/50">
           <div>
@@ -72,7 +72,7 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
 
         {/* Content (Scrollable) */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-          
+
           {/* Hero PnL */}
           <div className="flex items-center justify-between bg-elevated border border-default p-5 rounded-xl">
             <div>
@@ -158,8 +158,8 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
                     </div>
                     {trade.entry_chart_url.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
                       <div className="w-full h-32 bg-neutral-900 rounded border border-default overflow-hidden relative mt-3">
-                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                         <img src={trade.entry_chart_url} alt="Entry Chart" className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={trade.entry_chart_url} alt="Entry Chart" className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" />
                       </div>
                     ) : (
                       <p className="text-xs text-muted truncate">{trade.entry_chart_url}</p>
@@ -174,8 +174,8 @@ export const TradeDetailDrawer: React.FC<TradeDetailDrawerProps> = ({ isOpen, on
                     </div>
                     {trade.exit_chart_url.match(/\.(jpeg|jpg|gif|png)$/) != null ? (
                       <div className="w-full h-32 bg-neutral-900 rounded border border-default overflow-hidden relative mt-3">
-                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                         <img src={trade.exit_chart_url} alt="Exit Chart" className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={trade.exit_chart_url} alt="Exit Chart" className="object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-opacity" />
                       </div>
                     ) : (
                       <p className="text-xs text-muted truncate">{trade.exit_chart_url}</p>

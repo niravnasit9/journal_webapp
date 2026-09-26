@@ -142,7 +142,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
 
             {/* Date Range Picker */}
             <div className="z-50">
-              <DateRangePicker 
+              <DateRangePicker
                 value={datePreset}
                 onChange={(range: DateRange) => {
                   setDatePreset(range.preset);
@@ -152,7 +152,7 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
               />
             </div>
           </div>
-          
+
           {/* Clear Button */}
           {hasActiveFilters && (
             <button onClick={clearFilters}
@@ -187,8 +187,8 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                 <button key={v} onClick={() => setPnlFilter(v)}
                   className={`px-3 py-1.5 transition-colors ${pnlFilter === v
                     ? v === "WIN" ? "bg-emerald-500/20 text-emerald-400"
-                    : v === "LOSS" ? "bg-rose-500/20 text-rose-400"
-                    : "bg-elevated text-primary"
+                      : v === "LOSS" ? "bg-rose-500/20 text-rose-400"
+                        : "bg-elevated text-primary"
                     : "text-muted hover:text-secondary"} ${i > 0 ? "border-l border-default" : ""}`}>
                   {v === "ALL" ? "All" : v === "WIN" ? "✓ Win" : "✗ Loss"}
                 </button>
@@ -308,11 +308,10 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            (t as any).status === "CLOSED"
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(t as any).status === "CLOSED"
                               ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                               : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                          }`}>
+                            }`}>
                             {(t as any).status || "—"}
                           </span>
                         </td>

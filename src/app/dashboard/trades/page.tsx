@@ -218,6 +218,8 @@ export default function TradesPage() {
                 filteredTrades.map((trade) => {
                   const netPnL = trade.profit_loss;
                   const account = accounts.find(a => a.id === trade.account_id);
+                  const qty = (trade as any).units ?? trade.quantity ?? (trade as any).lots ?? trade.lot_size ?? 0;
+                  
                   return (
                     <tr key={trade.id} className="hover:bg-elevated transition-colors group">
                       <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
@@ -245,7 +247,7 @@ export default function TradesPage() {
                         </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right font-mono text-primary font-semibold hidden sm:table-cell">
-                        {isDomestic ? (trade.quantity || 0) : (trade.lot_size || 0).toFixed(2)}
+                        {isDomestic ? qty : Number(qty).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right font-mono hidden lg:table-cell">
                         <div className="text-primary font-semibold">{isDomestic ? trade.open_price.toFixed(2) : trade.open_price.toFixed(5)}</div>

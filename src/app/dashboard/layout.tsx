@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { auth, db } from "@/lib/firebase/config";
 import { updateProfile } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { GlobalSettings } from "@/lib/firebase/schema";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -64,6 +64,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
     fetchGlobalSettings();
   }, []);
+
+  useEffect(() => {
+    const setInitialWorkspace = async () => {
+      if (!user || role === "admin" || isDemoMode) return;
+      try {
+        const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid));
+        const accSnap = await getDocs(accQuery);
+        
+        let domesticTradeCount = 0;
+        let globalTradeCount = 0;
+
+        for (const docSnap of accSnap.docs) {
+          const acc = docSnap.data();
+          const tQuery = query(collection(db, "trades"), where("account_id", "==", docSnap.id));
+          const tSnap = await getDocs(tQuery);
+          if (acc.market_type === "DOMESTIC") {
+            domesticTradeCount += tSnap.size;
+          } else {
+            globalTradeCount += tSnap.size;
+          }
+        }
+
+        // Only switch if there's a clear majority to avoid unnecessary switching
+        if (domesticTradeCount > globalTradeCount && activeWorkspace !== "DOMESTIC") {
+          setWorkspace("DOMESTIC");
+        } else if (globalTradeCount > domesticTradeCount && activeWorkspace !== "GLOBAL") {
+          setWorkspace("GLOBAL");
+        }
+        
+      } catch (e) {
+        console.error("Failed to set initial workspace", e);
+      }
+    };
+
+    setInitialWorkspace();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, role, isDemoMode]); // Removed setWorkspace from dependencies to prevent infinite loops
 
   useEffect(() => {
     if (isMobileMenuOpen) {

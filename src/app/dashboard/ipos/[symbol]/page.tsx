@@ -149,6 +149,35 @@ export default function IpoDetailPage() {
     );
   }
 
+  // Dynamic Timeline Logic
+  const parseDate = (dStr: string) => {
+    if (dStr === "TBA" || !dStr) return Infinity;
+    const d = new Date(dStr);
+    return isNaN(d.getTime()) ? Infinity : d.getTime();
+  };
+  
+  const today = new Date().getTime();
+  const timelineSteps = [
+    { label: "Open", date: mockDeepData.timeline.open, time: parseDate(mockDeepData.timeline.open), icon: "la-door-open" },
+    { label: "Close", date: mockDeepData.timeline.close, time: parseDate(mockDeepData.timeline.close), icon: "la-door-closed" },
+    { label: "Allotment", date: mockDeepData.timeline.allotment, time: parseDate(mockDeepData.timeline.allotment), icon: "la-award" },
+    { label: "Listing", date: mockDeepData.timeline.listing, time: parseDate(mockDeepData.timeline.listing), icon: "la-flag-checkered" },
+  ];
+  
+  let currentStepIndex = -1;
+  timelineSteps.forEach((s, i) => {
+    if (today >= s.time) {
+      currentStepIndex = i;
+    }
+  });
+
+  const getProgressWidth = (idx: number) => {
+    if (idx === -1) return 0;
+    if (idx === 3) return 100;
+    return (idx * 33.33) + 16.66; // halfway to the next step
+  };
+  const timelineWidth = getProgressWidth(currentStepIndex);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-24 animate-in fade-in zoom-in duration-500">
       
@@ -271,31 +300,28 @@ export default function IpoDetailPage() {
             </h3>
             
             <div className="relative px-4">
-              <div className="absolute top-3 left-4 w-[calc(100%-2rem)] h-1 bg-surface rounded-full overflow-hidden">
-                <div className="h-full bg-purple-500 w-[25%] shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
+              <div className="absolute top-3 left-6 w-[calc(100%-3rem)] h-1 bg-surface rounded-full overflow-hidden">
+                <div className="h-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)] transition-all duration-1000 ease-in-out" style={{ width: `${timelineWidth}%` }}></div>
               </div>
               
               <div className="flex justify-between relative z-10">
-                <div className="flex flex-col items-center">
-                  <div className="w-7 h-7 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg border-2 border-elevated ring-2 ring-purple-500/30 mb-3"><i className="las la-check"></i></div>
-                  <p className="text-xs font-bold text-primary">Open</p>
-                  <p className="text-[10px] text-muted">{mockDeepData.timeline.open}</p>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-7 h-7 rounded-full bg-surface text-muted flex items-center justify-center border-2 border-elevated ring-2 ring-default mb-3"><i className="las la-dot-circle"></i></div>
-                  <p className="text-xs font-bold text-primary">Close</p>
-                  <p className="text-[10px] text-muted">{mockDeepData.timeline.close}</p>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-7 h-7 rounded-full bg-surface text-muted flex items-center justify-center border-2 border-elevated ring-2 ring-default mb-3"><i className="las la-award"></i></div>
-                  <p className="text-xs font-bold text-primary">Allotment</p>
-                  <p className="text-[10px] text-muted">{mockDeepData.timeline.allotment}</p>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-7 h-7 rounded-full bg-surface text-muted flex items-center justify-center border-2 border-elevated ring-2 ring-default mb-3"><i className="las la-flag-checkered"></i></div>
-                  <p className="text-xs font-bold text-primary">Listing</p>
-                  <p className="text-[10px] text-muted">{mockDeepData.timeline.listing}</p>
-                </div>
+                {timelineSteps.map((step, idx) => {
+                  const isCompleted = today >= step.time;
+                  
+                  return (
+                    <div key={idx} className="flex flex-col items-center w-24">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 mb-3 shadow-lg transition-colors duration-500 ${
+                        isCompleted 
+                          ? "bg-purple-500 text-white border-elevated ring-2 ring-purple-500/30"
+                          : "bg-surface text-muted border-elevated ring-2 ring-default"
+                      }`}>
+                        <i className={`las ${isCompleted ? "la-check" : step.icon}`}></i>
+                      </div>
+                      <p className={`text-xs font-bold transition-colors ${isCompleted ? "text-primary" : "text-muted"}`}>{step.label}</p>
+                      <p className="text-[10px] text-muted">{step.date}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

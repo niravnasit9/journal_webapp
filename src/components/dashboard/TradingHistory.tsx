@@ -140,7 +140,7 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
 
             {/* Date Range Picker */}
             <div className="z-50">
-              <DateRangePicker 
+              <DateRangePicker
                 value={datePreset}
                 onChange={(range: DateRange) => {
                   setDatePreset(range.preset);
@@ -150,7 +150,7 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
               />
             </div>
           </div>
-          
+
           {/* Clear Button */}
           {hasActiveFilters && (
             <button onClick={clearFilters}
@@ -170,8 +170,8 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                 <button key={v} onClick={() => setDirectionFilter(v)}
                   className={`px-3 py-1.5 transition-colors ${directionFilter === v
                     ? v === "BUY" ? "bg-emerald-500/20 text-emerald-400"
-                    : v === "SELL" ? "bg-rose-500/20 text-rose-400"
-                    : "bg-elevated text-primary"
+                      : v === "SELL" ? "bg-rose-500/20 text-rose-400"
+                        : "bg-elevated text-primary"
                     : "text-muted hover:text-secondary"} ${i > 0 ? "border-l border-default" : ""}`}>
                   {v === "ALL" ? "All" : v}
                 </button>
@@ -270,12 +270,11 @@ export default function TradingHistory({ executions, onEditTrade, onDeleteTrade 
                               : (t.symbol || "Unknown Asset")}
                           </td>
                           <td className="px-6 py-4 hidden md:table-cell">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              (t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                              : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
-                              : (t as any).domestic_segment === "IPO" ? "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 font-black border border-fuchsia-500/20"
-                              : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
-                            }`}>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(t as any).domestic_segment === "COMMODITY" ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                : (t as any).domestic_segment === "FNO_OPTIONS" ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
+                                  : (t as any).domestic_segment === "IPO" ? "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 font-black border border-fuchsia-500/20"
+                                    : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
+                              }`}>
                               {(t as any).domestic_segment || "EQUITY"}
                             </span>
                           </td>

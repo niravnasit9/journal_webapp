@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/firebase/authContext";
 import { useDemo } from "@/lib/demoContext";
 import { useAccountData } from "@/hooks/useAccountData";
@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { PlanStatusCard } from "@/components/subscription/PlanStatusCard";
 import TradeInsightsEngine from "@/components/dashboard/TradeInsightsEngine";
+import NeedsReviewModal from "@/components/dashboard/NeedsReviewModal";
 import dynamic from 'next/dynamic';
 
 // Lazy loading heavy components (if any are extracted in the future, e.g., Charts)
@@ -76,12 +77,41 @@ export default function UserDashboardCommandCenter() {
     return { totalBalance, totalPnL, todaysPnL, winRate, totalTradesCount };
   }, [activeAccounts, recentTrades, isDomestic]);
 
+  // Trades needing review
+  const tradesNeedingReview = useMemo(() => {
+    return recentTrades.filter((t: any) => !t.is_reviewed && t.domestic_segment !== 'IPO');
+  }, [recentTrades]);
+
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
   if (loading) {
     return <div className="p-8 flex items-center justify-center min-h-[50vh]"><LoadingSpinner className="w-10 h-10" /></div>;
   }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans animate-in fade-in w-full overflow-x-hidden">
+      
+      {/* Needs Review Alert Banner */}
+      {tradesNeedingReview.length > 0 && (
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+              <i className="las la-bell text-blue-500 text-xl animate-pulse"></i>
+            </div>
+            <div>
+              <h3 className="text-blue-500 font-bold">Action Required</h3>
+              <p className="text-sm text-secondary">You have <strong>{tradesNeedingReview.length} trades</strong> that need to be reviewed and tagged.</p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => setIsReviewModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 w-full sm:w-auto"
+          >
+            Review Now <i className="las la-arrow-right ml-1"></i>
+          </Button>
+        </div>
+      )}
+
       <PlanStatusCard />
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-subtle pb-6">
@@ -256,6 +286,15 @@ export default function UserDashboardCommandCenter() {
           </CardContent>
         </Card>
       </div>
+
+      <NeedsReviewModal 
+        isOpen={isReviewModalOpen} 
+        onClose={() => setIsReviewModalOpen(false)} 
+        trades={tradesNeedingReview} 
+        onComplete={() => {
+           // Modal completion handler (can refetch or rely on reactive state)
+        }}
+      />
     </div>
   );
 }
