@@ -1,7 +1,7 @@
 "use client";
 
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 import React, { useState, useEffect } from "react";
 
 

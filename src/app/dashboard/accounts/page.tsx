@@ -7,7 +7,8 @@ import { useDemo } from "@/lib/demoContext";
 import { db } from "@/lib/firebase/config";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import toast from "react-hot-toast";
-import { AccountDoc } from "@/lib/firebase/schema";
+import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
+import { tradeService } from "@/services/tradeService";
 import Link from "next/link";
 import AddAccountModal from "@/components/AddAccountModal";
 import EditAccountModal from "@/components/EditAccountModal";
@@ -18,7 +19,7 @@ import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 
 export default function UserAccountsPage() {
   const { user, tier, role } = useAuth();
@@ -33,6 +34,7 @@ export default function UserAccountsPage() {
   const [accountToEdit, setAccountToEdit] = useState<AccountDoc | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [allTrades, setAllTrades] = useState<TradeDoc[]>([]);
   
   useEffect(() => {
     if (user || isDemoMode) {
@@ -52,6 +54,11 @@ export default function UserAccountsPage() {
       const querySnapshot = await getDocs(q);
       const accs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccountDoc));
       setAccounts(accs);
+
+      // Fetch trades to compute breakdowns
+      const accountIds = accs.map(a => a.id);
+      const fetchedTrades = await tradeService.fetchTradesForAccounts(accountIds);
+      setAllTrades(fetchedTrades);
     } catch (error) {
       console.error("Error fetching accounts:", error);
     }
@@ -191,28 +198,71 @@ export default function UserAccountsPage() {
 
                 <div className="h-px w-full bg-subtle mb-6"></div>
   
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-6">
-                  <div>
-                    <p className="text-xs text-secondary font-medium mb-1">Starting Balance</p>
-                    <p className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
-                      {account.currency === "INR" ? "₹" : "$"}{account.initial_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-secondary font-medium mb-1">Current Equity</p>
-                    <p className={`text-xl sm:text-2xl font-bold tracking-tight ${(account.current_balance || account.initial_balance) >= account.initial_balance ? 'text-success' : 'text-danger'}`}>
-                      {account.currency === "INR" ? "₹" : "$"}{(account.current_balance || account.initial_balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div className="col-span-2 lg:col-span-1">
-                    <p className="text-xs text-secondary font-medium mb-1">Type</p>
-                    <p className="text-sm font-bold text-primary tracking-tight mt-1">
-                      {isDomestic 
-                        ? (account.broker || "Personal Brokerage")
-                        : (account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", ""))}
-                    </p>
-                  </div>
-                </div>
+                {(() => {
+                  const accTrades = allTrades.filter(t => t.account_id === account.id);
+                  let ipoPnl = 0;
+                  let tradePnl = 0;
+                  let computedEquity = account.initial_balance;
+                  
+                  accTrades.forEach(t => {
+                    const pnl = isDomestic ? ((t as any).net_pnl ?? ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0)) : (t.profit_loss || 0);
+                    computedEquity += pnl;
+                    if ((t as any).domestic_segment === 'IPO') {
+                      ipoPnl += pnl;
+                    } else {
+                      tradePnl += pnl;
+                    }
+                  });
+                  const totalPnl = computedEquity - account.initial_balance;
+                  
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-6">
+                        <div>
+                          <p className="text-xs text-secondary font-medium mb-1">Starting Balance</p>
+                          <p className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
+                            {account.currency === "INR" ? "₹" : "$"}{account.initial_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-secondary font-medium mb-1">Current Equity</p>
+                          <p className={`text-xl sm:text-2xl font-bold tracking-tight ${computedEquity >= account.initial_balance ? 'text-success' : 'text-danger'}`}>
+                            {account.currency === "INR" ? "₹" : "$"}{computedEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="col-span-2 lg:col-span-1">
+                          <p className="text-xs text-secondary font-medium mb-1">Type</p>
+                          <p className="text-sm font-bold text-primary tracking-tight mt-1">
+                            {isDomestic 
+                              ? (account.broker || "Personal Brokerage")
+                              : (account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", ""))}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mb-6 p-4 rounded-xl bg-surface/50 border border-default grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Total P&L</p>
+                          <p className={`text-sm font-black ${totalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {totalPnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(totalPnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Trades P&L</p>
+                          <p className={`text-sm font-black ${tradePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {tradePnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(tradePnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">IPO P&L</p>
+                          <p className={`text-sm font-black ${ipoPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {ipoPnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(ipoPnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 <div className="flex items-center gap-3 pt-4 border-t border-subtle">
                   <Button 

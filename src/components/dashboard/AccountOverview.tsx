@@ -32,12 +32,20 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
   let totalLosses = 0;
   let grossProfit = 0;
   let grossLoss = 0;
+  let ipoPnl = 0;
+  let tradePnl = 0;
 
   const equityCurve = [{ tradeIndex: 0, label: 'Start', equity: account.initial_balance }];
 
   chronoTrades.forEach((t, i) => {
-    const pnl = isDomestic ? (t.net_pnl || 0) : (t.profit_loss || 0);
+    const pnl = isDomestic ? ((t as any).net_pnl ?? ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0)) : (t.profit_loss || 0);
     currentEquity += pnl;
+
+    if (t.domestic_segment === 'IPO') {
+      ipoPnl += pnl;
+    } else {
+      tradePnl += pnl;
+    }
 
     if (pnl > 0) {
       totalWins++;
@@ -103,6 +111,22 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
             <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface/50 border border-white/5">
               <i className={`las ${netPnl >= 0 ? 'la-arrow-up text-emerald-600 dark:text-emerald-400' : 'la-arrow-down text-rose-600 dark:text-rose-400'} mr-1`}></i>
               <span className={netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{Math.abs(netPnlPct).toFixed(2)}%</span>
+            </div>
+
+            {/* P&L Breakdown */}
+            <div className="mt-4 pt-4 border-t border-default/50 grid grid-cols-2 gap-2 text-sm relative z-20">
+              <div>
+                <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">Trades P&L</span>
+                <span className={`font-mono font-bold ${tradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {tradePnl > 0 ? '+' : ''}{formatCurrency(tradePnl)}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">IPO P&L</span>
+                <span className={`font-mono font-bold ${ipoPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {ipoPnl > 0 ? '+' : ''}{formatCurrency(ipoPnl)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -17,7 +17,7 @@ import { DrawdownProfile } from "@/components/analytics/DrawdownProfile";
 import { SessionHeatmap } from "@/components/analytics/SessionHeatmap";
 import { VolumeCorrelation } from "@/components/analytics/VolumeCorrelation";
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 
 export default function AnalyticsOverview() {
   const { user } = useAuth();

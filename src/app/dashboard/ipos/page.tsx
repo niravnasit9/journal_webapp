@@ -158,7 +158,7 @@ export default function IpoDashboard() {
           if (accSnap.exists()) {
             const accData = accSnap.data();
             await updateDoc(accRef, {
-              current_balance: (accData.current_balance || 0) + profit_loss
+              current_balance: (accData.current_balance ?? accData.initial_balance ?? 0) + profit_loss
             });
           }
         }
@@ -175,6 +175,9 @@ export default function IpoDashboard() {
           open_time: new Date(formData.application_date).toISOString(),
           close_time: new Date(formData.sell_date).toISOString(),
           profit_loss: profit_loss,
+          gross_pnl: (Number(formData.sell_price) - Number(formData.offer_price)) * (Number(formData.lot_size) * Number(formData.lots_allotted)),
+          net_pnl: profit_loss,
+          total_taxes: Number(formData.taxes_and_charges),
           commission: Number(formData.taxes_and_charges),
           domestic_segment: "IPO",
           quantity: Number(formData.lot_size) * Number(formData.lots_allotted),

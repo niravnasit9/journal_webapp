@@ -16,7 +16,7 @@ import { DEMO_ACCOUNTS, generateTradesForAccount } from "@/lib/adminDemoData";
 import { useDemo } from "@/lib/demoContext";
 import { formatTradeDate, getTradeDuration } from "@/lib/dateUtils";
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 
 export default function TradesPage() {
   const { user, tier, role } = useAuth();

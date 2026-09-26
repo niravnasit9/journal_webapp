@@ -10,7 +10,7 @@ import { useUiStore } from "@/store/useUiStore";
 import { useDemo } from "@/lib/demoContext";
 import { useTierAccess } from "@/hooks/useTierAccess";
 import { DEMO_ACCOUNTS } from "@/lib/adminDemoData";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 
 import { Tier1Free } from "@/components/risk/tiers/Tier1Free";
 import { Tier2Starter } from "@/components/risk/tiers/Tier2Starter";

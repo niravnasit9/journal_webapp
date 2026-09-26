@@ -13,7 +13,7 @@ import AddTradeModal from "@/components/AddTradeModal";
 import EditTradeModal from "@/components/EditTradeModal";
 import ImportTradesModal from "@/components/ImportTradesModal";
 import toast from "react-hot-toast";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 import { deleteManualTradeAction } from "@/app/actions/tradeActions";
 import DeleteTradesModal from "@/components/DeleteTradesModal";
 

@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { DEMO_TRADES, DEMO_ACCOUNTS } from "@/lib/adminDemoData";
 import { TiltAnalyzer } from "@/components/insights/TiltAnalyzer";
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 import { AccountDoc } from "@/lib/firebase/schema";
 import { useDemo } from "@/lib/demoContext";
 

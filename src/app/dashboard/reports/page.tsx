@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/Input";
 import toast from "react-hot-toast";
 import { DEMO_ACCOUNTS, DEMO_TRADES } from "@/lib/adminDemoData";
 import { useUiStore } from "@/store/useUiStore";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
+
 import { useDemo } from "@/lib/demoContext";
 
 export default function ReportsPage() {

@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { PlanStatusCard } from "@/components/subscription/PlanStatusCard";
-import MarketSwitcher from "@/components/layout/MarketSwitcher";
 import TradeInsightsEngine from "@/components/dashboard/TradeInsightsEngine";
 import dynamic from 'next/dynamic';
 
@@ -62,7 +61,7 @@ export default function UserDashboardCommandCenter() {
     todayStart.setHours(0, 0, 0, 0);
 
     recentTrades.forEach((t: TradeDoc) => {
-      const net = isDomestic ? ((t as any).net_pnl || 0) : (t.profit_loss - (t.commission || 0));
+      const net = isDomestic ? ((t as any).net_pnl ?? ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0)) : (t.profit_loss - (t.commission || 0));
       totalPnL += net;
       if (net > 0) winningTrades++;
 
