@@ -47,6 +47,7 @@ export default function IpoDashboard() {
 
     // Listed IPO tracking fields
     applied_account_id: "",
+    applied_account_name: "",
     allotted_account_id: "",
     lots_allotted: 0,
     is_sold: false,
@@ -122,6 +123,7 @@ export default function IpoDashboard() {
         total_amount: Number(formData.total_amount),
 
         applied_account_id: formData.applied_account_id,
+        applied_account_name: formData.applied_account_name,
         allotted_account_id: formData.allotted_account_id,
         lots_allotted: Number(formData.lots_allotted),
         is_sold: formData.is_sold,
@@ -187,6 +189,7 @@ export default function IpoDashboard() {
             lots_applied: 1,
             total_amount: 15000,
             applied_account_id: "",
+            applied_account_name: "",
             allotted_account_id: "",
             lots_allotted: 0,
             is_sold: false,
@@ -236,7 +239,10 @@ export default function IpoDashboard() {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="font-bold text-primary text-lg">{app.ipo_name}</h3>
-                        <p className="text-xs font-mono text-muted">{app.application_number || "No App #"}</p>
+                        <p className="text-xs font-mono text-muted">
+                          {app.applied_account_name ? `${app.applied_account_name} ` : ''}
+                          {app.application_number ? `(#${app.application_number})` : "No App #"}
+                        </p>
                       </div>
                       <Badge variant={app.status === "Allotted" ? "success" : app.status === "Rejected" ? "danger" : "warning"}>
                         {app.status}
@@ -370,6 +376,7 @@ export default function IpoDashboard() {
                             lots_applied: 1,
                             total_amount: ipo.minAmount || 15000,
                             applied_account_id: "",
+                            applied_account_name: "",
                             allotted_account_id: "",
                             lots_allotted: 0,
                             is_sold: false,
@@ -447,17 +454,14 @@ export default function IpoDashboard() {
                 <div className="space-y-4 pt-2 border-t border-default/50">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Applied From Account</label>
-                      <select
+                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Applied From Account (Name)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Zerodha, Groww"
                         className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                        value={formData.applied_account_id}
-                        onChange={e => setFormData({ ...formData, applied_account_id: e.target.value })}
-                      >
-                        <option value="">Select Account</option>
-                        {userAccounts.map(acc => (
-                          <option key={acc.id} value={acc.id}>{acc.label}</option>
-                        ))}
-                      </select>
+                        value={formData.applied_account_name}
+                        onChange={e => setFormData({ ...formData, applied_account_name: e.target.value })}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Allotted To Account</label>
@@ -583,14 +587,26 @@ export default function IpoDashboard() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Application Number (Optional)</label>
-                <input
-                  type="text"
-                  className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                  value={formData.application_number}
-                  onChange={e => setFormData({ ...formData, application_number: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Account Name (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Zerodha"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                    value={formData.applied_account_name}
+                    onChange={e => setFormData({ ...formData, applied_account_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Application Number (Optional)</label>
+                  <input
+                    type="text"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                    value={formData.application_number}
+                    onChange={e => setFormData({ ...formData, application_number: e.target.value })}
+                  />
+                </div>
               </div>
 
               <Button type="submit" className="w-full mt-4">

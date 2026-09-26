@@ -21,7 +21,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { PlanRenewalBanner } from "@/components/subscription/PlanRenewalBanner";
 import { useSubscriptionExpiry } from "@/hooks/useSubscriptionExpiry";
-import { useMarketMode } from "@/contexts/MarketModeContext";
+import { useUiStore } from "@/store/useUiStore";
 
 interface NavItem {
   name: string;
@@ -39,7 +39,7 @@ interface NavSection {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, role, tier, loading, userDoc } = useAuth();
   const { isDemoMode, toggleDemoMode } = useDemo();
-  const { marketMode, toggleMarketMode } = useMarketMode();
+  const { activeWorkspace, setWorkspace } = useUiStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -180,10 +180,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     {
       title: "RESOURCES",
       items: [
-        ...(marketMode === "GLOBAL" ? [
+        ...(activeWorkspace === "GLOBAL" ? [
           { name: "Prop Firms", href: "/dashboard/prop-firms", icon: "las la-building" }
         ] : []),
-        ...(marketMode === "DOMESTIC" ? [
+        ...(activeWorkspace === "DOMESTIC" ? [
           { name: "IPOs", href: "/dashboard/ipos", icon: "las la-rocket" }
         ] : []),
         { name: "Goals", href: "/dashboard/goals", icon: "las la-bullseye" },
@@ -241,13 +241,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="px-6 pb-6">
             <div 
-              onClick={toggleMarketMode}
+              onClick={() => setWorkspace(activeWorkspace === 'GLOBAL' ? 'DOMESTIC' : 'GLOBAL')}
               className="w-full flex items-center justify-between p-1 bg-surface border border-default rounded-xl cursor-pointer hover:border-strong transition-all"
             >
-              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${marketMode === 'GLOBAL' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}>
+              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${activeWorkspace === 'GLOBAL' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}>
                 <i className="las la-globe-americas mr-1"></i> Global
               </div>
-              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${marketMode === 'DOMESTIC' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}>
+              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${activeWorkspace === 'DOMESTIC' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}>
                 <i className="las la-rupee-sign mr-1"></i> Domestic
               </div>
             </div>

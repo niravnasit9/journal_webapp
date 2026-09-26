@@ -150,7 +150,7 @@ export default function ReportsPage() {
           </h1>
           <p className="text-secondary text-sm mt-1">Export customized statements for taxes or funding verification.</p>
         </div>
-        <MarketSwitcher />
+        
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

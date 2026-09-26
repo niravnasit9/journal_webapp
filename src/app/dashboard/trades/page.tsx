@@ -155,7 +155,7 @@ export default function TradesPage() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <MarketSwitcher />
+          
           <div title={!isProOrElite ? "Exporting is available on Pro/Elite tiers" : "Export your trade history"}>
             <Button 
               variant="outline"

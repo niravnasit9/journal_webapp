@@ -293,7 +293,7 @@ export default function CalendarPage() {
           </div>
         </div>
         <div className="w-full md:w-auto">
-          <MarketSwitcher />
+          
         </div>
       </div>
       

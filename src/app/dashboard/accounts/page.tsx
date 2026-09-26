@@ -88,7 +88,7 @@ export default function UserAccountsPage() {
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto">
-          <MarketSwitcher />
+          
           <div className="w-32">
             <Select 
               options={[

@@ -94,7 +94,7 @@ export default function UserDashboardCommandCenter() {
           <p className="text-secondary text-sm mt-1 font-medium">Welcome back, here's your {isDomestic ? 'domestic' : 'global'} trading overview.</p>
         </div>
         <div className="flex flex-wrap gap-3 w-full md:w-auto items-center">
-          <MarketSwitcher />
+          
           <Link href="/dashboard/accounts">
             <Button variant="secondary" leftIcon={<i className="las la-wallet text-lg"></i>}>
               Accounts

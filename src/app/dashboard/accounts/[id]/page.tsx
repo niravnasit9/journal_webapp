@@ -168,7 +168,7 @@ export default function AccountDetailView() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="heading-page text-primary">{account.label}</h1>
-            <MarketSwitcher />
+            
           </div>
           <p className="text-sm text-secondary">
             {account.broker} • {account.account_type}

@@ -171,7 +171,7 @@ export default function AnalyticsOverview() {
         </div>
         
         <div className="flex items-center gap-4">
-          <MarketSwitcher />
+          
           <select 
             className="bg-elevated border border-default text-primary font-medium rounded-xl px-4 py-3 outline-none focus:border-[#a855f7] min-w-[200px]"
             value={selectedAccountId}

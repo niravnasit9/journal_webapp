@@ -268,6 +268,7 @@ export interface IpoApplicationDoc {
   
   // New fields for tracking listed/sold IPOs
   applied_account_id?: string; // Account applied from
+  applied_account_name?: string; // Account name applied from
   allotted_account_id?: string; // Account received allotment in
   lots_allotted?: number;
   is_sold?: boolean;

@@ -79,7 +79,7 @@ export default function InsightsPage() {
             </h1>
             <p className="text-secondary text-sm mt-1">Data-driven analysis of your {isDomestic ? 'domestic' : 'global'} trading habits.</p>
           </div>
-          <MarketSwitcher />
+          
         </div>
         <Card className="p-12 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-elevated flex items-center justify-center mb-4 border border-default">
@@ -181,7 +181,7 @@ export default function InsightsPage() {
           </h1>
           <p className="text-secondary text-sm mt-1">Data-driven analysis of your trading habits across {trades.length} {isDomestic ? 'domestic' : 'global'} trades.</p>
         </div>
-        <MarketSwitcher />
+        
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

@@ -92,7 +92,7 @@ export default function RiskCenterPage() {
         </div>
         
         <div className="flex items-center gap-4">
-          <MarketSwitcher />
+          
         </div>
       </div>
 
