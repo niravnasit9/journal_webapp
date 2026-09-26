@@ -40,7 +40,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
       
       stats[dateKey].grossPnl += grossPnl;
       stats[dateKey].netPnl += netPnl;
-      stats[dateKey].count += 1;
+      stats[dateKey].count += (trade as any).trades_count || 1;
       // Evaluate win/loss based on gross PnL
       if (grossPnl > 0) stats[dateKey].wins += 1;
       else if (grossPnl < 0) stats[dateKey].losses += 1;

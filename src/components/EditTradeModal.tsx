@@ -222,8 +222,9 @@ export default function EditTradeModal({
 
   return (
     <Portal>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/80 backdrop-blur-sm">
+        <div className="min-h-full flex items-center justify-center p-4 py-10">
+          <div className="premium-card w-full max-w-4xl p-6 shadow-2xl relative">
         <button onClick={onClose} className="absolute top-4 right-4 text-secondary hover:text-primary transition-colors">
           <i className="las la-times text-2xl"></i>
         </button>
@@ -404,6 +405,7 @@ export default function EditTradeModal({
             {loading ? "Updating Trade..." : "Save Changes"}
           </button>
         </form>
+      </div>
       </div>
       </div>
     </Portal>

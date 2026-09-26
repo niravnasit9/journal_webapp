@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/firebase/authContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DemoProvider } from "@/lib/demoContext";
+import { MarketModeProvider } from "@/contexts/MarketModeContext";
 import Script from "next/script";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -37,7 +38,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }}/>
         <ThemeProvider>
           <AuthProvider>
-            <DemoProvider>{children}</DemoProvider>
+            <DemoProvider>
+              <MarketModeProvider>
+                {children}
+              </MarketModeProvider>
+            </DemoProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

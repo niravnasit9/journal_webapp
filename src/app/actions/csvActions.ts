@@ -83,6 +83,7 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
       let buyUnits = 0, sellUnits = 0;
       let buyLots = 0, sellLots = 0;
       let buyValue = 0, sellValue = 0;
+      let buyCount = 0, sellCount = 0;
       let totalBrokerage = 0, totalStt = 0, totalTxn = 0, totalGst = 0, totalSebi = 0, totalStamp = 0;
 
       for (const t of normalizedExecutions) {
@@ -95,10 +96,12 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
           buyUnits += t.unitQty;
           buyLots += lots;
           buyValue += t.unitQty * t.price;
+          buyCount++;
         } else {
           sellUnits += t.unitQty;
           sellLots += lots;
           sellValue += t.unitQty * t.price;
+          sellCount++;
         }
 
         let bCharges = t.brokerageCharges || 0;
@@ -149,6 +152,8 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
 
       const totalTaxes = totalBrokerage + totalStt + totalTxn + totalGst + totalSebi + totalStamp;
       const netPnl = pnl - totalTaxes;
+      
+      const tradesCount = Math.max(buyCount, sellCount) || 1;
 
       let optType = "";
       let strPrice = "";
@@ -221,6 +226,7 @@ export async function syncCsvTradesAction(accountId: string, allTrades: any[]) {
             stamp_duty: totalStamp
           },
           total_taxes: totalTaxes,
+          trades_count: tradesCount,
           created_at: new Date().toISOString()
         };
         const safePayload = Object.fromEntries(Object.entries(posPayload).filter(([_, v]) => v !== undefined));

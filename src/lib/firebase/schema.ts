@@ -255,6 +255,34 @@ export interface PropFirmPreset {
   consistency_rule_pct: number;
 }
 
+export interface IpoApplicationDoc {
+  id: string;
+  owner_uid: string;
+  ipo_name: string;
+  symbol: string;
+  application_date: string;
+  application_number: string;
+  status: "Pending" | "Allotted" | "Rejected";
+  lots_applied: number;
+  total_amount: number; // calculated as lots_applied * minAmount
+  
+  // New fields for tracking listed/sold IPOs
+  applied_account_id?: string; // Account applied from
+  allotted_account_id?: string; // Account received allotment in
+  lots_allotted?: number;
+  is_sold?: boolean;
+  sell_date?: string;
+  sell_price?: number;
+  offer_price?: number; // Issue price
+  lot_size?: number; // Number of shares per lot
+  
+  listing_date?: string;
+  listing_price?: number;
+  profit_loss?: number; // calculated as (sell_price - offer_price) * (lot_size * lots_allotted)
+  created_at: any;
+  updated_at: any;
+}
+
 export interface GlobalSettings {
   id?: string; // e.g., 'main'
   ai_revenge_gap_mins: number;

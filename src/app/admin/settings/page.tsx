@@ -30,6 +30,7 @@ export default function AdminSettingsPage() {
   const [strictAiEnforcement, setStrictAiEnforcement] = useState(true);
   const [defaultFreeTrialDays, setDefaultFreeTrialDays] = useState(14);
   const [supportEmail, setSupportEmail] = useState("support@profitpulse.com");
+  const [showFmpKey, setShowFmpKey] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -197,14 +198,21 @@ export default function AdminSettingsPage() {
                     <h3 className="text-sm font-bold text-primary">FMP API Key (Economic Calendar)</h3>
                     <p className="text-xs text-muted mt-1">Financial Modeling Prep API key for loading live macroeconomic news.</p>
                   </div>
-                  <div className="md:w-1/3">
+                  <div className="md:w-1/3 relative">
                     <input 
-                      type="password" 
+                      type={showFmpKey ? "text" : "password"}
                       value={settings.fmp_api_key || ""}
                       onChange={e => setSettings({...settings, fmp_api_key: e.target.value})}
-                      className="input-premium w-full bg-black border-default text-sm"
+                      className="input-premium w-full bg-black border-default text-sm pr-10"
                       placeholder="Enter FMP API Key..."
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowFmpKey(!showFmpKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                    >
+                      <i className={`las ${showFmpKey ? "la-eye-slash" : "la-eye"} text-lg`}></i>
+                    </button>
                   </div>
                 </div>
               </div>

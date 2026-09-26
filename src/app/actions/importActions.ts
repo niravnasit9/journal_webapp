@@ -161,6 +161,7 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
       let buyUnits = 0, sellUnits = 0;
       let buyLots = 0, sellLots = 0;
       let buyValue = 0, sellValue = 0;
+      let buyCount = 0, sellCount = 0;
       let totalBrokerage = 0, totalStt = 0, totalTxn = 0, totalGst = 0, totalSebi = 0, totalStamp = 0;
 
       for (const t of normalizedExecutions) {
@@ -175,10 +176,12 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
           buyUnits += t.unitQty;
           buyLots += lots;
           buyValue += t.unitQty * t.price;
+          buyCount++;
         } else {
           sellUnits += t.unitQty;
           sellLots += lots;
           sellValue += t.unitQty * t.price;
+          sellCount++;
         }
 
         let bCharges = t.brokerageCharges || 0;
@@ -280,6 +283,7 @@ export async function syncDhanApiAction(clientId: string, accessToken: string, a
           profit_loss: matchedUnits > 0 ? positionPnl : 0, // TradeDoc requirement
           net_pnl: matchedUnits > 0 ? positionPnl - totalTaxesSum : 0 - totalTaxesSum,
           total_taxes: totalTaxesSum,
+          trades_count: Math.max(buyCount, sellCount) || 1,
           commission: totalTaxesSum, // TradeDoc requirement
           status: matchedUnits === 0 ? "OPEN" : "CLOSED",
           tax_breakdown: {

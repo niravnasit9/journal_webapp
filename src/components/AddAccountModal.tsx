@@ -146,8 +146,9 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
   };
 
   return (
-    <div className="fixed inset-0 bg-[#fafafa] dark:bg-[#0a0f1c]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-300 dark:border-slate-700 w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#fafafa] dark:bg-[#0a0f1c]/80 backdrop-blur-sm">
+      <div className="min-h-full flex items-center justify-center p-4 py-10">
+        <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-yellow-300 dark:border-slate-700 w-full max-w-md relative animate-in fade-in zoom-in duration-200">
         <div className="flex justify-between items-center p-5 border-b border-yellow-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0f1523]">
           <h3 className="text-lg font-bold text-gray-900 dark:text-primary flex items-center gap-2 tracking-tight">
             <i className="las la-plus-circle text-2xl text-blue-500"></i> Add Account
@@ -366,6 +367,7 @@ export default function AddAccountModal({ isOpen, onClose, onAdded }: AddAccount
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );
