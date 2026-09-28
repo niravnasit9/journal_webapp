@@ -18,12 +18,6 @@ async function fetchUpcomingIpos() {
   return await res.json();
 }
 
-async function fetchListedIpos() {
-  const res = await fetch("/api/ipos-listed");
-  if (!res.ok) throw new Error("Failed to fetch listed IPOs");
-  return await res.json();
-}
-
 export default function IpoDashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -70,13 +64,10 @@ export default function IpoDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Upcoming IPOs & Listed IPOs
-      const [ipos, listed] = await Promise.all([
-        fetchUpcomingIpos(),
-        fetchListedIpos()
-      ]);
-      setUpcomingIpos(ipos);
-      setListedIpos(listed);
+      // 1. Fetch All IPOs and separate by status
+      const ipos = await fetchUpcomingIpos();
+      setUpcomingIpos(ipos.filter((i: any) => i.status !== 'Listed'));
+      setListedIpos(ipos.filter((i: any) => i.status === 'Listed'));
 
       // 2. Fetch My Applications
       const q = query(collection(db, "ipo_applications"), where("owner_uid", "==", user?.uid));
@@ -356,6 +347,22 @@ export default function IpoDashboard() {
             </h2>
 
             <div className="flex flex-col gap-3">
+              {/* Upcoming vs Listed */}
+              <div className="flex items-center justify-between p-1 bg-surface border border-default rounded-xl cursor-pointer w-full mb-1">
+                <div
+                  onClick={() => setStatusCategory('UPCOMING')}
+                  className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${statusCategory === 'UPCOMING' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}
+                >
+                  Upcoming / Live
+                </div>
+                <div
+                  onClick={() => setStatusCategory('LISTED')}
+                  className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition-all ${statusCategory === 'LISTED' ? 'bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'text-muted hover:text-primary'}`}
+                >
+                  Listed
+                </div>
+              </div>
+
               {/* Mainboard vs SME */}
               <div className="flex items-center justify-between p-1 bg-surface border border-default rounded-xl cursor-pointer w-full">
                 <div
@@ -376,7 +383,7 @@ export default function IpoDashboard() {
           </div>
 
           <div className="space-y-4">
-            {upcomingIpos
+            {(statusCategory === 'UPCOMING' ? upcomingIpos : listedIpos)
                 .filter(ipo => ipoCategory === 'MAINBOARD' ? ipo.exchange !== 'SME' : ipo.exchange === 'SME')
                 .map((ipo, idx) => (
                   <Link href={`/dashboard/ipos/${ipo.symbol}`} key={idx} className="block group">
@@ -394,74 +401,120 @@ export default function IpoDashboard() {
                             </p>
                           </div>
                         </div>
-                        <Badge variant="neutral" className={`text-[10px] whitespace-nowrap ${ipo.status === 'Live' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}`}>
-                          {ipo.status === 'Live' ? <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> {ipo.status}</span> : ipo.status}
-                        </Badge>
+                        <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border ${
+                          ipo.status === 'Live' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+                          ipo.status === 'Upcoming' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                          ipo.status === 'Allotment Awaited' || ipo.status === 'Closed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          ipo.status === 'Allotment Out' ? 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' :
+                          ipo.status === 'Listed' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                          'bg-surface border-default/50 text-muted'
+                        }`}>
+                          {ipo.status === 'Live' ? <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {ipo.status}</span> : ipo.status}
+                        </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-2 text-xs mb-4">
                         <div>
-                          <p className="text-muted flex items-center gap-1"><i className="las la-tag"></i> Offer Price</p>
-                          <p className="text-primary font-bold mt-0.5">{ipo.priceRange}</p>
+                          <p className="text-muted flex items-center gap-1"><i className="las la-tag"></i> {statusCategory === 'LISTED' ? 'Issue Price' : 'Offer Price'}</p>
+                          <p className="text-primary font-bold mt-0.5">{statusCategory === 'LISTED' ? ipo.issuePrice || ipo.priceRange : ipo.priceRange}</p>
                         </div>
                         <div>
-                          <p className="text-muted flex items-center gap-1"><i className="las la-box"></i> Lot Size</p>
-                          <p className="text-primary font-bold mt-0.5">{ipo.minLot}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted flex items-center gap-1"><i className="las la-users"></i> Subs</p>
-                          <p className="text-primary font-bold mt-0.5">{ipo.subs}</p>
-                        </div>
-
-                        <div>
-                          <p className="text-muted flex items-center gap-1"><i className="las la-chart-line"></i> Exp. Premium</p>
-                          <p className={`font-bold mt-0.5 ${ipo.gmp && !ipo.gmp.startsWith('₹0') ? 'text-green-500' : 'text-red-500'}`}>
-                            {ipo.gmp && !ipo.gmp.startsWith('₹0') ? <i className="las la-arrow-up text-[10px]"></i> : <i className="las la-arrow-down text-[10px]"></i>}
-                            {ipo.gmp}
-                          </p>
+                          <p className="text-muted flex items-center gap-1"><i className="las la-users"></i> Final Subs</p>
+                          <p className="text-primary font-bold mt-0.5">{ipo.subscription || ipo.subs}</p>
                         </div>
                         <div>
                           <p className="text-muted flex items-center gap-1"><i className="las la-building"></i> Issue Size</p>
                           <p className="text-primary font-bold mt-0.5">{ipo.issueSize}</p>
                         </div>
-                        <div>
-                          <p className="text-muted flex items-center gap-1"><i className="las la-wallet"></i> Min. Amount</p>
-                          <p className="text-primary font-bold mt-0.5">₹{ipo.minAmount?.toLocaleString()}/-</p>
-                        </div>
+
+                        {statusCategory === 'LISTED' ? (
+                          <>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-chart-bar"></i> Listing Price</p>
+                              <p className="text-primary font-bold mt-0.5">{ipo.actualListingPrice}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-chart-pie"></i> Day 1 Close</p>
+                              <p className="text-primary font-bold mt-0.5">{ipo.listingDayClose}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-bolt"></i> Current LTP</p>
+                              <p className="text-emerald-500 font-bold mt-0.5">{ipo.currentLtp}</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-box"></i> Lot Size</p>
+                              <p className="text-primary font-bold mt-0.5">{ipo.minLot}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-chart-line"></i> Exp. Premium</p>
+                              <p className={`font-bold mt-0.5 ${ipo.gmp && !ipo.gmp.startsWith('₹0') ? 'text-green-500' : 'text-red-500'}`}>
+                                {ipo.gmp && !ipo.gmp.startsWith('₹0') ? <i className="las la-arrow-up text-[10px]"></i> : <i className="las la-arrow-down text-[10px]"></i>}
+                                {ipo.gmp}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-muted flex items-center gap-1"><i className="las la-wallet"></i> Min. Amount</p>
+                              <p className="text-primary font-bold mt-0.5">₹{ipo.minAmount?.toLocaleString()}/-</p>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      <Button
-                        variant="outline"
-                        className="w-full text-xs h-8 bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                        onClick={(e) => {
-                          e.preventDefault(); // Prevent navigating to detail page when clicking the button
-                          setEditId(null);
-                          setFormData({
-                            ...formData,
-                            ipo_name: ipo.name,
-                            symbol: ipo.symbol,
-                            application_date: new Date().toISOString().split('T')[0],
-                            application_number: "",
-                            status: "Pending",
-                            lots_applied: 1,
-                            total_amount: ipo.minAmount || 15000,
-                            applied_account_id: "",
-                            applied_account_name: "",
-                            allotted_account_id: "",
-                            lots_allotted: 0,
-                            is_sold: false,
-                            sell_date: new Date().toISOString().split('T')[0],
-                            sell_price: 0,
-                            offer_price: 0,
-                            lot_size: 1,
-                            taxes_and_charges: 0
-                          });
-                          setModalMode('UPCOMING');
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        Quick Log Application
-                      </Button>
+                      <div className="flex items-center gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-all">
+                        {ipo.status === 'Allotment Out' ? (
+                          <Button
+                            variant="outline"
+                            className="flex-1 text-[11px] h-8 bg-cyan-500/10 text-cyan-500 border-cyan-500/20 hover:bg-cyan-500 hover:text-white transition-all px-0"
+                          >
+                            <i className="las la-external-link-alt mr-1"></i> Check Allotment
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline" 
+                            disabled
+                            className="flex-1 text-[11px] h-8 bg-surface text-muted border-default/50 opacity-50 cursor-not-allowed px-0"
+                            onClick={(e) => e.preventDefault()}
+                          >
+                            <i className="las la-lock mr-1"></i> Allotment Locked
+                          </Button>
+                        )}
+
+                        <Button
+                          variant="outline"
+                          className="flex-1 text-[11px] h-8 bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all px-0"
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevent navigating to detail page when clicking the button
+                            setEditId(null);
+                            setFormData({
+                              ...formData,
+                              ipo_name: ipo.name,
+                              symbol: ipo.symbol,
+                              application_date: new Date().toISOString().split('T')[0],
+                              application_number: "",
+                              status: "Pending",
+                              lots_applied: 1,
+                              total_amount: ipo.minAmount || 15000,
+                              applied_account_id: "",
+                              applied_account_name: "",
+                              allotted_account_id: "",
+                              lots_allotted: 0,
+                              is_sold: false,
+                              sell_date: new Date().toISOString().split('T')[0],
+                              sell_price: 0,
+                              offer_price: 0,
+                              lot_size: 1,
+                              taxes_and_charges: 0
+                            });
+                            setModalMode('UPCOMING');
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          Quick Log
+                        </Button>
+                      </div>
                     </Card>
                   </Link>
                 ))}

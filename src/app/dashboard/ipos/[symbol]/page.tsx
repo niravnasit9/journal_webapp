@@ -16,7 +16,7 @@ export default function IpoDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [ipoData, setIpoData] = useState<any>(null);
-  const [showChart, setShowChart] = useState(false);
+  const [deepData, setDeepData] = useState<any>(null);
 
   useEffect(() => {
     fetchIpoDetails();
@@ -29,7 +29,8 @@ export default function IpoDetailPage() {
       if (!res.ok) throw new Error("Failed to fetch IPO data");
       
       const allIpos = await res.json();
-      const specificIpo = allIpos.find((i: any) => i.symbol === symbol);
+      const decodedSymbol = decodeURIComponent(symbol);
+      const specificIpo = allIpos.find((i: any) => i.symbol === decodedSymbol);
       
       if (!specificIpo) {
         toast.error("IPO details not found");
@@ -38,6 +39,18 @@ export default function IpoDetailPage() {
       }
       
       setIpoData(specificIpo);
+
+      if (specificIpo.detailUrl) {
+        try {
+          const detailRes = await fetch(`/api/ipos/details?url=${encodeURIComponent(specificIpo.detailUrl)}`);
+          if (detailRes.ok) {
+            const dData = await detailRes.json();
+            setDeepData(dData);
+          }
+        } catch (e) {
+          console.error("Failed to load deep data", e);
+        }
+      }
     } catch (error) {
       console.error(error);
       toast.error("Error loading IPO details");
@@ -56,98 +69,13 @@ export default function IpoDetailPage() {
 
   if (!ipoData) return null;
 
-  // Mock extended data based on the real basic data to match the screenshots perfectly
-  const mockDeepData = {
-    timeline: { open: ipoData.date, close: ipoData.closeDate, allotment: "TBA", listing: "TBA" },
-    subs: {
-      date: new Date().toLocaleString(),
-      qib: "0.26x",
-      niiAbove: "14.95x",
-      niiBelow: "18.34x",
-      niiTotal: "16.08x",
-      retail: ipoData.subs || "5.41x",
-      total: "6.22x"
-    },
-    lotSize: [
-      { cat: "Retail (Min)", lots: 1, shares: ipoData.minLot, amount: ipoData.minAmount },
-      { cat: "sHNI (Min)", lots: 14, shares: ipoData.minLot * 14, amount: ipoData.minAmount * 14 },
-      { cat: "bHNI (Min)", lots: 67, shares: ipoData.minLot * 67, amount: ipoData.minAmount * 67 },
-    ],
-    valuations: [
-      { label: "EPS Pre IPO", val: "₹1.58/-" },
-      { label: "EPS Post IPO", val: "₹3.95/-" },
-      { label: "P/E Pre IPO", val: "21.52" },
-      { label: "P/E Post IPO", val: "8.61" },
-      { label: "ROE", val: "17.4%" },
-      { label: "ROCE", val: "22.1%" },
-      { label: "Market Cap", val: "₹5,984.79 Cr." },
-    ],
-    chartData: [
-      { date: "Sep 21, 11:30 PM", premium: 3 },
-      { date: "Sep 22, 10:00 AM", premium: 5 },
-      { date: "Sep 22, 04:00 PM", premium: 8 },
-      { date: "Sep 23, 10:30 AM", premium: 11 },
-      { date: "Sep 23, 04:00 PM", premium: 12 },
-      { date: "Sep 24, 02:45 PM", premium: 13 },
-      { date: "Sep 25, 10:00 AM", premium: 14 },
-      { date: "Sep 25, 04:15 PM", premium: 13 },
-    ]
-  };
+  const lotSizeData = [
+    { cat: "Retail (Min)", lots: 1, shares: ipoData.minLot, amount: ipoData.minAmount },
+    { cat: "sHNI (Min)", lots: Math.ceil(200000 / ipoData.minAmount), shares: ipoData.minLot * Math.ceil(200000 / ipoData.minAmount), amount: ipoData.minAmount * Math.ceil(200000 / ipoData.minAmount) },
+    { cat: "bHNI (Min)", lots: Math.ceil(1000000 / ipoData.minAmount), shares: ipoData.minLot * Math.ceil(1000000 / ipoData.minAmount), amount: ipoData.minAmount * Math.ceil(1000000 / ipoData.minAmount) },
+  ];
 
-  if (showChart) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-4 pb-24 animate-in fade-in slide-in-from-right-4 duration-300">
-        <div className="flex items-center gap-3 mb-4 sticky top-0 bg-background/80 backdrop-blur-md z-40 py-4 border-b border-default">
-          <button onClick={() => setShowChart(false)} className="p-2 -ml-2 rounded-full hover:bg-elevated transition-colors">
-            <i className="las la-arrow-left text-xl"></i>
-          </button>
-          <h1 className="text-xl font-bold text-primary truncate">{ipoData.name} IPO</h1>
-        </div>
 
-        <div className="flex justify-between items-center bg-elevated px-4 py-3 rounded-xl border border-default text-xs md:text-sm">
-          <span className="text-muted">{ipoData.date} - {ipoData.closeDate}</span>
-          <span className="text-primary font-bold">{ipoData.priceRange}</span>
-          <span className="text-muted">Lot: {ipoData.minLot}</span>
-        </div>
-
-        <Card className="p-5 bg-elevated border-default shadow-sm">
-          <h3 className="font-bold text-primary mb-6">Premium Chart</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockDeepData.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 40 }}>
-                <defs>
-                  <linearGradient id="colorPremium" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-default/20" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="currentColor" 
-                  className="text-muted text-[10px]" 
-                  tickMargin={15}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis stroke="currentColor" className="text-muted text-xs" axisLine={false} tickLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-default)', borderRadius: '8px' }}
-                  itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
-                />
-                <Area type="monotone" dataKey="premium" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorPremium)" activeDot={{ r: 6, fill: "#8b5cf6", stroke: "#fff" }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <p className="text-[10px] text-muted text-center max-w-lg mx-auto leading-relaxed mt-6">
-          Disclaimer: Exp. Premium/GMP is indicative and from unofficial markets. Not a guarantee of listing price or returns. Invest at your own risk.
-        </p>
-      </div>
-    );
-  }
 
   // Dynamic Timeline Logic
   const parseDate = (dStr: string) => {
@@ -158,23 +86,29 @@ export default function IpoDetailPage() {
   
   const today = new Date().getTime();
   const timelineSteps = [
-    { label: "Open", date: mockDeepData.timeline.open, time: parseDate(mockDeepData.timeline.open), icon: "la-door-open" },
-    { label: "Close", date: mockDeepData.timeline.close, time: parseDate(mockDeepData.timeline.close), icon: "la-door-closed" },
-    { label: "Allotment", date: mockDeepData.timeline.allotment, time: parseDate(mockDeepData.timeline.allotment), icon: "la-award" },
-    { label: "Listing", date: mockDeepData.timeline.listing, time: parseDate(mockDeepData.timeline.listing), icon: "la-flag-checkered" },
+    { label: "Open", date: ipoData.date, time: parseDate(ipoData.date), icon: "la-door-open" },
+    { label: "Close", date: ipoData.closeDate, time: parseDate(ipoData.closeDate), icon: "la-door-closed" },
+    { label: "Allotment", date: ipoData.allotmentDate || deepData?.allotmentDate || "TBA", time: parseDate(ipoData.allotmentDate || deepData?.allotmentDate), icon: "la-award" },
+    { label: "Listing", date: ipoData.listingDate || deepData?.listingDate || "TBA", time: parseDate(ipoData.listingDate || deepData?.listingDate), icon: "la-flag-checkered" }
   ];
   
   let currentStepIndex = -1;
   timelineSteps.forEach((s, i) => {
-    if (today >= s.time) {
+    if (today >= s.time && s.date !== "TBA") {
       currentStepIndex = i;
     }
   });
 
+  // Hard override based on status to ensure accuracy even if dates are missing or slightly off
+  if (ipoData.status === 'Closed' && currentStepIndex < 1) currentStepIndex = 1;
+  if (ipoData.status === 'Allotment Awaited' && currentStepIndex < 1) currentStepIndex = 1;
+  if (ipoData.status === 'Allotment Out' && currentStepIndex < 2) currentStepIndex = 2;
+  if (ipoData.status === 'Listed' && currentStepIndex < 3) currentStepIndex = 3;
+
   const getProgressWidth = (idx: number) => {
     if (idx === -1) return 0;
-    if (idx === 3) return 100;
-    return (idx * 33.33) + 16.66; // halfway to the next step
+    if (idx >= timelineSteps.length - 1) return 100;
+    return (idx * (100 / (timelineSteps.length - 1)));
   };
   const timelineWidth = getProgressWidth(currentStepIndex);
 
@@ -196,10 +130,39 @@ export default function IpoDetailPage() {
           <Badge variant="neutral" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-xs hidden sm:inline-flex">
             <i className="las la-building mr-1"></i> {ipoData.exchange.includes('NSE') && !ipoData.exchange.includes('SME') ? 'MAINBOARD' : 'SME'}
           </Badge>
-          <Badge variant="neutral" className={`text-xs ${ipoData.status === 'Live' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface text-muted'}`}>
+          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-bold uppercase tracking-wider whitespace-nowrap border ${
+            ipoData.status === 'Live' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+            ipoData.status === 'Upcoming' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+            ipoData.status === 'Allotment Awaited' || ipoData.status === 'Closed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+            ipoData.status === 'Allotment Out' ? 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' :
+            ipoData.status === 'Listed' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+            'bg-surface border-default/50 text-muted'
+          }`}>
             {ipoData.status === 'Live' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>}
             {ipoData.status}
-          </Badge>
+          </span>
+
+          {/* Glowing Check Allotment Button */}
+          {ipoData.status === 'Allotment Out' && deepData?.allotmentUrl ? (
+            <a 
+              href={deepData.allotmentUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="ml-2 group relative inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-500 hover:to-indigo-500 border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:shadow-[0_0_25px_rgba(59,130,246,0.8)]"
+            >
+              <i className="las la-external-link-alt text-sm"></i>
+              Check Allotment
+              <span className="absolute inset-0 rounded-lg ring-2 ring-white/20 group-hover:ring-white/50 transition-all duration-300"></span>
+            </a>
+          ) : (
+            <button 
+              disabled
+              className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-muted transition-all duration-300 bg-surface rounded-lg border border-default/50 opacity-50 cursor-not-allowed"
+            >
+              <i className="las la-lock text-sm"></i>
+              Allotment Locked
+            </button>
+          )}
         </div>
       </div>
 
@@ -238,21 +201,23 @@ export default function IpoDetailPage() {
               </div>
             </div>
 
-            {/* GMP Highlight */}
-            <div className="bg-surface/80 p-5 rounded-2xl border border-default shadow-lg flex flex-col justify-center items-center min-w-[200px] backdrop-blur-md transform group-hover:-translate-y-1 transition-transform duration-300">
-              <p className="text-xs text-muted uppercase tracking-widest font-bold mb-2">Expected Premium</p>
-              <div className={`text-4xl font-extrabold tracking-tight ${ipoData.gmp && !ipoData.gmp.startsWith('₹0') ? 'text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]'}`}>
-                {ipoData.gmp}
+            {/* GMP Highlight or Listed Performance */}
+            {ipoData.status === 'Listed' ? (
+              <div className="bg-surface/80 p-5 rounded-2xl border border-default shadow-lg flex flex-col justify-center items-center min-w-[200px] backdrop-blur-md transform group-hover:-translate-y-1 transition-transform duration-300">
+                <p className="text-xs text-muted uppercase tracking-widest font-bold mb-2">Current LTP</p>
+                <div className="text-3xl font-extrabold tracking-tight text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                  {ipoData.currentLtp?.split(' ')[0] || '--'}
+                </div>
+                <p className="text-[10px] text-emerald-500 font-bold mt-1">{ipoData.currentLtp?.split(' ')[1] || ''}</p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowChart(true)}
-                className="mt-4 w-full bg-background/50 hover:bg-background text-xs border border-default/50"
-              >
-                <i className="las la-chart-area text-lg mr-1 text-purple-400"></i> Open Chart
-              </Button>
-            </div>
+            ) : (
+              <div className="bg-surface/80 p-5 rounded-2xl border border-default shadow-lg flex flex-col justify-center items-center min-w-[200px] backdrop-blur-md transform group-hover:-translate-y-1 transition-transform duration-300">
+                <p className="text-xs text-muted uppercase tracking-widest font-bold mb-2">Expected Premium</p>
+                <div className={`text-4xl font-extrabold tracking-tight ${ipoData.gmp && !ipoData.gmp.startsWith('₹0') ? 'text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]'}`}>
+                  {ipoData.gmp}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -264,34 +229,32 @@ export default function IpoDetailPage() {
         <div className="space-y-6 lg:col-span-2">
           
           {/* Subscription Dashboard */}
-          <Card className="p-0 bg-elevated border-default overflow-hidden shadow-sm">
-            <div className="p-5 border-b border-default bg-surface/30 flex justify-between items-center">
-              <h3 className="font-bold text-primary flex items-center gap-2">
-                <i className="las la-fire text-orange-500 text-xl"></i> Live Subscription
+          {/* Subscription Dashboard */}
+          <div className="rounded-xl border border-white/10 bg-[#0f0f0f] overflow-hidden">
+            <div className="p-4 border-b border-white/5 flex justify-between items-center">
+              <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+                <i className="las la-fire text-orange-500 text-lg"></i> Live Subscription
               </h3>
-              <span className="text-xs text-muted font-mono">{mockDeepData.subs.date}</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-default/30">
-              <div className="bg-elevated p-5 flex flex-col justify-center items-center text-center hover:bg-surface/50 transition-colors">
-                <p className="text-xs text-muted mb-1 font-bold">QIB</p>
-                <p className="text-xl font-bold text-primary">{mockDeepData.subs.qib}</p>
+            <div className="grid grid-cols-4 divide-x divide-white/5">
+              <div className="p-5 flex flex-col justify-center items-center text-center">
+                <p className="text-[11px] text-slate-500 mb-1 font-bold">QIB</p>
+                <p className="text-xl font-bold text-white">{ipoData.subsQib !== '--' ? ipoData.subsQib : (deepData?.subsQib || "--")}</p>
               </div>
-              <div className="bg-elevated p-5 flex flex-col justify-center items-center text-center hover:bg-surface/50 transition-colors">
-                <p className="text-xs text-muted mb-1 font-bold">NII</p>
-                <p className="text-xl font-bold text-primary">{mockDeepData.subs.niiTotal}</p>
+              <div className="p-5 flex flex-col justify-center items-center text-center">
+                <p className="text-[11px] text-slate-500 mb-1 font-bold">NII</p>
+                <p className="text-xl font-bold text-white">{ipoData.subsNii !== '--' ? ipoData.subsNii : (deepData?.subsNii || "--")}</p>
               </div>
-              <div className="bg-elevated p-5 flex flex-col justify-center items-center text-center hover:bg-surface/50 transition-colors relative overflow-hidden group">
-                <div className="absolute inset-0 bg-blue-500/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                <p className="text-xs text-blue-500 mb-1 font-bold">Retail</p>
-                <p className="text-xl font-bold text-primary">{mockDeepData.subs.retail}</p>
+              <div className="p-5 flex flex-col justify-center items-center text-center">
+                <p className="text-[11px] text-blue-500 mb-1 font-bold">Retail</p>
+                <p className="text-xl font-bold text-white">{ipoData.subsRetail !== '--' ? ipoData.subsRetail : (deepData?.subsRetail || "--")}</p>
               </div>
-              <div className="bg-elevated p-5 flex flex-col justify-center items-center text-center hover:bg-surface/50 transition-colors relative overflow-hidden group">
-                <div className="absolute inset-0 bg-emerald-500/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                <p className="text-xs text-emerald-500 mb-1 font-bold">Total</p>
-                <p className="text-2xl font-black text-primary">{mockDeepData.subs.total}</p>
+              <div className="p-5 flex flex-col justify-center items-center text-center">
+                <p className="text-[11px] text-emerald-500 mb-1 font-bold">Total</p>
+                <p className="text-xl font-bold text-white">{ipoData.subs || "--"}</p>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Timeline & Details */}
           <Card className="p-6 bg-elevated border-default shadow-sm">
@@ -306,7 +269,7 @@ export default function IpoDetailPage() {
               
               <div className="flex justify-between relative z-10">
                 {timelineSteps.map((step, idx) => {
-                  const isCompleted = today >= step.time;
+                  const isCompleted = currentStepIndex >= idx;
                   
                   return (
                     <div key={idx} className="flex flex-col items-center w-24">
@@ -332,15 +295,15 @@ export default function IpoDetailPage() {
               </div>
               <div>
                 <p className="text-[10px] text-muted uppercase">Face Value</p>
-                <p className="text-sm font-bold mt-1">₹10</p>
+                <p className="text-sm font-bold mt-1">{deepData?.faceValue || "--"}</p>
               </div>
               <div>
                 <p className="text-[10px] text-muted uppercase">Listed On</p>
                 <p className="text-sm font-bold mt-1">{ipoData.exchange}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <a href="#" className="w-8 h-8 flex items-center justify-center rounded-lg bg-background border border-default hover:border-purple-500 hover:text-purple-500 transition-colors text-muted text-xs" title="DRHP"><i className="las la-file-pdf text-lg"></i></a>
-                <a href="#" className="w-8 h-8 flex items-center justify-center rounded-lg bg-background border border-default hover:border-purple-500 hover:text-purple-500 transition-colors text-muted text-xs" title="RHP"><i className="las la-file-alt text-lg"></i></a>
+              <div>
+                <p className="text-[10px] text-muted uppercase">Registrar</p>
+                <p className="text-sm font-bold mt-1 truncate">{deepData?.registrar || "--"}</p>
               </div>
             </div>
           </Card>
@@ -351,7 +314,7 @@ export default function IpoDetailPage() {
           <Card className="p-0 bg-elevated border-default overflow-hidden shadow-sm">
             <div className="p-4 border-b border-default bg-surface/30"><h3 className="font-bold text-primary">Investment Tiers</h3></div>
             <div className="divide-y divide-default/50">
-              {mockDeepData.lotSize.map((l, i) => (
+              {lotSizeData.map((l, i) => (
                 <div key={i} className="p-4 hover:bg-surface/30 transition-colors flex justify-between items-center group">
                   <div>
                     <p className="text-sm font-bold text-primary">{l.cat}</p>
@@ -365,17 +328,29 @@ export default function IpoDetailPage() {
             </div>
           </Card>
 
-          <Card className="p-0 bg-elevated border-default overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-default bg-surface/30"><h3 className="font-bold text-primary">Financial Valuations</h3></div>
-            <div className="grid grid-cols-2 divide-y divide-x divide-default/50">
-              {mockDeepData.valuations.map((v, i) => (
-                <div key={i} className="p-4 text-center hover:bg-surface/30 transition-colors group">
-                  <p className="text-[10px] text-muted uppercase tracking-wider mb-1">{v.label}</p>
-                  <p className="text-sm font-bold text-primary group-hover:text-blue-500 transition-colors">{v.val}</p>
+          {ipoData.status === 'Listed' && (
+            <Card className="p-0 bg-elevated border-default overflow-hidden shadow-sm mt-6">
+              <div className="p-4 border-b border-default bg-surface/30"><h3 className="font-bold text-primary">Listing Performance</h3></div>
+              <div className="divide-y divide-default/50">
+                <div className="p-4 flex justify-between items-center group">
+                  <span className="text-xs text-muted">Final Subscription</span>
+                  <span className="font-bold font-mono">{ipoData.subscription || ipoData.subs}</span>
                 </div>
-              ))}
-            </div>
-          </Card>
+                <div className="p-4 flex justify-between items-center group">
+                  <span className="text-xs text-muted">Listing Price</span>
+                  <span className="font-bold font-mono">{ipoData.actualListingPrice}</span>
+                </div>
+                <div className="p-4 flex justify-between items-center group">
+                  <span className="text-xs text-muted">Day 1 Close</span>
+                  <span className="font-bold font-mono">{ipoData.listingDayClose}</span>
+                </div>
+                <div className="p-4 flex justify-between items-center group">
+                  <span className="text-xs text-muted">Current LTP</span>
+                  <span className="font-bold font-mono text-emerald-500">{ipoData.currentLtp}</span>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
 
