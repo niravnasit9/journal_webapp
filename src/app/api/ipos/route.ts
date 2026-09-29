@@ -60,6 +60,7 @@ export async function GET(request: Request) {
       const cols = $(el).find('td');
       if (cols.length >= 8) {
         let nameRaw = $(cols[0]).text().trim();
+        nameRaw = nameRaw.replace(/\[email\s*protected\]/gi, '').replace(/\([0-9.%+-]+\)/g, '').trim();
         let detailUrl = $(cols[0]).find('a').attr('href') || '';
         
         // Check if SME
@@ -113,6 +114,53 @@ export async function GET(request: Request) {
         let allotmentDate = boaDateRaw && boaDateRaw !== '--' ? `${boaDateRaw}-${new Date().getFullYear()}` : 'TBA';
         let listingDate = listDateRaw && listDateRaw !== '--' ? `${listDateRaw}-${new Date().getFullYear()}` : 'TBA';
         
+        if (openDate !== 'TBA' && closeDate !== 'TBA') {
+          try {
+            const nowStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+            const now = new Date(nowStr);
+
+            const openD = new Date(openDate + " 10:00:00 GMT+0530");
+            const closeD = new Date(closeDate + " 17:00:00 GMT+0530");
+
+            if (status !== 'Allotment Out') {
+              if (now.toDateString() === closeD.toDateString()) {
+                 if (now < closeD) {
+                    status = 'Closing Today';
+                 } else {
+                    status = 'Closed';
+                 }
+              } else if (now < openD) {
+                 status = 'Upcoming';
+              } else if (now >= openD && now < closeD) {
+                 status = 'Live';
+              } else if (now > closeD) {
+                 const allotmentD = allotmentDate !== 'TBA' ? new Date(allotmentDate + " 00:00:00 GMT+0530") : null;
+                 const listD = listingDate !== 'TBA' ? new Date(listingDate + " 00:00:00 GMT+0530") : null;
+                 
+                 if (listD && now.toDateString() === listD.toDateString() && now >= listD) {
+                    status = 'Listed';
+                 } else if (listD && now > listD) {
+                    status = 'Listed';
+                 } else if (allotmentD) {
+                    if (now.toDateString() === allotmentD.toDateString()) {
+                       // Exact allotment day -> usually comes out in evening
+                       status = 'Allotment Awaited';
+                    } else if (now > allotmentD) {
+                       // Day after allotment -> it is definitely out by now!
+                       status = 'Allotment Out';
+                    } else {
+                       status = 'Closed';
+                    }
+                 } else {
+                    status = 'Closed';
+                 }
+              }
+            }
+          } catch (e) {
+            console.error("Date parsing error", e);
+          }
+        }
+        
         if (!nameRaw) return;
         
         mappedIpos.push({
@@ -156,7 +204,7 @@ export async function GET(request: Request) {
           const cols = $listed(el).find('td');
           if (cols.length >= 11) {
             const rawName = $listed(cols[0]).text().trim();
-            const cleanName = rawName.replace(/(NSE|BSE)/g, '').trim() || rawName;
+            const cleanName = rawName.replace(/(NSE|BSE)/gi, '').replace(/\[email protected\]/gi, '').replace(/\([0-9.%+-]+\)/g, '').trim() || rawName;
             let detailUrl = $listed(cols[0]).find('a').attr('href') || '';
             
             // Skip the header-like row "NSE" or "BSE"
@@ -191,7 +239,7 @@ export async function GET(request: Request) {
           const cols = $listedSme(el).find('td');
           if (cols.length >= 11) {
             const rawName = $listedSme(cols[0]).text().trim();
-            const cleanName = rawName.replace(/(NSE|BSE)/g, '').trim() || rawName;
+            const cleanName = rawName.replace(/(NSE|BSE)/gi, '').replace(/\[email protected\]/gi, '').replace(/\([0-9.%+-]+\)/g, '').trim() || rawName;
             let detailUrl = $listedSme(cols[0]).find('a').attr('href') || '';
             
             // Skip the header-like row "NSE" or "BSE"
@@ -232,7 +280,23 @@ export async function GET(request: Request) {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
-    return NextResponse.json(mappedIpos);
+    // Remove duplicates (e.g. if an IPO is both in upcoming and listed tables)
+    // Priority to the one with actualListingPrice (which comes from the listed tables)
+    const uniqueMap = new Map();
+    for (const ipo of mappedIpos) {
+       const key = ipo.symbol;
+       if (uniqueMap.has(key)) {
+           const existing = uniqueMap.get(key);
+           if (ipo.actualListingPrice && !existing.actualListingPrice) {
+               uniqueMap.set(key, ipo);
+           }
+       } else {
+           uniqueMap.set(key, ipo);
+       }
+    }
+    const finalIpos = Array.from(uniqueMap.values());
+
+    return NextResponse.json(finalIpos);
     
   } catch (error: any) {
     console.error("IPO API Error:", error);

@@ -25,8 +25,10 @@ export default function IpoDashboard() {
   const [listedIpos, setListedIpos] = useState<any[]>([]);
   const [myApplications, setMyApplications] = useState<IpoApplicationDoc[]>([]);
   const [userAccounts, setUserAccounts] = useState<AccountDoc[]>([]);
+  const [ipoNews, setIpoNews] = useState<any[]>([]);
   const [ipoCategory, setIpoCategory] = useState<'MAINBOARD' | 'SME'>('MAINBOARD');
   const [statusCategory, setStatusCategory] = useState<'UPCOMING' | 'LISTED'>('UPCOMING');
+  const [searchQuery, setSearchQuery] = useState("");
   const hasFetched = React.useRef(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +39,7 @@ export default function IpoDashboard() {
     symbol: "",
     application_date: new Date().toISOString().split('T')[0],
     application_number: "",
+    pan_number: "",
     status: "Pending",
     lots_applied: 1,
     total_amount: 15000,
@@ -54,15 +57,49 @@ export default function IpoDashboard() {
     taxes_and_charges: 0
   });
 
+  const [checkAllotmentApp, setCheckAllotmentApp] = useState<IpoApplicationDoc | null>(null);
+  const [allotmentDetails, setAllotmentDetails] = useState<{registrar?: string, url?: string} | null>(null);
+  const [loadingAllotment, setLoadingAllotment] = useState(false);
+
   useEffect(() => {
-    if (user && !hasFetched.current) {
+    if (checkAllotmentApp) {
+      // Find the IPO to get its detailUrl
+      const ipo = [...upcomingIpos, ...listedIpos].find(i => i.symbol === checkAllotmentApp.symbol || i.name === checkAllotmentApp.ipo_name);
+      if (ipo && ipo.detailUrl) {
+        setLoadingAllotment(true);
+        fetch(`/api/ipos/details?url=${encodeURIComponent(ipo.detailUrl)}`)
+          .then(res => res.json())
+          .then(data => {
+            setAllotmentDetails({ registrar: data.registrar !== 'TBA' ? data.registrar : undefined, url: data.allotmentUrl });
+          })
+          .catch(console.error)
+          .finally(() => setLoadingAllotment(false));
+      } else {
+        setAllotmentDetails(null);
+      }
+    } else {
+      setAllotmentDetails(null);
+    }
+  }, [checkAllotmentApp, upcomingIpos, listedIpos]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (!hasFetched.current) {
       hasFetched.current = true;
       loadData();
     }
+
+    // Continuously check for allotment/status updates every 30 seconds in the background
+    const interval = setInterval(() => {
+      loadData(true);
+    }, 30 * 1000);
+
+    return () => clearInterval(interval);
   }, [user]);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       // 1. Fetch All IPOs and separate by status
       const ipos = await fetchUpcomingIpos();
@@ -86,11 +123,22 @@ export default function IpoDashboard() {
         .filter(acc => acc.market_type === "DOMESTIC" || acc.currency === "INR");
       setUserAccounts(accounts);
 
+      // 4. Fetch IPO News
+      try {
+        const newsRes = await fetch("/api/ipo-news");
+        if (newsRes.ok) {
+          const newsData = await newsRes.json();
+          setIpoNews(newsData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch news", err);
+      }
+
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to load IPO data");
+      if (!isBackground) toast.error(error.message || "Failed to load IPO data");
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
@@ -114,6 +162,7 @@ export default function IpoDashboard() {
         symbol: formData.symbol,
         application_date: formData.application_date,
         application_number: formData.application_number,
+        pan_number: formData.pan_number,
         status: formData.status as any,
         lots_applied: Number(formData.lots_applied),
         total_amount: Number(formData.total_amount),
@@ -211,6 +260,7 @@ export default function IpoDashboard() {
             symbol: "",
             application_date: new Date().toISOString().split('T')[0],
             application_number: "",
+            pan_number: "",
             status: "Pending",
             lots_applied: 1,
             total_amount: 15000,
@@ -299,6 +349,12 @@ export default function IpoDashboard() {
 
                   <div className="flex gap-4 mt-4 pt-4 border-t border-default">
                     <button
+                      onClick={() => setCheckAllotmentApp(app)}
+                      className="text-xs text-purple-400 hover:text-purple-300 transition-colors mr-auto flex items-center gap-1"
+                    >
+                      <i className="las la-external-link-alt"></i> Check Allotment
+                    </button>
+                    <button
                       onClick={() => {
                         setEditId(app.id);
                         setFormData({
@@ -306,6 +362,7 @@ export default function IpoDashboard() {
                           symbol: app.symbol || "",
                           application_date: app.application_date || new Date().toISOString().split('T')[0],
                           application_number: app.application_number || "",
+                          pan_number: app.pan_number || "",
                           status: app.status || "Pending",
                           lots_applied: app.lots_applied || 1,
                           total_amount: app.total_amount || 0,
@@ -337,16 +394,49 @@ export default function IpoDashboard() {
               ))}
             </div>
           )}
+
+          {/* IPO News Widget (Moved to Left Column) */}
+          {ipoNews.length > 0 && (
+            <div className="flex flex-col gap-4 mt-8">
+              <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+                <i className="las la-newspaper text-blue-500"></i> Latest IPO News
+              </h2>
+              <div className="bg-elevated border border-default rounded-xl p-4 max-h-[350px] overflow-y-auto custom-scrollbar space-y-3">
+                {ipoNews.map((news, idx) => (
+                  <a key={idx} href={news.link} target="_blank" rel="noreferrer" className="block p-3 rounded-lg bg-surface hover:bg-black/10 transition-colors border border-default/50 hover:border-blue-500/30">
+                    <h4 className="text-sm font-bold text-primary line-clamp-2 leading-snug">{news.title}</h4>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-wider bg-black/20 px-2 py-0.5 rounded">{news.source}</span>
+                      <span className="text-xs text-muted font-mono">{new Date(news.pubDate).toLocaleDateString()}</span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: IPO Listings */}
         <div className="space-y-6">
+
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-primary flex items-center gap-2">
               <i className="las la-rocket text-purple-500"></i> Market Overview
             </h2>
 
             <div className="flex flex-col gap-3">
+              {/* Search Input */}
+              <div className="relative">
+                <i className="las la-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+                <input
+                  type="text"
+                  placeholder="Search IPOs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-surface border border-default rounded-xl pl-10 pr-4 py-2 text-sm text-primary focus:outline-none focus:border-blue-500 transition-all"
+                />
+              </div>
+
               {/* Upcoming vs Listed */}
               <div className="flex items-center justify-between p-1 bg-surface border border-default rounded-xl cursor-pointer w-full mb-1">
                 <div
@@ -385,6 +475,7 @@ export default function IpoDashboard() {
           <div className="space-y-4">
             {(statusCategory === 'UPCOMING' ? upcomingIpos : listedIpos)
                 .filter(ipo => ipoCategory === 'MAINBOARD' ? ipo.exchange !== 'SME' : ipo.exchange === 'SME')
+                .filter(ipo => ipo.name?.toLowerCase().includes(searchQuery.toLowerCase()) || ipo.symbol?.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map((ipo, idx) => (
                   <Link href={`/dashboard/ipos/${ipo.symbol}`} key={idx} className="block group">
                     <Card className="p-4 bg-elevated border border-default hover:border-blue-500/50 transition-all duration-300">
@@ -403,6 +494,7 @@ export default function IpoDashboard() {
                         </div>
                         <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border ${
                           ipo.status === 'Live' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+                          ipo.status === 'Closing Today' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 animate-pulse' :
                           ipo.status === 'Upcoming' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                           ipo.status === 'Allotment Awaited' || ipo.status === 'Closed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                           ipo.status === 'Allotment Out' ? 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20' :
@@ -468,6 +560,15 @@ export default function IpoDashboard() {
                           <Button
                             variant="outline"
                             className="flex-1 text-[11px] h-8 bg-cyan-500/10 text-cyan-500 border-cyan-500/20 hover:bg-cyan-500 hover:text-white transition-all px-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCheckAllotmentApp({
+                                symbol: ipo.symbol,
+                                ipo_name: ipo.name,
+                                pan_number: "", 
+                                application_number: ""
+                              } as any);
+                            }}
                           >
                             <i className="las la-external-link-alt mr-1"></i> Check Allotment
                           </Button>
@@ -570,6 +671,27 @@ export default function IpoDashboard() {
                     <option value="Allotted">Allotted</option>
                     <option value="Rejected">Rejected</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Application Number</label>
+                  <input
+                    type="text"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
+                    value={formData.application_number}
+                    onChange={e => setFormData({ ...formData, application_number: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">PAN Number</label>
+                  <input
+                    type="text"
+                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500 uppercase"
+                    value={formData.pan_number}
+                    onChange={e => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
+                  />
                 </div>
               </div>
 
@@ -718,7 +840,7 @@ export default function IpoDashboard() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="col-span-2">
                   <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Account Name (Optional)</label>
                   <input
                     type="text"
@@ -726,15 +848,6 @@ export default function IpoDashboard() {
                     className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
                     value={formData.applied_account_name}
                     onChange={e => setFormData({ ...formData, applied_account_name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Application Number (Optional)</label>
-                  <input
-                    type="text"
-                    className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
-                    value={formData.application_number}
-                    onChange={e => setFormData({ ...formData, application_number: e.target.value })}
                   />
                 </div>
               </div>
@@ -745,6 +858,133 @@ export default function IpoDashboard() {
             </form>
           </Card>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Check Allotment Modal */}
+      {checkAllotmentApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <Card className="w-full max-w-md p-6 relative shadow-2xl border border-default/20">
+            <button
+              onClick={() => setCheckAllotmentApp(null)}
+              className="absolute top-4 right-4 text-muted hover:text-primary"
+            >
+              <i className="las la-times text-xl"></i>
+            </button>
+            
+            <h2 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
+              <i className="las la-external-link-alt text-purple-500"></i> Check Allotment
+            </h2>
+            <p className="text-sm text-muted mb-6">Use these details to check your allotment status on the registrar website.</p>
+
+            <div className="space-y-4 mb-6">
+              <div className="bg-surface/50 border border-default rounded-lg p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">PAN Number</p>
+                  <p className="text-primary font-mono font-bold text-lg">{checkAllotmentApp.pan_number || "Not Provided"}</p>
+                </div>
+                {checkAllotmentApp.pan_number && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(checkAllotmentApp.pan_number || "");
+                      toast.success("PAN copied to clipboard!");
+                    }}
+                    className="w-10 h-10 rounded-lg bg-elevated border border-default flex items-center justify-center hover:text-purple-500 transition-colors"
+                  >
+                    <i className="las la-copy text-xl"></i>
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-surface/50 border border-default rounded-lg p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted uppercase font-bold tracking-wider mb-1">Application Number</p>
+                  <p className="text-primary font-mono font-bold text-lg">{checkAllotmentApp.application_number || "Not Provided"}</p>
+                </div>
+                {checkAllotmentApp.application_number && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(checkAllotmentApp.application_number || "");
+                      toast.success("Application number copied!");
+                    }}
+                    className="w-10 h-10 rounded-lg bg-elevated border border-default flex items-center justify-center hover:text-purple-500 transition-colors"
+                  >
+                    <i className="las la-copy text-xl"></i>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs text-muted font-bold uppercase tracking-wider text-center">Registrar Links</p>
+              {loadingAllotment ? (
+                <div className="flex justify-center py-4"><div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div></div>
+              ) : allotmentDetails?.url ? (
+                <a href={allotmentDetails.url} target="_blank" rel="noopener noreferrer" className="w-full flex flex-col items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-4 px-4 rounded-lg text-primary transition-colors">
+                  <span className="font-medium text-purple-400 flex items-center gap-2 text-center leading-tight">
+                    {allotmentDetails.registrar || "Registrar"} <i className="las la-external-link-alt"></i>
+                  </span>
+                  <div className="bg-yellow-500/10 text-yellow-500/90 text-xs px-3 py-2 rounded border border-yellow-500/20 text-center mt-1">
+                    <i className="las la-info-circle text-sm mr-1"></i>
+                    Registrar websites do not allow auto-filling. <strong>Copy your PAN or App No</strong> using the buttons above, then paste it on their site.
+                  </div>
+                </a>
+              ) : allotmentDetails?.registrar ? (
+                (() => {
+                  const regLower = allotmentDetails.registrar.toLowerCase();
+                  let fallbackUrl = "https://ipo.bseindia.com/IPO_status.html";
+                  let regName = allotmentDetails.registrar;
+                  if (regLower.includes('kfintech') || regLower.includes('kfin tech')) {
+                    fallbackUrl = "https://ipostatus.kfintech.com/";
+                    regName = "KFintech";
+                  } else if (regLower.includes('link intime') || regLower.includes('linkintime')) {
+                    fallbackUrl = "https://in.mpms.mufg.com/Initial_Offer/public-issues.html";
+                    regName = "Link Intime";
+                  } else if (regLower.includes('bigshare')) {
+                    fallbackUrl = "https://ipo.bigshareonline.com/IPO_Status.html";
+                    regName = "Bigshare Services";
+                  } else if (regLower.includes('cameo')) {
+                    fallbackUrl = "https://ipo.cameoindia.com/";
+                    regName = "Cameo Corporate";
+                  } else if (regLower.includes('skylin')) {
+                    fallbackUrl = "https://www.skylinerta.com/ipo.php";
+                    regName = "Skyline Financial";
+                  }
+                  
+                  return (
+                    <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="w-full flex flex-col items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-4 px-4 rounded-lg text-primary transition-colors">
+                      <span className="font-medium text-purple-400 flex items-center gap-2 text-center leading-tight">
+                        {regName} <i className="las la-external-link-alt"></i>
+                      </span>
+                      <div className="bg-yellow-500/10 text-yellow-500/90 text-xs px-3 py-2 rounded border border-yellow-500/20 text-center mt-1">
+                        <i className="las la-info-circle text-sm mr-1"></i>
+                        Registrar websites do not allow auto-filling. <strong>Copy your PAN or App No</strong> using the buttons above, then paste it on their site.
+                      </div>
+                    </a>
+                  );
+                })()
+              ) : (
+                <>
+                  <a href="https://ipo.bseindia.com/IPO_status.html" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
+                    BSE India Checker <i className="las la-arrow-right"></i>
+                  </a>
+                  <a href="https://ipostatus.kfintech.com/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
+                    KFintech <i className="las la-arrow-right"></i>
+                  </a>
+                  <a href="https://in.mpms.mufg.com/Initial_Offer/public-issues.html" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
+                    Link Intime <i className="las la-arrow-right"></i>
+                  </a>
+                </>
+              )}
+            </div>
+            
+            {(!checkAllotmentApp.pan_number || !checkAllotmentApp.application_number) && (
+              <p className="text-xs text-amber-500/80 mt-4 text-center">
+                <i className="las la-exclamation-triangle"></i> Tip: Edit your application to add your PAN or Application Number for quick copying.
+              </p>
+            )}
+          </Card>
         </div>,
         document.body
       )}

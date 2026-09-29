@@ -262,6 +262,7 @@ export interface IpoApplicationDoc {
   symbol: string;
   application_date: string;
   application_number: string;
+  pan_number?: string;
   status: "Pending" | "Allotted" | "Rejected";
   lots_applied: number;
   total_amount: number; // calculated as lots_applied * minAmount
