@@ -27,6 +27,7 @@ export default function ReportsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [includeIpos, setIncludeIpos] = useState(true);
   
   const { activeWorkspace } = useUiStore();
   const isDomestic = activeWorkspace === "DOMESTIC";
@@ -89,6 +90,13 @@ export default function ReportsPage() {
       const endOfDay = e + (24 * 60 * 60 * 1000) - 1;
       const tTime = new Date(t.close_time).getTime();
       if (tTime > endOfDay) match = false;
+    }
+    
+    // Check IPO filter for domestic accounts
+    if (isDomestic && !includeIpos) {
+      if ((t as any).domestic_segment === "IPO") {
+        match = false;
+      }
     }
     
     return match;
@@ -194,6 +202,21 @@ export default function ReportsPage() {
                 leftIcon={<i className="las la-calendar-check text-lg"></i>}
               />
             </div>
+
+            {isDomestic && (
+              <div className="flex items-center justify-between p-3 rounded-lg border border-default bg-elevated/50">
+                <label className="text-[11px] font-bold text-secondary uppercase tracking-widest cursor-pointer" htmlFor="include-ipos-toggle">
+                  Include IPOs
+                </label>
+                <div 
+                  className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${includeIpos ? 'bg-blue-500' : 'bg-surface border border-subtle'}`}
+                  onClick={() => setIncludeIpos(!includeIpos)}
+                  id="include-ipos-toggle"
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${includeIpos ? 'left-[22px]' : 'left-0.5 bg-secondary'}`}></div>
+                </div>
+              </div>
+            )}
 
             <Button 
               variant="primary" 

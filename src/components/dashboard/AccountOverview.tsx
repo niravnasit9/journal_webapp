@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useUiStore } from "@/store/useUiStore";
 import { AccountDoc, TradeDoc } from "@/lib/firebase/schema";
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
@@ -13,6 +14,8 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
   const { activeWorkspace } = useUiStore();
   const isDomestic = activeWorkspace === "DOMESTIC";
 
+  const [includeIpo, setIncludeIpo] = useState(false);
+
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -20,8 +23,25 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
     }).format(val);
   };
 
+  // Compute breakdown across ALL trades regardless of toggle
+  let actualTradePnl = 0;
+  let actualIpoPnl = 0;
+  trades.forEach(t => {
+    const pnl = isDomestic ? ((t as any).net_pnl ?? ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0)) : (t.profit_loss || 0);
+    if ((t as any).domestic_segment === 'IPO') {
+      actualIpoPnl += pnl;
+    } else {
+      actualTradePnl += pnl;
+    }
+  });
+
+  // Filter trades based on toggle
+  const filteredTrades = includeIpo 
+    ? trades 
+    : trades.filter(t => (t as any).domestic_segment !== 'IPO');
+
   // Ensure trades are sorted chronologically for equity curve
-  const chronoTrades = [...trades].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime());
+  const chronoTrades = [...filteredTrades].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime());
 
   let currentEquity = account.initial_balance;
   let peakEquity = account.initial_balance;
@@ -40,12 +60,6 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
   chronoTrades.forEach((t, i) => {
     const pnl = isDomestic ? ((t as any).net_pnl ?? ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0)) : (t.profit_loss || 0);
     currentEquity += pnl;
-
-    if (t.domestic_segment === 'IPO') {
-      ipoPnl += pnl;
-    } else {
-      tradePnl += pnl;
-    }
 
     if (pnl > 0) {
       totalWins++;
@@ -80,6 +94,22 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Account Overview</h2>
+        <button 
+          onClick={() => setIncludeIpo(!includeIpo)}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
+            includeIpo 
+              ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
+              : 'bg-elevated border-default text-secondary hover:text-primary hover:border-primary/30'
+          }`}
+          title="Toggle Combined IPO + Trading"
+        >
+          <i className={`las ${includeIpo ? 'la-compress-arrows-alt' : 'la-expand-arrows-alt'} text-lg`}></i>
+          {includeIpo ? 'Combined View' : 'Trading Only'}
+        </button>
+      </div>
+
       {/* Top Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Starting Balance & Current Equity */}
@@ -117,14 +147,14 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
             <div className="mt-4 pt-4 border-t border-default/50 grid grid-cols-2 gap-2 text-sm relative z-20">
               <div>
                 <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">Trades P&L</span>
-                <span className={`font-mono font-bold ${tradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {tradePnl > 0 ? '+' : ''}{formatCurrency(tradePnl)}
+                <span className={`font-mono font-bold ${actualTradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {actualTradePnl > 0 ? '+' : ''}{formatCurrency(actualTradePnl)}
                 </span>
               </div>
               <div>
                 <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">IPO P&L</span>
-                <span className={`font-mono font-bold ${ipoPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {ipoPnl > 0 ? '+' : ''}{formatCurrency(ipoPnl)}
+                <span className={`font-mono font-bold ${actualIpoPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {actualIpoPnl > 0 ? '+' : ''}{formatCurrency(actualIpoPnl)}
                 </span>
               </div>
             </div>
@@ -150,7 +180,9 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart */}
         <div className="lg:col-span-2 premium-card p-6">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-6">Equity Curve</h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Equity Curve {includeIpo && <span className="text-blue-500 ml-1">(Combined)</span>}</h3>
+          </div>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={equityCurve} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

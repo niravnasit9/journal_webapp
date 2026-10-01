@@ -27,6 +27,7 @@ export default function TradesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccountId, setSelectedAccountId] = useState("ALL");
+  const [includeIpos, setIncludeIpos] = useState(true);
   const { activeWorkspace } = useUiStore();
   const isDomestic = activeWorkspace === "DOMESTIC";
   const currencySymbol = isDomestic ? "₹" : "$";
@@ -101,6 +102,11 @@ export default function TradesPage() {
     // 3. Filter by selected account ID
     const matchesAccount = selectedAccountId === "ALL" || t.account_id === selectedAccountId;
     
+    // 4. IPO filter
+    if (isDomestic && !includeIpos) {
+      if ((t as any).domestic_segment === "IPO") return false;
+    }
+    
     return matchesSearch && matchesAccount;
   });
 
@@ -167,6 +173,21 @@ export default function TradesPage() {
             </Button>
           </div>
           
+          {isDomestic && (
+            <div className="flex items-center gap-2 bg-surface border border-default rounded-md px-3 h-10" title="Include IPOs">
+              <label className="text-xs font-bold text-secondary uppercase tracking-widest cursor-pointer whitespace-nowrap" htmlFor="include-ipos-toggle">
+                IPOs
+              </label>
+              <div 
+                className={`w-8 h-4 rounded-full relative cursor-pointer transition-colors ${includeIpos ? 'bg-blue-500' : 'bg-elevated border border-subtle'}`}
+                onClick={() => setIncludeIpos(!includeIpos)}
+                id="include-ipos-toggle"
+              >
+                <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all shadow-sm ${includeIpos ? 'left-[18px]' : 'left-0.5 bg-secondary'}`}></div>
+              </div>
+            </div>
+          )}
+
           <div className="w-full md:w-64">
             <Input 
               placeholder="Search symbols (e.g. XAUUSD)" 

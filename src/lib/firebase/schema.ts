@@ -237,7 +237,7 @@ export interface GoalDoc {
   id: string;
   owner_uid: string;
   title: string;
-  type: "profit_target" | "trading_days" | "win_rate" | "custom";
+  type: "profit_target" | "trading_days" | "win_rate" | "custom" | "trades_count";
   target_value: number;
   current_value: number;
   deadline?: any; // Firestore Timestamp

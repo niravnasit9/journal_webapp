@@ -174,7 +174,9 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
           let bgColor = "bg-surface";
           let textColor = "text-secondary";
           
-          if (stat && stat.count > 0 && primaryPnl !== undefined) {
+          const hasStats = isCurrentMonth && stat && stat.count > 0 && primaryPnl !== undefined;
+
+          if (hasStats) {
             if (primaryPnl > 0) {
               bgColor = "bg-emerald-50 dark:bg-emerald-500/10";
               textColor = "text-emerald-500 dark:text-emerald-400";
@@ -208,7 +210,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
                   {format(day, 'd')}
                 </div>
                 {/* Trade Count Dot */}
-                {stat && stat.count > 0 && (
+                {hasStats && (
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-default text-[10px] font-bold text-muted shadow-sm">
                     {stat.count}
                   </span>
@@ -216,7 +218,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
               </div>
               
               {/* Centered PnL */}
-              {stat && stat.count > 0 && primaryPnl !== undefined && (
+              {hasStats && (
                 <div className="flex-1 flex items-center justify-center pt-2 pb-1">
                   <span className={`text-[15px] md:text-[17px] font-bold tracking-tight text-center ${textColor}`}>
                     {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
@@ -225,7 +227,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
               )}
               
               {/* Detailed Hover Tooltip */}
-              {stat && stat.count > 0 && primaryPnl !== undefined && (
+              {hasStats && (
                 <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-elevated border border-default shadow-2xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none hidden md:block">
                   <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-elevated border-b border-r border-default rotate-45"></div>
                   <p className="text-xs font-bold text-primary mb-2 border-b border-default pb-2">{format(day, 'MMM do, yyyy')}</p>

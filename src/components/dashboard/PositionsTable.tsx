@@ -68,7 +68,15 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
   const groupedByDate = useMemo(() => {
     const groups: Record<string, TradeDoc[]> = {};
     filtered.forEach(p => {
-      const date = (p as any).trade_date || (p.close_time || "").split("T")[0];
+      let date = "";
+      if (p.close_time) {
+        date = p.close_time.split("T")[0];
+      } else if ((p as any).trade_date) {
+        date = (p as any).trade_date;
+      } else if (p.open_time) {
+        date = p.open_time.split("T")[0];
+      }
+      
       if (!groups[date]) groups[date] = [];
       groups[date].push(p);
     });
@@ -290,9 +298,14 @@ export default function PositionsTable({ positions }: PositionsTableProps) {
                                 ? `${t.symbol || "Unknown Asset"} ${(t as any).strike_price || ""} ${(t as any).option_type || ""}`.trim()
                                 : (t.symbol || "Unknown Asset")}
                             </span>
-                            {(t as any).domestic_segment && (
-                              <span className="text-[10px] text-muted">{(t as any).domestic_segment}</span>
-                            )}
+                            {(t as any).domestic_segment === "IPO" ? (
+                              <div className="flex flex-col gap-0.5 mt-1">
+                                <span className="text-[10px] text-muted font-mono"><span className="font-bold text-secondary">Applied:</span> {formatDate(t.open_time || "")}</span>
+                                <span className="text-[10px] text-muted font-mono"><span className="font-bold text-secondary">Sold:</span> {formatDate(t.close_time || "")}</span>
+                              </div>
+                            ) : (t as any).domestic_segment ? (
+                              <span className="text-[10px] text-muted mt-0.5">{(t as any).domestic_segment}</span>
+                            ) : null}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right font-mono text-xs text-emerald-600 dark:text-emerald-400 hidden md:table-cell">{formatCurrency(t.open_price || 0)}</td>

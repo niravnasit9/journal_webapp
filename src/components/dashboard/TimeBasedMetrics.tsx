@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TradeDoc } from "@/lib/firebase/schema";
 import { 
   startOfDay, endOfDay, 
@@ -16,6 +16,7 @@ interface TimeBasedMetricsProps {
 }
 
 export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetricsProps) {
+  const [combineYearly, setCombineYearly] = useState(false);
   
   const metrics = useMemo(() => {
     const now = new Date();
@@ -31,6 +32,8 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
       weekly: 0,
       monthly: 0,
       yearly: 0,
+      yearlyIpo: 0,
+      ipo: 0,
     };
 
     trades.forEach(trade => {
@@ -39,11 +42,17 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
       if (isNaN(tradeDate.getTime())) return;
       
       const pnl = isDomestic ? (trade as any).net_pnl || 0 : trade.profit_loss || 0;
+      const isIpo = (trade as any).domestic_segment === "IPO";
 
-      if (isWithinInterval(tradeDate, today)) result.daily += pnl;
-      if (isWithinInterval(tradeDate, thisWeek)) result.weekly += pnl;
-      if (isWithinInterval(tradeDate, thisMonth)) result.monthly += pnl;
-      if (isWithinInterval(tradeDate, thisYear)) result.yearly += pnl;
+      if (isIpo) {
+        result.ipo += pnl;
+        if (isWithinInterval(tradeDate, thisYear)) result.yearlyIpo += pnl;
+      } else {
+        if (isWithinInterval(tradeDate, today)) result.daily += pnl;
+        if (isWithinInterval(tradeDate, thisWeek)) result.weekly += pnl;
+        if (isWithinInterval(tradeDate, thisMonth)) result.monthly += pnl;
+        if (isWithinInterval(tradeDate, thisYear)) result.yearly += pnl;
+      }
     });
 
     return result;
@@ -75,11 +84,35 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
       <MetricCard label="Today" value={metrics.daily} icon="la-sun" />
       <MetricCard label="This Week" value={metrics.weekly} icon="la-calendar-week" />
       <MetricCard label="This Month" value={metrics.monthly} icon="la-calendar" />
-      <MetricCard label="This Year" value={metrics.yearly} icon="la-calendar-alt" />
+      
+      {/* Custom Yearly Card with Toggle */}
+      <div className="premium-inner-box p-4 relative group">
+        <div className="flex justify-between items-start gap-2 mb-2 min-h-[32px]">
+          <p className="text-xs text-muted uppercase font-bold tracking-widest flex-1 leading-tight">
+            This Year {combineYearly && <span className="block text-[10px] text-blue-500/80 mt-0.5">Combined</span>}
+          </p>
+          <button 
+            onClick={() => setCombineYearly(!combineYearly)}
+            className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors border ${
+              combineYearly 
+                ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
+                : 'bg-elevated border-default text-secondary hover:text-primary hover:border-primary/30'
+            }`}
+            title="Toggle Combined IPO + Trading"
+          >
+            <i className={`las ${combineYearly ? 'la-compress-arrows-alt' : 'la-expand-arrows-alt'} text-lg`}></i>
+          </button>
+        </div>
+        <p className={`text-2xl font-black tracking-tight ${(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0)) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0)) >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0))}
+        </p>
+      </div>
+
+      <MetricCard label="IPO Profit" value={metrics.ipo} icon="la-chart-bar" />
     </div>
   );
 }

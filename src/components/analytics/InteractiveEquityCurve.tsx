@@ -10,6 +10,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
   const [chartType, setChartType] = useState<ChartType>('Area');
   const [timeFilter, setTimeFilter] = useState<'All' | '30D' | '90D' | '1Y'>('All');
   const [aggregation, setAggregation] = useState<'Trade' | 'Day'>('Trade');
+  const [includeIpo, setIncludeIpo] = useState(false);
 
   const formatMoney = (val: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(val);
@@ -18,8 +19,9 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
   const data = useMemo(() => {
     let runningBalance = 0;
     const sorted = [...trades].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime());
+    const baseTrades = includeIpo ? sorted : sorted.filter(t => (t as any).domestic_segment !== "IPO");
     
-    let filtered = sorted;
+    let filtered = baseTrades;
     if (timeFilter !== 'All') {
       const now = new Date();
       let threshold = new Date();
@@ -81,7 +83,7 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
     }
 
     return chartData;
-  }, [trades, timeFilter, aggregation, isDomestic]);
+  }, [trades, timeFilter, aggregation, isDomestic, includeIpo]);
 
   if (trades.length === 0) {
     return (
@@ -186,6 +188,19 @@ export const InteractiveEquityCurve: React.FC<{ trades: TradeDoc[], currency: "U
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
+          <button 
+            onClick={() => setIncludeIpo(!includeIpo)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors border ${
+              includeIpo 
+                ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
+                : 'bg-elevated border-default text-secondary hover:text-primary hover:border-primary/30'
+            }`}
+            title="Toggle Combined IPO + Trading"
+          >
+            <i className={`las ${includeIpo ? 'la-compress-arrows-alt' : 'la-expand-arrows-alt'} text-base`}></i>
+            {includeIpo ? 'Combined' : 'Trading Only'}
+          </button>
+
           <select 
             className="bg-elevated border border-default text-neutral-300 text-xs rounded-lg px-3 py-2 outline-none focus:border-[#a855f7]"
             value={timeFilter}

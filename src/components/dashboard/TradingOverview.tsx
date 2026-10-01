@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useUiStore } from "@/store/useUiStore";
 import { TradeDoc } from "@/lib/firebase/schema";
 
@@ -16,7 +17,10 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
     }).format(val);
   };
 
-  const totalTrades = trades.length;
+  const [includeIpo, setIncludeIpo] = useState(false);
+  const filteredTrades = includeIpo ? trades : trades.filter(t => (t as any).domestic_segment !== "IPO");
+
+  const totalTrades = filteredTrades.length;
   let wins = 0;
   let losses = 0;
   let grossProfit = 0;
@@ -26,20 +30,30 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
   let longWins = 0, longLosses = 0;
   let shortWins = 0, shortLosses = 0;
 
-  trades.forEach(t => {
-    const pnl = isDomestic ? (t.net_pnl || 0) : (t.profit_loss || 0);
+  filteredTrades.forEach(t => {
+    const pnl = isDomestic ? (t.net_pnl || ((t as any).domestic_segment === 'IPO' ? t.profit_loss : 0) || 0) : (t.profit_loss || 0);
+    
+    let isShort = t.direction === "SELL";
+    if (isDomestic && (t as any).option_type) {
+      if ((t as any).option_type === "PE") {
+        isShort = t.direction === "BUY" || !t.direction; // Default to BUY if missing
+      } else if ((t as any).option_type === "CE") {
+        isShort = t.direction === "SELL";
+      }
+    }
+
     if (pnl > 0) {
       wins++;
       grossProfit += pnl;
       if (pnl > largestWin) largestWin = pnl;
-      if (t.direction === "BUY") longWins++;
-      else shortWins++;
+      if (isShort) shortWins++;
+      else longWins++;
     } else if (pnl < 0) {
       losses++;
       grossLoss += Math.abs(pnl);
       if (Math.abs(pnl) > largestLoss) largestLoss = Math.abs(pnl);
-      if (t.direction === "BUY") longLosses++;
-      else shortLosses++;
+      if (isShort) shortLosses++;
+      else longLosses++;
     }
   });
 
@@ -53,10 +67,26 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
   const longWinRate = longTotal > 0 ? (longWins / longTotal) * 100 : 0;
   const shortWinRate = shortTotal > 0 ? (shortWins / shortTotal) * 100 : 0;
 
-  const totalVolume = trades.reduce((sum, t) => sum + (isDomestic ? (t.quantity || 0) : (t.lot_size || 0)), 0);
+  const totalVolume = filteredTrades.reduce((sum, t) => sum + (isDomestic ? (Number((t as any).units) || Number((t as any).quantity) || 0) : (Number((t as any).lot_size) || 0)), 0);
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">Trading Overview</h2>
+        <button 
+          onClick={() => setIncludeIpo(!includeIpo)}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
+            includeIpo 
+              ? 'bg-blue-500/10 border-blue-500/50 text-blue-500' 
+              : 'bg-elevated border-default text-secondary hover:text-primary hover:border-primary/30'
+          }`}
+          title="Toggle Combined IPO + Trading"
+        >
+          <i className={`las ${includeIpo ? 'la-compress-arrows-alt' : 'la-expand-arrows-alt'} text-lg`}></i>
+          {includeIpo ? 'Combined View' : 'Trading Only'}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Core Metrics */}
         <div className="premium-card p-5 group relative overflow-hidden">
@@ -138,19 +168,19 @@ export default function TradingOverview({ trades }: TradingOverviewProps) {
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total Brokerage</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{filteredTrades.reduce((s, t) => s + (t.tax_breakdown?.brokerage || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total STT</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{filteredTrades.reduce((s, t) => s + (t.tax_breakdown?.stt || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-surface/50 p-4 rounded-xl border border-white/5">
               <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Total GST</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{trades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{filteredTrades.reduce((s, t) => s + (t.tax_breakdown?.gst || 0), 0).toLocaleString()}</p>
             </div>
             <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-500/20">
               <p className="text-[10px] text-rose-400 uppercase font-bold tracking-widest mb-1">Total Tax Drag</p>
-              <p className="text-lg font-bold text-rose-400">₹{trades.reduce((s, t) => s + (t.total_taxes || 0), 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-rose-400">₹{filteredTrades.reduce((s, t) => s + (t.total_taxes || 0), 0).toLocaleString()}</p>
             </div>
           </div>
         </div>
