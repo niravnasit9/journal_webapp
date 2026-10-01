@@ -10,6 +10,48 @@ import {
   isSameDay, isToday
 } from "date-fns";
 
+const INDIAN_MARKET_HOLIDAYS: Record<string, string> = {
+  // 2024
+  "2024-01-26": "Republic Day",
+  "2024-03-08": "Mahashivratri",
+  "2024-03-25": "Holi",
+  "2024-03-29": "Good Friday",
+  "2024-04-11": "Id-Ul-Fitr",
+  "2024-04-17": "Shri Ram Navmi",
+  "2024-05-01": "Maharashtra Day",
+  "2024-06-17": "Bakri Id",
+  "2024-07-17": "Muharram",
+  "2024-08-15": "Independence Day",
+  "2024-10-02": "Mahatma Gandhi Jayanti",
+  "2024-11-01": "Diwali",
+  "2024-11-15": "Gurunanak Jayanti",
+  "2024-12-25": "Christmas",
+  // 2025
+  "2025-02-26": "Mahashivratri",
+  "2025-03-14": "Holi",
+  "2025-03-31": "Id-Ul-Fitr",
+  "2025-04-10": "Mahavir Jayanti",
+  "2025-04-14": "Ambedkar Jayanti",
+  "2025-04-18": "Good Friday",
+  "2025-05-01": "Maharashtra Day",
+  "2025-08-15": "Independence Day",
+  "2025-10-02": "Gandhi Jayanti",
+  "2025-10-21": "Diwali",
+  "2025-11-05": "Gurunanak Jayanti",
+  "2025-12-25": "Christmas",
+  // 2026
+  "2026-01-26": "Republic Day",
+  "2026-03-03": "Holi",
+  "2026-03-20": "Id-Ul-Fitr",
+  "2026-04-03": "Good Friday",
+  "2026-04-14": "Ambedkar Jayanti",
+  "2026-05-01": "Maharashtra Day",
+  "2026-08-15": "Independence Day",
+  "2026-10-02": "Gandhi Jayanti",
+  "2026-11-08": "Diwali",
+  "2026-12-25": "Christmas"
+};
+
 interface TradingCalendarProps {
   trades: TradeDoc[];
   isDomestic: boolean;
@@ -22,9 +64,18 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
+const getExpiryForDay = (date: Date) => {
+  const day = date.getDay();
+  switch(day) {
+    case 2: return { name: "NIFTY", short: "NIFTY" };
+    case 4: return { name: "SENSEX", short: "SENSEX" };
+    default: return null;
+  }
+};
+
   // Compute stats per day for the entire dataset
   const dailyStats = useMemo(() => {
-    const stats: Record<string, { grossPnl: number; netPnl: number; ipoPnl: number; tradePnl: number; count: number; wins: number; losses: number }> = {};
+    const stats: Record<string, { grossPnl: number; netPnl: number; ipoPnl: number; tradePnl: number; expiryPnl: number; count: number; wins: number; losses: number; expiryTraded: boolean }> = {};
     
     trades.forEach(trade => {
       const tradeDate = new Date(trade.close_time);
@@ -35,8 +86,11 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
       const netPnl = isDomestic ? ((trade as any).net_pnl ?? (isIpo ? trade.profit_loss : 0)) : (trade.profit_loss || 0);
       const grossPnl = trade.profit_loss || 0;
       
+      const expiry = getExpiryForDay(tradeDate);
+      const isExpiryTrade = isDomestic && expiry && trade.symbol && trade.symbol.toUpperCase().includes(expiry.name);
+      
       if (!stats[dateKey]) {
-        stats[dateKey] = { grossPnl: 0, netPnl: 0, ipoPnl: 0, tradePnl: 0, count: 0, wins: 0, losses: 0 };
+        stats[dateKey] = { grossPnl: 0, netPnl: 0, ipoPnl: 0, tradePnl: 0, expiryPnl: 0, count: 0, wins: 0, losses: 0, expiryTraded: false };
       }
       
       stats[dateKey].grossPnl += grossPnl;
@@ -46,6 +100,12 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
       } else {
         stats[dateKey].tradePnl += netPnl;
       }
+      
+      if (isExpiryTrade) {
+        stats[dateKey].expiryTraded = true;
+        stats[dateKey].expiryPnl += netPnl;
+      }
+      
       stats[dateKey].count += (trade as any).trades_count || 1;
       // Evaluate win/loss based on gross PnL
       if (grossPnl > 0) stats[dateKey].wins += 1;
@@ -175,6 +235,7 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
           let textColor = "text-secondary";
           
           const hasStats = isCurrentMonth && stat && stat.count > 0 && primaryPnl !== undefined;
+          const isHoliday = isDomestic && INDIAN_MARKET_HOLIDAYS[dateKey] !== undefined;
 
           if (hasStats) {
             if (primaryPnl > 0) {
@@ -187,6 +248,9 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
               bgColor = "bg-blue-50 dark:bg-blue-500/10";
               textColor = "text-blue-500 dark:text-blue-400";
             }
+          } else if (isHoliday && isCurrentMonth) {
+            bgColor = "bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20";
+            textColor = "text-orange-500 dark:text-orange-400";
           } else if (!isCurrentMonth) {
             bgColor = "bg-background/20";
           } else {
@@ -209,20 +273,39 @@ export default function TradingCalendar({ trades, isDomestic }: TradingCalendarP
                 <div className={`flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full text-sm font-semibold ${isTodayDate ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : !isCurrentMonth && !stat ? 'text-muted/30' : 'text-secondary'}`}>
                   {format(day, 'd')}
                 </div>
-                {/* Trade Count Dot */}
-                {hasStats && (
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-default text-[10px] font-bold text-muted shadow-sm">
-                    {stat.count}
-                  </span>
-                )}
+                <div className="flex gap-1">
+                  {isHoliday && isCurrentMonth && (
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 text-xs" title={INDIAN_MARKET_HOLIDAYS[dateKey]}>
+                      <i className="las la-umbrella-beach"></i>
+                    </span>
+                  )}
+                  {hasStats && (
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-default text-[10px] font-bold text-muted shadow-sm">
+                      {stat.count}
+                    </span>
+                  )}
+                </div>
               </div>
               
-              {/* Centered PnL */}
-              {hasStats && (
-                <div className="flex-1 flex items-center justify-center pt-2 pb-1">
+              {/* Centered Content */}
+              {hasStats ? (
+                <div className="flex-1 flex flex-col items-center justify-center pt-2 pb-1">
                   <span className={`text-[15px] md:text-[17px] font-bold tracking-tight text-center ${textColor}`}>
                     {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
                   </span>
+                </div>
+              ) : isHoliday && isCurrentMonth ? (
+                <div className="flex-1 flex flex-col items-center justify-center pt-1 pb-1">
+                  <span className={`text-[10px] md:text-[11px] font-bold text-center leading-tight px-1 ${textColor}`}>
+                    {INDIAN_MARKET_HOLIDAYS[dateKey]}
+                  </span>
+                </div>
+              ) : <div className="flex-1"></div>}
+              
+              {/* Expiry Label at Bottom */}
+              {isDomestic && isCurrentMonth && getExpiryForDay(day) && (
+                <div className={`mt-auto text-[9px] font-bold text-center uppercase tracking-widest px-1 py-0.5 rounded-sm w-full truncate ${stat?.expiryTraded ? (stat.expiryPnl >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500') : 'text-muted bg-background/50 border border-default'}`}>
+                  {getExpiryForDay(day)?.short} EXP {stat?.expiryTraded ? `(${stat.expiryPnl >= 0 ? '+' : '-'}${formatMoney(stat.expiryPnl)})` : ''}
                 </div>
               )}
               
