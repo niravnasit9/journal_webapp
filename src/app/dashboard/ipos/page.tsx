@@ -777,6 +777,7 @@ export default function IpoDashboard() {
                           <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Offer Price (₹)</label>
                           <input
                             type="number"
+                            step="any"
                             required min="0"
                             className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
                             value={formData.offer_price}
@@ -787,6 +788,7 @@ export default function IpoDashboard() {
                           <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Sell Price (₹)</label>
                           <input
                             type="number"
+                            step="any"
                             required min="0"
                             className="w-full bg-elevated border border-default rounded-lg px-4 py-2 text-primary focus:outline-none focus:border-blue-500"
                             value={formData.sell_price}
@@ -930,16 +932,37 @@ export default function IpoDashboard() {
                     Registrar websites do not allow auto-filling. <strong>Copy your PAN or App No</strong> using the buttons above, then paste it on their site.
                   </div>
                 </a>
-              ) : allotmentDetails?.registrar ? (
+              ) : (
                 (() => {
-                  const regLower = allotmentDetails.registrar.toLowerCase();
+                  let regName = allotmentDetails?.registrar || "";
                   let fallbackUrl = "https://ipo.bseindia.com/IPO_status.html";
-                  let regName = allotmentDetails.registrar;
+                  
+                  // Hardcoded Fallbacks for known IPOs where API fails to fetch Registrar
+                  const ipoName = (checkAllotmentApp?.ipo_name || "").toLowerCase();
+                  if (!regName) {
+                    if (ipoName.includes('moneyview')) regName = 'Link Intime';
+                  }
+
+                  if (!regName) {
+                    // Total fallback if we absolutely don't know the registrar
+                    return (
+                      <>
+                        <a href="https://ipostatus.kfintech.com/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
+                          KFintech <i className="las la-arrow-right"></i>
+                        </a>
+                        <a href="https://linkintime.co.in/initial_offer/public-issues.html" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
+                          Link Intime <i className="las la-arrow-right"></i>
+                        </a>
+                      </>
+                    );
+                  }
+
+                  const regLower = regName.toLowerCase();
                   if (regLower.includes('kfintech') || regLower.includes('kfin tech')) {
                     fallbackUrl = "https://ipostatus.kfintech.com/";
                     regName = "KFintech";
-                  } else if (regLower.includes('link intime') || regLower.includes('linkintime')) {
-                    fallbackUrl = "https://in.mpms.mufg.com/Initial_Offer/public-issues.html";
+                  } else if (regLower.includes('link intime') || regLower.includes('linkintime') || regLower.includes('mufg')) {
+                    fallbackUrl = "https://linkintime.co.in/initial_offer/public-issues.html";
                     regName = "Link Intime";
                   } else if (regLower.includes('bigshare')) {
                     fallbackUrl = "https://ipo.bigshareonline.com/IPO_Status.html";
@@ -964,18 +987,6 @@ export default function IpoDashboard() {
                     </a>
                   );
                 })()
-              ) : (
-                <>
-                  <a href="https://ipo.bseindia.com/IPO_status.html" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
-                    BSE India Checker <i className="las la-arrow-right"></i>
-                  </a>
-                  <a href="https://ipostatus.kfintech.com/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
-                    KFintech <i className="las la-arrow-right"></i>
-                  </a>
-                  <a href="https://in.mpms.mufg.com/Initial_Offer/public-issues.html" target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-3 rounded-lg text-primary font-medium transition-colors">
-                    Link Intime <i className="las la-arrow-right"></i>
-                  </a>
-                </>
               )}
             </div>
             
