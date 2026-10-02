@@ -113,47 +113,45 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
       {/* Top Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Starting Balance & Current Equity */}
-        <div className="lg:col-span-2 premium-card p-6 flex flex-col justify-between border-t-2 border-t-blue-500 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="lg:col-span-2 bg-surface/50 border border-default rounded-xl p-6 flex flex-col justify-between group transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold text-muted uppercase tracking-widest">Starting Balance</p>
-              <p className="text-xl font-bold text-slate-600 dark:text-white/70 mt-1">{formatCurrency(account.initial_balance)}</p>
+              <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Starting Balance</p>
+              <p className="text-xl font-bold text-primary mt-1">{formatCurrency(account.initial_balance)}</p>
             </div>
-            <div className="hidden sm:block h-10 w-[1px] bg-slate-200 dark:bg-white/10 mx-4"></div>
+            <div className="hidden sm:block h-10 w-px bg-subtle mx-4"></div>
             <div className="sm:text-right">
-              <p className="text-xs font-bold text-muted uppercase tracking-widest">Current Equity</p>
-              <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1 drop-shadow-md">{formatCurrency(currentEquity)}</p>
+              <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Current Equity</p>
+              <p className="text-3xl font-black text-primary tracking-tight mt-1">{formatCurrency(currentEquity)}</p>
             </div>
           </div>
         </div>
 
         {/* Net PnL */}
-        <div className={`premium-card p-6 border-t-2 relative overflow-hidden group ${netPnl >= 0 ? 'border-t-emerald-500' : 'border-t-rose-500'}`}>
-          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${netPnl >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent'}`}></div>
-          <div className="relative z-10">
-            <p className="text-xs font-bold text-muted uppercase tracking-widest">Net Return</p>
-            <div className="mt-2 flex items-baseline gap-2">
-              <p className={`text-2xl sm:text-3xl font-black drop-shadow-md ${netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+        <div className="bg-surface/50 border border-default rounded-xl p-6 flex flex-col justify-between group transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+          <div>
+            <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Net Return</p>
+            <div className="mt-1 flex items-baseline gap-2">
+              <p className={`text-3xl font-black tracking-tight ${netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                 {netPnl > 0 ? '+' : ''}{formatCurrency(netPnl)}
               </p>
             </div>
-            <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface/50 border border-white/5">
-              <i className={`las ${netPnl >= 0 ? 'la-arrow-up text-emerald-600 dark:text-emerald-400' : 'la-arrow-down text-rose-600 dark:text-rose-400'} mr-1`}></i>
-              <span className={netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{Math.abs(netPnlPct).toFixed(2)}%</span>
+            <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-elevated border border-default">
+              <i className={`las ${netPnl >= 0 ? 'la-arrow-up text-emerald-500' : 'la-arrow-down text-rose-500'} mr-1`}></i>
+              <span className={netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}>{Math.abs(netPnlPct).toFixed(2)}%</span>
             </div>
 
             {/* P&L Breakdown */}
-            <div className="mt-4 pt-4 border-t border-default/50 grid grid-cols-2 gap-2 text-sm relative z-20">
+            <div className="mt-5 pt-4 border-t border-subtle grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">Trades P&L</span>
-                <span className={`font-mono font-bold ${actualTradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <span className="text-[10px] text-secondary uppercase font-bold tracking-widest block mb-1">Trades P&L</span>
+                <span className={`font-bold ${actualTradePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {actualTradePnl > 0 ? '+' : ''}{formatCurrency(actualTradePnl)}
                 </span>
               </div>
               <div>
-                <span className="text-muted block text-[10px] uppercase font-bold tracking-widest mb-1">IPO P&L</span>
-                <span className={`font-mono font-bold ${actualIpoPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <span className="text-[10px] text-secondary uppercase font-bold tracking-widest block mb-1">IPO P&L</span>
+                <span className={`font-bold ${actualIpoPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {actualIpoPnl > 0 ? '+' : ''}{formatCurrency(actualIpoPnl)}
                 </span>
               </div>
@@ -162,15 +160,14 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
         </div>
 
         {/* Max Drawdown */}
-        <div className="premium-card p-6 border-t-2 border-t-orange-500 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="relative z-10">
-            <p className="text-xs font-bold text-muted uppercase tracking-widest">Max Drawdown</p>
-            <p className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400 mt-2 drop-shadow-md">
+        <div className="bg-surface/50 border border-default rounded-xl p-6 flex flex-col justify-between group transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+          <div>
+            <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Max Drawdown</p>
+            <p className="text-3xl font-black text-rose-500 tracking-tight mt-1">
               -{formatCurrency(maxDrawdownValue)}
             </p>
-            <div className="mt-2 inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface/50 border border-white/5">
-              <span className="text-orange-600 dark:text-orange-400">-{maxDrawdownPct.toFixed(2)}%</span>
+            <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-elevated border border-default">
+              <span className="text-rose-500">-{maxDrawdownPct.toFixed(2)}%</span>
             </div>
           </div>
         </div>
@@ -179,7 +176,7 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
       {/* Equity Curve & Secondary Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart */}
-        <div className="lg:col-span-2 premium-card p-6">
+        <div className="lg:col-span-2 bg-surface/50 border border-default rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Equity Curve {includeIpo && <span className="text-blue-500 ml-1">(Combined)</span>}</h3>
           </div>
@@ -231,35 +228,32 @@ export default function AccountOverview({ account, trades }: AccountOverviewProp
 
         {/* Extra Stats */}
         <div className="grid grid-rows-3 gap-4">
-          <div className="premium-card p-5 flex items-center justify-between group relative overflow-hidden">
-             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-             <div className="relative z-10">
-               <p className="text-xs font-bold text-muted uppercase tracking-widest">Win Rate</p>
-               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{winRate.toFixed(1)}%</p>
+          <div className="bg-surface/50 border border-default rounded-xl p-5 flex items-center justify-between group transition-all hover:border-primary/20">
+             <div>
+               <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Win Rate</p>
+               <p className="text-2xl font-black tracking-tight text-primary mt-1">{winRate.toFixed(1)}%</p>
              </div>
-             <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center relative z-10 text-blue-400">
+             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                <i className="las la-trophy text-2xl"></i>
              </div>
           </div>
           
-          <div className="premium-card p-5 flex items-center justify-between group relative overflow-hidden">
-             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-             <div className="relative z-10">
-               <p className="text-xs font-bold text-muted uppercase tracking-widest">Profit Factor</p>
-               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{profitFactor.toFixed(2)}</p>
+          <div className="bg-surface/50 border border-default rounded-xl p-5 flex items-center justify-between group transition-all hover:border-primary/20">
+             <div>
+               <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Profit Factor</p>
+               <p className="text-2xl font-black tracking-tight text-primary mt-1">{profitFactor.toFixed(2)}</p>
              </div>
-             <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center relative z-10 text-purple-400">
+             <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                <i className="las la-balance-scale text-2xl"></i>
              </div>
           </div>
 
-          <div className="premium-card p-5 flex items-center justify-between group relative overflow-hidden">
-             <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-             <div className="relative z-10">
-               <p className="text-xs font-bold text-muted uppercase tracking-widest">Total Trades</p>
-               <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{totalTrades}</p>
+          <div className="bg-surface/50 border border-default rounded-xl p-5 flex items-center justify-between group transition-all hover:border-primary/20">
+             <div>
+               <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">Total Trades</p>
+               <p className="text-2xl font-black tracking-tight text-primary mt-1">{totalTrades}</p>
              </div>
-             <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center relative z-10 text-emerald-400">
+             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                <i className="las la-exchange-alt text-2xl"></i>
              </div>
           </div>

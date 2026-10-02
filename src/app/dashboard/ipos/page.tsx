@@ -90,10 +90,10 @@ export default function IpoDashboard() {
       loadData();
     }
 
-    // Continuously check for allotment/status updates every 30 seconds in the background
+    // Continuously check for allotment/status updates every 5 seconds in the background
     const interval = setInterval(() => {
       loadData(true);
-    }, 30 * 1000);
+    }, 5 * 1000);
 
     return () => clearInterval(interval);
   }, [user]);
@@ -252,7 +252,77 @@ export default function IpoDashboard() {
           <h1 className="text-3xl font-bold text-primary tracking-tight">IPO Suite</h1>
           <p className="text-muted mt-2">Track upcoming IPOs and log your applications.</p>
         </div>
-        <Button onClick={() => {
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            className="border-dashed border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10"
+            onClick={async () => {
+              if (!user) return;
+              try {
+                const accQuery = query(collection(db, "accounts"), where("owner_uid", "==", user.uid), where("market_type", "==", "DOMESTIC"));
+                const accSnap = await getDocs(accQuery);
+                if (accSnap.empty) {
+                  toast.error("No domestic account found to attach profit");
+                  return;
+                }
+                const accountId = accSnap.docs[0].id;
+                const accountName = accSnap.docs[0].data().label || "Axis Account";
+
+                const ipoRef = doc(db, "ipo_applications", "legacy-axis-11k");
+                await setDoc(ipoRef, {
+                  id: "legacy-axis-11k",
+                  owner_uid: user.uid,
+                  ipo_name: "Legacy Axis Profit",
+                  symbol: "LEGACY_IPO",
+                  application_date: "2026-08-28",
+                  status: "Allotted",
+                  lots_applied: 1,
+                  total_amount: 0,
+                  applied_account_id: accountId,
+                  applied_account_name: accountName,
+                  allotted_account_id: accountId,
+                  lots_allotted: 1,
+                  is_sold: true,
+                  sell_date: "2026-09-07",
+                  sell_price: 11000,
+                  offer_price: 0,
+                  lot_size: 1,
+                  taxes_and_charges: 0,
+                  profit_loss: 11000,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                });
+
+                const tradeRef = doc(db, "trades", "ipo-legacy-axis-11k");
+                await setDoc(tradeRef, {
+                  id: "ipo-legacy-axis-11k",
+                  account_id: accountId,
+                  symbol: "Legacy Axis Profit (IPO)",
+                  direction: "BUY",
+                  open_price: 0,
+                  close_price: 11000,
+                  open_time: new Date("2026-08-28T10:00:00Z").toISOString(),
+                  close_time: new Date("2026-09-07T10:00:00Z").toISOString(),
+                  profit_loss: 11000,
+                  gross_pnl: 11000,
+                  net_pnl: 11000,
+                  total_taxes: 0,
+                  commission: 0,
+                  domestic_segment: "IPO",
+                  quantity: 1,
+                  comment: "Legacy Axis account profit"
+                });
+
+                toast.success("Legacy Axis profit added! Please refresh.");
+                loadData();
+              } catch(e) {
+                toast.error("Error adding legacy profit");
+              }
+            }}
+          >
+            <i className="las la-history"></i> Add 11k Legacy Axis Profit
+          </Button>
+          <Button onClick={() => {
           setEditId(null);
           setModalMode('UPCOMING');
           setFormData({
@@ -280,6 +350,7 @@ export default function IpoDashboard() {
           <i className="las la-plus"></i> Log Application
         </Button>
       </div>
+    </div>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -922,16 +993,6 @@ export default function IpoDashboard() {
               <p className="text-xs text-muted font-bold uppercase tracking-wider text-center">Registrar Links</p>
               {loadingAllotment ? (
                 <div className="flex justify-center py-4"><div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div></div>
-              ) : allotmentDetails?.url ? (
-                <a href={allotmentDetails.url} target="_blank" rel="noopener noreferrer" className="w-full flex flex-col items-center justify-center gap-2 bg-elevated hover:bg-surface border border-default py-4 px-4 rounded-lg text-primary transition-colors">
-                  <span className="font-medium text-purple-400 flex items-center gap-2 text-center leading-tight">
-                    {allotmentDetails.registrar || "Registrar"} <i className="las la-external-link-alt"></i>
-                  </span>
-                  <div className="bg-yellow-500/10 text-yellow-500/90 text-xs px-3 py-2 rounded border border-yellow-500/20 text-center mt-1">
-                    <i className="las la-info-circle text-sm mr-1"></i>
-                    Registrar websites do not allow auto-filling. <strong>Copy your PAN or App No</strong> using the buttons above, then paste it on their site.
-                  </div>
-                </a>
               ) : (
                 (() => {
                   let regName = allotmentDetails?.registrar || "";
@@ -980,10 +1041,6 @@ export default function IpoDashboard() {
                       <span className="font-medium text-purple-400 flex items-center gap-2 text-center leading-tight">
                         {regName} <i className="las la-external-link-alt"></i>
                       </span>
-                      <div className="bg-yellow-500/10 text-yellow-500/90 text-xs px-3 py-2 rounded border border-yellow-500/20 text-center mt-1">
-                        <i className="las la-info-circle text-sm mr-1"></i>
-                        Registrar websites do not allow auto-filling. <strong>Copy your PAN or App No</strong> using the buttons above, then paste it on their site.
-                      </div>
                     </a>
                   );
                 })()

@@ -69,14 +69,14 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
   const MetricCard = ({ label, value, icon }: { label: string, value: number, icon: string }) => {
     const isProfit = value >= 0;
     return (
-      <div className="premium-inner-box p-4">
-        <div className="flex justify-between items-start mb-2">
-          <p className="text-xs text-muted uppercase font-bold tracking-widest">{label}</p>
-          <div className="w-8 h-8 rounded-lg bg-elevated border border-default flex items-center justify-center text-secondary">
+      <div className="bg-surface/50 border border-default rounded-xl p-4 transition-all hover:border-primary/20 group">
+        <div className="flex justify-between items-start mb-3">
+          <p className="text-[11px] text-secondary uppercase font-bold tracking-widest">{label}</p>
+          <div className="w-8 h-8 rounded-lg bg-elevated border border-default flex items-center justify-center text-secondary transition-colors group-hover:text-primary">
             <i className={`las ${icon} text-lg`}></i>
           </div>
         </div>
-        <p className={`text-2xl font-black tracking-tight ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <p className={`text-2xl font-black tracking-tight ${isProfit ? 'text-emerald-500' : 'text-rose-500'}`}>
           {isProfit ? '+' : '-'}{currencySymbol}{formatMoney(value)}
         </p>
       </div>
@@ -90,10 +90,10 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
       <MetricCard label="This Month" value={metrics.monthly} icon="la-calendar" />
       
       {/* Custom Yearly Card with Toggle */}
-      <div className="premium-inner-box p-4 relative group">
-        <div className="flex justify-between items-start gap-2 mb-2 min-h-[32px]">
-          <p className="text-xs text-muted uppercase font-bold tracking-widest flex-1 leading-tight">
-            This Year {combineYearly && <span className="block text-[10px] text-blue-500/80 mt-0.5">Combined</span>}
+      <div className="bg-surface/50 border border-default rounded-xl p-4 transition-all hover:border-primary/20 group relative">
+        <div className="flex justify-between items-start gap-2 mb-3 min-h-[32px]">
+          <p className="text-[11px] text-secondary uppercase font-bold tracking-widest flex-1 leading-tight">
+            This Year {combineYearly && <span className="block text-[10px] text-blue-500 mt-1 font-black">Combined</span>}
           </p>
           <button 
             onClick={() => setCombineYearly(!combineYearly)}
@@ -107,7 +107,7 @@ export default function TimeBasedMetrics({ trades, isDomestic }: TimeBasedMetric
             <i className={`las ${combineYearly ? 'la-compress-arrows-alt' : 'la-expand-arrows-alt'} text-lg`}></i>
           </button>
         </div>
-        <p className={`text-2xl font-black tracking-tight ${(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0)) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <p className={`text-2xl font-black tracking-tight ${(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0)) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
           {(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0)) >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(metrics.yearly + (combineYearly ? metrics.yearlyIpo : 0))}
         </p>
       </div>

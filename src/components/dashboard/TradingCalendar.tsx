@@ -212,17 +212,19 @@ const getExpiryForDay = (date: Date) => {
 
       {/* Calendar Grid Container */}
       <div className="border border-default rounded-xl bg-surface shadow-sm mb-2">
-        {/* Days of Week Header */}
-        <div className="grid grid-cols-7 border-b border-default bg-elevated/50">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center py-3 text-[10px] font-bold text-muted uppercase tracking-widest border-r border-default last:border-r-0">
-              {day}
-            </div>
-          ))}
-        </div>
+        <div className="w-full">
+          {/* Days of Week Header */}
+          <div className="grid grid-cols-7 border-b border-default bg-elevated/50">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="text-center py-2 sm:py-3 text-[8px] sm:text-[10px] font-bold text-muted uppercase tracking-widest border-r border-default last:border-r-0 truncate px-1">
+                <span className="hidden sm:inline">{day}</span>
+                <span className="sm:hidden">{day.charAt(0)}</span>
+              </div>
+            ))}
+          </div>
 
-        {/* Days Grid */}
-        <div className="grid grid-cols-7">
+          {/* Days Grid */}
+          <div className="grid grid-cols-7">
         {daysInGrid.map(day => {
           const dateKey = format(day, 'yyyy-MM-dd');
           const stat = dailyStats[dateKey];
@@ -266,21 +268,21 @@ const getExpiryForDay = (date: Date) => {
             <div 
               key={dateKey} 
               onClick={() => setSelectedDate(day)}
-              className={`group min-h-[100px] md:min-h-[140px] p-3 border-r border-b border-default flex flex-col relative transition-all duration-200 cursor-pointer ${bgColor} ${ringClass} ${day.getDay() === 6 ? 'border-r-0' : ''}`}
+              className={`group min-h-[70px] sm:min-h-[100px] md:min-h-[140px] p-1 sm:p-2 md:p-3 border-r border-b border-default flex flex-col relative transition-all duration-200 cursor-pointer ${bgColor} ${ringClass} ${day.getDay() === 6 ? 'border-r-0' : ''}`}
             >
               {/* Day Number Header & Trade Count */}
               <div className="flex justify-between items-start">
-                <div className={`flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full text-sm font-semibold ${isTodayDate ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : !isCurrentMonth && !stat ? 'text-muted/30' : 'text-secondary'}`}>
+                <div className={`flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full text-[10px] sm:text-sm font-semibold ${isTodayDate ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : !isCurrentMonth && !stat ? 'text-muted/30' : 'text-secondary'}`}>
                   {format(day, 'd')}
                 </div>
                 <div className="flex gap-1">
                   {isHoliday && isCurrentMonth && (
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 text-xs" title={INDIAN_MARKET_HOLIDAYS[dateKey]}>
+                    <span className="flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 text-[10px] sm:text-xs" title={INDIAN_MARKET_HOLIDAYS[dateKey]}>
                       <i className="las la-umbrella-beach"></i>
                     </span>
                   )}
                   {hasStats && (
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-surface border border-default text-[10px] font-bold text-muted shadow-sm">
+                    <span className="flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-surface border border-default text-[8px] sm:text-[10px] font-bold text-muted shadow-sm">
                       {stat.count}
                     </span>
                   )}
@@ -289,14 +291,14 @@ const getExpiryForDay = (date: Date) => {
               
               {/* Centered Content */}
               {hasStats ? (
-                <div className="flex-1 flex flex-col items-center justify-center pt-2 pb-1">
-                  <span className={`text-[15px] md:text-[17px] font-bold tracking-tight text-center ${textColor}`}>
+                <div className="flex-1 flex flex-col items-center justify-center pt-1 sm:pt-2 pb-1">
+                  <span className={`text-[10px] sm:text-[13px] md:text-[17px] font-bold md:font-black tracking-tight text-center ${textColor}`}>
                     {primaryPnl >= 0 ? '+' : '-'}{currencySymbol}{formatMoney(primaryPnl)}
                   </span>
                 </div>
               ) : isHoliday && isCurrentMonth ? (
                 <div className="flex-1 flex flex-col items-center justify-center pt-1 pb-1">
-                  <span className={`text-[10px] md:text-[11px] font-bold text-center leading-tight px-1 ${textColor}`}>
+                  <span className={`text-[8px] sm:text-[10px] md:text-[11px] font-bold text-center leading-tight px-0.5 sm:px-1 ${textColor}`}>
                     {INDIAN_MARKET_HOLIDAYS[dateKey]}
                   </span>
                 </div>
@@ -304,14 +306,16 @@ const getExpiryForDay = (date: Date) => {
               
               {/* Expiry Label at Bottom */}
               {isDomestic && isCurrentMonth && getExpiryForDay(day) && (
-                <div className={`mt-auto text-[9px] font-bold text-center uppercase tracking-widest px-1 py-0.5 rounded-sm w-full truncate ${stat?.expiryTraded ? (stat.expiryPnl >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500') : 'text-muted bg-background/50 border border-default'}`}>
-                  {getExpiryForDay(day)?.short} EXP {stat?.expiryTraded ? `(${stat.expiryPnl >= 0 ? '+' : '-'}${formatMoney(stat.expiryPnl)})` : ''}
+                <div className={`mt-auto text-[7px] sm:text-[9px] font-bold text-center uppercase tracking-widest px-0.5 sm:px-1 py-0.5 rounded-sm w-full truncate ${stat?.expiryTraded ? (stat.expiryPnl >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500') : 'text-muted bg-background/50 border border-default'}`}>
+                  <span className="hidden sm:inline">{getExpiryForDay(day)?.short} EXP </span>
+                  <span className="sm:hidden">{getExpiryForDay(day)?.short.charAt(0)} </span>
+                  {stat?.expiryTraded ? `(${stat.expiryPnl >= 0 ? '+' : '-'}${formatMoney(stat.expiryPnl)})` : ''}
                 </div>
               )}
               
               {/* Detailed Hover Tooltip */}
               {hasStats && (
-                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-elevated border border-default shadow-2xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none hidden md:block">
+                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-elevated border border-default shadow-2xl rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
                   <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-elevated border-b border-r border-default rotate-45"></div>
                   <p className="text-xs font-bold text-primary mb-2 border-b border-default pb-2">{format(day, 'MMM do, yyyy')}</p>
                   <div className="space-y-1.5 text-xs relative z-10">
@@ -361,7 +365,8 @@ const getExpiryForDay = (date: Date) => {
             </div>
           );
         })}
-      </div>
+        </div>
+        </div>
       </div>
       </div>
 

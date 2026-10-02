@@ -172,37 +172,37 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-      <div className="premium-card w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 relative">
-        <div className="flex justify-between items-center p-5 border-b border-default bg-elevated/50">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-primary flex items-center gap-2 tracking-tight">
+      <div className="bg-surface border border-white/5 w-full max-w-md rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-200 relative shadow-2xl shadow-black/50">
+        <div className="flex justify-between items-center p-5 border-b border-white/5 bg-black/20 backdrop-blur-md">
+          <h3 className="text-lg font-black text-primary flex items-center gap-2 tracking-tight">
             <i className="las la-pen text-2xl text-blue-500"></i> Edit Account
           </h3>
-          <button onClick={onClose} className="text-secondary hover:text-gray-600 dark:hover:text-primary transition-colors">
-            <i className="las la-times text-2xl"></i>
+          <button onClick={onClose} className="text-secondary hover:text-primary transition-colors bg-white/5 hover:bg-white/10 w-8 h-8 rounded-full flex items-center justify-center">
+            <i className="las la-times text-lg"></i>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-2">
-            <label className="label-premium block mb-2 uppercase tracking-widest pl-1">
+            <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest pl-1">
               Account Name
             </label>
             <input 
               required type="text"
               value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})}
-              className="input-premium w-full font-semibold"
+              className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest pl-1">
                 Account Type
               </label>
               <select 
                 value={formData.account_type} 
                 onChange={e => setFormData({...formData, account_type: e.target.value})}
-                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
               >
                 <option value="Real">Real</option>
                 {formData.market_type === "GLOBAL" && <option value="Funded">Funded</option>}
@@ -211,13 +211,13 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
             </div>
             
             <div className="space-y-2">
-              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest pl-1">
                 Market Type
               </label>
               <select 
                 value={formData.market_type} 
                 onChange={e => setFormData({...formData, market_type: e.target.value as "GLOBAL" | "DOMESTIC"})}
-                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
               >
                 <option value="GLOBAL">Global</option>
                 <option value="DOMESTIC">Domestic</option>
@@ -225,13 +225,13 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
+              <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest pl-1">
                 Currency
               </label>
               <select 
                 value={formData.currency} 
                 onChange={e => setFormData({...formData, currency: e.target.value as "USD" | "INR"})}
-                className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
               >
                 <option value="USD">USD ($)</option>
                 <option value="INR">INR (₹)</option>
@@ -241,13 +241,13 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
 
           {formData.market_type === "GLOBAL" && (
           <div className="space-y-2">
-            <label className="block text-xs font-black text-muted dark:text-slate-400 uppercase tracking-widest pl-1">
+            <label className="block text-[10px] font-bold text-secondary uppercase tracking-widest pl-1">
               Prop Firm Tracker
             </label>
             <select 
               value={formData.prop_firm} 
               onChange={e => setFormData({...formData, prop_firm: e.target.value})}
-              className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none mb-3"
+              className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none mb-3"
             >
               <option value="">None (Standard Account)</option>
               {propFirms.map((firm: PropFirmDoc) => (
@@ -260,7 +260,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
                 <select
                   value={selectedProgramId}
                   onChange={e => setSelectedProgramId(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                  className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
                 >
                   <option value="none">Select a Program...</option>
                   {uniquePrograms.map(p => (
@@ -275,7 +275,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
                 <select
                   value={selectedSize}
                   onChange={e => setSelectedSize(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                  className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
                 >
                   <option value="none">Select Account Size...</option>
                   {uniqueSizes.map(s => (
@@ -290,7 +290,7 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
                 <select
                   value={selectedPhaseId}
                   onChange={e => setSelectedPhaseId(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-[#16181d] border border-gray-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-semibold appearance-none"
+                  className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-primary outline-none focus:border-blue-500/50 focus:bg-black/40 transition-all font-semibold appearance-none"
                 >
                   <option value="none">Select Phase (if applicable)...</option>
                   {uniquePhases.map(p => (
@@ -381,10 +381,10 @@ export default function EditAccountModal({ isOpen, onClose, account, onUpdated }
           )}
 
           <div className="pt-2 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 text-gray-700 dark:text-slate-300 font-bold hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-white/5 bg-black/20 hover:bg-black/40 text-secondary font-bold transition-all">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className={`flex-1 px-4 py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed ' + theme.buttonPrimary : theme.buttonPrimary}`}>
+            <button type="submit" disabled={loading} className={`flex-1 px-4 py-3 rounded-xl font-bold shadow-lg shadow-black/20 flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed ' + theme.buttonPrimary : theme.buttonPrimary}`}>
               {loading ? <i className="las la-spinner la-spin text-xl"></i> : <i className="las la-save text-xl"></i>}
               Save Changes
             </button>

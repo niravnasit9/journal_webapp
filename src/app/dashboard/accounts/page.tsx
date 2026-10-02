@@ -94,9 +94,9 @@ export default function UserAccountsPage() {
           />
         </div>
 
-        <div className="flex items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 w-full md:w-auto">
           
-          <div className="w-32">
+          <div className="w-full sm:w-32 flex-shrink-0">
             <Select 
               options={[
                 { value: "all", label: "All" },
@@ -119,7 +119,7 @@ export default function UserAccountsPage() {
               }
             }}
             variant="primary"
-            className={hasReachedLimit ? "opacity-80" : ""}
+            className={`w-full sm:w-auto justify-center ${hasReachedLimit ? "opacity-80" : ""}`}
             leftIcon={<i className={`las ${hasReachedLimit ? 'la-lock' : 'la-plus'} text-lg`}></i>}
           >
             {hasReachedLimit ? 'Upgrade to Add' : 'Add'}
@@ -148,20 +148,31 @@ export default function UserAccountsPage() {
           </div>
         ) : (
           filteredAccounts.map(account => (
-            <Card key={account.id} className={`group flex flex-col ${theme.card}`}>
-              <CardContent className="flex-1 flex flex-col p-6">
-                
-                <div className="flex justify-between items-start mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-elevated flex items-center justify-center border border-default shrink-0 text-secondary">
-                      <i className="las la-shield-alt text-xl"></i>
+            <Card key={account.id} className={`group flex flex-col border border-white/5 bg-gradient-to-br from-surface to-elevated hover:border-primary/20 transition-all duration-300 shadow-xl overflow-hidden relative ${theme.card}`}>
+              {/* Subtle background flair */}
+              <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+              <CardContent className="flex-1 flex flex-col p-6 sm:p-8 relative z-10">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center border border-white/5 shrink-0 text-primary shadow-inner">
+                      <i className="las la-shield-alt text-2xl"></i>
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-primary tracking-tight">
+                      <h2 className="text-xl sm:text-2xl font-black text-primary tracking-tight">
                         {account.label}
                       </h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="success" size="sm">Active</Badge>
+                      <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded backdrop-blur-sm border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active
+                        </span>
+                        <span className="text-xs text-secondary font-medium flex items-center gap-1">
+                          <i className="las la-calendar text-sm"></i> {new Date(account.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                        <span className="text-xs text-secondary font-medium flex items-center gap-1">
+                          <i className="las la-building text-sm"></i> {isDomestic ? (account.broker || "Personal") : (account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : "Challenge")}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -171,33 +182,14 @@ export default function UserAccountsPage() {
                       setAccountToEdit(account);
                       setIsEditModalOpen(true);
                     }}
-                    className="p-2 text-muted hover:text-primary hover:bg-elevated rounded-lg transition-colors"
+                    className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary hover:bg-white/5 rounded-full transition-colors"
                     title="Edit Account"
                   >
-                    <i className="las la-pen text-lg"></i>
+                    <i className="las la-ellipsis-v text-xl"></i>
                   </button>
                 </div>
   
-                <div className="space-y-3 mb-6 flex-1">
-                  {!isDomestic && (
-                    <div className="flex items-center gap-2.5">
-                      <i className={`las la-trophy text-lg ${theme.icon}`}></i>
-                      <span className="text-secondary text-sm font-medium">
-                        {account.account_type === 'funded' ? 'Funded Account: ' : 'Phase 1 Challenge: '}
-                        <span className="text-primary font-semibold">{account.account_type === 'funded' ? 'Instant Hero' : 'Pay Later Challenge'}</span>
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2.5">
-                    <i className={`las la-calendar text-lg ${theme.icon}`}></i>
-                    <span className="text-secondary text-sm font-medium">
-                      Started: <span className="text-primary font-semibold">{new Date(account.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-subtle mb-6"></div>
-  
+                {/* Financials */}
                 {(() => {
                   const accTrades = allTrades.filter(t => t.account_id === account.id);
                   let ipoPnl = 0;
@@ -216,70 +208,94 @@ export default function UserAccountsPage() {
                   const totalPnl = computedEquity - account.initial_balance;
                   
                   return (
-                    <>
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4 mb-6">
+                    <div className="flex-1 flex flex-col justify-end">
+                      {/* Main Balances */}
+                      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
                         <div>
-                          <p className="text-xs text-secondary font-medium mb-1">Starting Balance</p>
-                          <p className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
+                          <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1 opacity-70">Starting Balance</p>
+                          <p className="text-xl font-medium text-secondary tracking-tight">
                             {account.currency === "INR" ? "₹" : "$"}{account.initial_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-xs text-secondary font-medium mb-1">Current Equity</p>
-                          <p className={`text-xl sm:text-2xl font-bold tracking-tight ${computedEquity >= account.initial_balance ? 'text-success' : 'text-danger'}`}>
+                        <div className="sm:text-right">
+                          <p className="text-[10px] text-primary font-bold uppercase tracking-widest mb-1 opacity-70">Current Equity</p>
+                          <p className={`text-4xl font-black tracking-tighter ${computedEquity >= account.initial_balance ? 'text-primary' : 'text-danger'}`}>
                             {account.currency === "INR" ? "₹" : "$"}{computedEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </p>
-                        </div>
-                        <div className="col-span-2 lg:col-span-1">
-                          <p className="text-xs text-secondary font-medium mb-1">Type</p>
-                          <p className="text-sm font-bold text-primary tracking-tight mt-1">
-                            {isDomestic 
-                              ? (account.broker || "Personal Brokerage")
-                              : (account.account_type === "real" ? "Live" : account.account_type === "funded" ? "Funded" : account.account_type.replace("Goat Funded Challenge ", ""))}
                           </p>
                         </div>
                       </div>
 
-                      <div className="mb-6 p-4 rounded-xl bg-surface/50 border border-default grid grid-cols-3 gap-4 text-center">
-                        <div>
-                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Total P&L</p>
-                          <p className={`text-sm font-black ${totalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {/* P&L Breakdown (Clean Minimal Bar) */}
+                      <div className="mb-6 p-4 rounded-xl bg-black/20 border border-white/5 grid grid-cols-2 sm:grid-cols-3 gap-4 backdrop-blur-sm">
+                        <div className="col-span-2 sm:col-span-1">
+                          <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1 opacity-70">Total Net Return</p>
+                          <p className={`text-lg font-bold tracking-tight ${totalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {totalPnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(totalPnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Trades P&L</p>
-                          <p className={`text-sm font-black ${tradePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1 opacity-70">Trades</p>
+                          <p className={`text-sm font-semibold ${tradePnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {tradePnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(tradePnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">IPO P&L</p>
-                          <p className={`text-sm font-black ${ipoPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          <p className="text-[10px] text-secondary font-bold uppercase tracking-widest mb-1 opacity-70">IPOs</p>
+                          <p className={`text-sm font-semibold ${ipoPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {ipoPnl >= 0 ? '+' : '-'}{account.currency === "INR" ? "₹" : "$"}{Math.abs(ipoPnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                       </div>
-                    </>
+                    </div>
                   );
                 })()}
 
-                <div className="flex items-center gap-3 pt-4 border-t border-subtle">
+                {/* Footer Actions */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4 mt-auto">
                   <Button 
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => {
-                      toast(`Broker: ${account.broker}\nCurrency: ${account.currency}\nType: ${account.account_type}`, {
-                        icon: 'ℹ️',
-                      });
+                      toast.custom((t) => (
+                        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-surface/90 backdrop-blur-md border border-subtle shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black/5 overflow-hidden`}>
+                           <div className="flex-1 p-4 relative">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mt-10 -mr-10 pointer-events-none"></div>
+                              <div className="flex items-start relative z-10">
+                                <div className="flex-shrink-0 pt-0.5">
+                                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary shadow-inner">
+                                    <i className="las la-key text-xl"></i>
+                                  </div>
+                                </div>
+                                <div className="ml-4 flex-1">
+                                  <p className="text-sm font-bold text-primary tracking-tight">Account Credentials</p>
+                                  <div className="mt-2 text-xs space-y-1.5">
+                                    <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-md border border-white/5">
+                                      <span className="text-secondary font-bold uppercase tracking-widest text-[9px]">Broker</span>
+                                      <span className="text-primary font-semibold">{account.broker || 'Personal'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-md border border-white/5">
+                                      <span className="text-secondary font-bold uppercase tracking-widest text-[9px]">Currency</span>
+                                      <span className="text-primary font-semibold">{account.currency}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-black/20 px-2 py-1.5 rounded-md border border-white/5">
+                                      <span className="text-secondary font-bold uppercase tracking-widest text-[9px]">Type</span>
+                                      <span className="text-primary font-semibold">{account.account_type}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                           </div>
+                        </div>
+                      ), { duration: 4000 });
                     }}
+                    className="w-full sm:w-auto text-secondary hover:text-primary hover:bg-white/5 px-4 h-11 rounded-xl font-semibold justify-center"
                     leftIcon={<i className="las la-key text-lg"></i>}
                   >
                     Credentials
                   </Button>
                   
-                  <Link href={`/dashboard/accounts/${account.id}`} className="ml-auto">
-                    <Button variant="primary" leftIcon={<i className="las la-eye text-lg"></i>}>
-                      Dashboard
+                  <Link href={`/dashboard/accounts/${account.id}`} className="w-full sm:w-auto sm:ml-auto block">
+                    <Button variant="primary" className="w-full h-11 px-6 rounded-xl font-bold shadow-lg shadow-primary/20 justify-center" rightIcon={<i className="las la-arrow-right text-lg"></i>}>
+                      View Dashboard
                     </Button>
                   </Link>
                 </div>

@@ -106,8 +106,8 @@ export async function GET(request: Request) {
         
         let openDateRaw = $(cols[7]).text().trim().split('GMP')[0].trim();
         let closeDateRaw = $(cols[8]).text().trim().split('GMP')[0].trim();
-        let boaDateRaw = $(cols[9]).text().trim();
-        let listDateRaw = $(cols[10]).text().trim();
+        let boaDateRaw = $(cols[9]).text().trim().split('GMP')[0].trim();
+        let listDateRaw = $(cols[10]).text().trim().split('GMP')[0].trim();
         
         let openDate = openDateRaw && openDateRaw !== '--' ? `${openDateRaw}-${new Date().getFullYear()}` : 'TBA';
         let closeDate = closeDateRaw && closeDateRaw !== '--' ? `${closeDateRaw}-${new Date().getFullYear()}` : 'TBA';
@@ -122,39 +122,18 @@ export async function GET(request: Request) {
             const openD = new Date(openDate + " 10:00:00 GMT+0530");
             const closeD = new Date(closeDate + " 17:00:00 GMT+0530");
 
-            if (status !== 'Allotment Out') {
-              if (now.toDateString() === closeD.toDateString()) {
-                 if (now < closeD) {
-                    status = 'Closing Today';
-                 } else {
-                    status = 'Closed';
-                 }
-              } else if (now < openD) {
-                 status = 'Upcoming';
-              } else if (now >= openD && now < closeD) {
-                 status = 'Live';
-              } else if (now > closeD) {
-                 const allotmentD = allotmentDate !== 'TBA' ? new Date(allotmentDate + " 00:00:00 GMT+0530") : null;
-                 const listD = listingDate !== 'TBA' ? new Date(listingDate + " 00:00:00 GMT+0530") : null;
-                 
-                 if (listD && now.toDateString() === listD.toDateString() && now >= listD) {
-                    status = 'Listed';
-                 } else if (listD && now > listD) {
-                    status = 'Listed';
-                 } else if (allotmentD) {
-                    if (now.toDateString() === allotmentD.toDateString()) {
-                       // Exact allotment day -> usually comes out in evening
-                       status = 'Allotment Awaited';
-                    } else if (now > allotmentD) {
-                       // Day after allotment -> it is definitely out by now!
-                       status = 'Allotment Out';
-                    } else {
-                       status = 'Closed';
-                    }
-                 } else {
-                    status = 'Closed';
-                 }
-              }
+            const listD = listingDate !== 'TBA' ? new Date(listingDate + " 10:00:00 GMT+0530") : null;
+
+            if (listD && now >= listD) {
+               status = 'Listed';
+            } else if (status === 'Allotment Out' || status === 'Allotment Awaited') {
+               // Preserve the exact 'Allotment Out' or 'Allotment Awaited' status directly from the website's badge
+            } else if (now < openD) {
+               status = 'Upcoming';
+            } else if (now >= openD && now < closeD) {
+               status = 'Live';
+            } else if (now >= closeD) {
+               status = 'Closed';
             }
           } catch (e) {
             console.error("Date parsing error", e);
